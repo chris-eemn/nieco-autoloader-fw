@@ -73,37 +73,6 @@ extern "C" {
 #define M1_EN_ACTIVE_STATE                              HAL_GPIO_PIN_SET
 #define M1_EN_INACTIVE_STATE                            HAL_GPIO_PIN_RESET
 
-/* Primary aliases for GPIO PB4(NJTRST) pin */
-#define PB4_PORT                                        HAL_GPIOB
-#define PB4_PIN                                         HAL_GPIO_PIN_4
-
-/* Secondary aliases for GPIO PB4(NJTRST) pin */
-#define M1_NFAULT_PORT                                  HAL_GPIOB
-#define M1_NFAULT_PIN                                   HAL_GPIO_PIN_4
-
-#define M1_NFAULT_PORT                                  HAL_GPIOB
-#define M1_NFAULT_PIN                                   HAL_GPIO_PIN_4
-
-/* Primary aliases for GPIO PB10 pin */
-#define PB10_PORT                                       HAL_GPIOB
-#define PB10_PIN                                        HAL_GPIO_PIN_10
-#define PB10_INIT_STATE                                 HAL_GPIO_PIN_RESET
-#define PB10_ACTIVE_STATE                               HAL_GPIO_PIN_SET
-#define PB10_INACTIVE_STATE                             HAL_GPIO_PIN_RESET
-
-/* Secondary aliases for GPIO PB10 pin */
-#define M1_STEP_PORT                                    HAL_GPIOB
-#define M1_STEP_PIN                                     HAL_GPIO_PIN_10
-#define M1_STEP_INIT_STATE                              HAL_GPIO_PIN_RESET
-#define M1_STEP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
-#define M1_STEP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
-
-#define M1_STEP_PORT                                    HAL_GPIOB
-#define M1_STEP_PIN                                     HAL_GPIO_PIN_10
-#define M1_STEP_INIT_STATE                              HAL_GPIO_PIN_RESET
-#define M1_STEP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
-#define M1_STEP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
-
 /* Primary aliases for GPIO PC6 pin */
 #define PC6_PORT                                        HAL_GPIOC
 #define PC6_PIN                                         HAL_GPIO_PIN_6
@@ -123,6 +92,37 @@ extern "C" {
 #define M1_DIR_INIT_STATE                               HAL_GPIO_PIN_RESET
 #define M1_DIR_ACTIVE_STATE                             HAL_GPIO_PIN_SET
 #define M1_DIR_INACTIVE_STATE                           HAL_GPIO_PIN_RESET
+
+/* Primary aliases for GPIO PD5 pin */
+#define PD5_PORT                                        HAL_GPIOD
+#define PD5_PIN                                         HAL_GPIO_PIN_5
+#define PD5_INIT_STATE                                  HAL_GPIO_PIN_RESET
+#define PD5_ACTIVE_STATE                                HAL_GPIO_PIN_SET
+#define PD5_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
+
+/* Secondary aliases for GPIO PD5 pin */
+#define M1_STEP_PORT                                    HAL_GPIOD
+#define M1_STEP_PIN                                     HAL_GPIO_PIN_5
+#define M1_STEP_INIT_STATE                              HAL_GPIO_PIN_RESET
+#define M1_STEP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
+#define M1_STEP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
+
+#define M1_STEP_PORT                                    HAL_GPIOD
+#define M1_STEP_PIN                                     HAL_GPIO_PIN_5
+#define M1_STEP_INIT_STATE                              HAL_GPIO_PIN_RESET
+#define M1_STEP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
+#define M1_STEP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
+
+/* Primary aliases for GPIO PD6 pin */
+#define PD6_PORT                                        HAL_GPIOD
+#define PD6_PIN                                         HAL_GPIO_PIN_6
+
+/* Secondary aliases for GPIO PD6 pin */
+#define M1_NFAULT_PORT                                  HAL_GPIOD
+#define M1_NFAULT_PIN                                   HAL_GPIO_PIN_6
+
+#define M1_NFAULT_PORT                                  HAL_GPIOD
+#define M1_NFAULT_PIN                                   HAL_GPIO_PIN_6
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/

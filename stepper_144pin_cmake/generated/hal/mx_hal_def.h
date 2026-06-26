@@ -36,7 +36,9 @@ extern "C" {
 #include "mx_tim1.h"
 #include "mx_tim17.h"
 #include "mx_tim12.h"
+#include "mx_tim15.h"
 #include "mx_usart2.h"
+#include "mx_usart3.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -111,11 +113,35 @@ extern "C" {
   */
 #define step_timer_init mx_tim12_init
 
+  /* ***********************************************************
+      TIM15: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_tim15 with HAL layer
+  *         Name of the User label:
+  *                   mb_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM15 instance
+  */
+#define mb_timer_init mx_tim15_init
+
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_usart2_uart_init
     ************************************************************* */
+
+  /* ***********************************************************
+      USART3: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_usart3_uart with HAL layer
+  *         Name of the User label:
+  *                   mb_slave
+  * @retval hal_uart_handle_t Pointer on the handle on the USART3 instance
+  */
+#define mb_slave_init mx_usart3_uart_init
 
 /* ########################################################### */
 
@@ -179,11 +205,33 @@ extern "C" {
   */
 #define step_timer_deinit mx_tim12_deinit
 
+  /* ***********************************************************
+      TIM15: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_tim15 with HAL layer
+  *         Name of the User label:
+  *                   mb_timer
+  */
+#define mb_timer_deinit mx_tim15_deinit
+
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_usart2_uart_deinit
     ************************************************************* */
+
+  /* ***********************************************************
+      USART3: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_usart3_uart with HAL layer
+  *         Name of the User label:
+  *                   mb_slave
+  */
+#define mb_slave_deinit mx_usart3_uart_deinit
 
 /* ########################################################### */
 
@@ -227,11 +275,31 @@ extern "C" {
   */
 #define step_timer_gethandle mx_tim12_gethandle
 
+  /* ***********************************************************
+      TIM15: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for TIM15
+  *         Name of the User label:
+  *                   mb_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM15 instance
+  */
+#define mb_timer_gethandle mx_tim15_gethandle
+
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_usart2_uart_gethandle
     ************************************************************* */
+
+  /* ***********************************************************
+      USART3: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for USART3
+  *         Name of the User label:
+  *                   mb_slave
+  * @retval hal_uart_handle_t Pointer on the handle on the USART3 instance
+  */
+#define mb_slave_gethandle mx_usart3_uart_gethandle
 
 /* ########################################################### */
 
