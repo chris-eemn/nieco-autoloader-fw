@@ -4756,14 +4756,14 @@
                 "use_hal_tim_dma": false
               },
               "uart_feature": {
-                "use_register_callback": false,
+                "use_register_callback": true,
                 "user_data": false,
                 "get_last_errors": false,
                 "clk_enable_model": "HAL_CLK_ENABLE_NO",
                 "use_hal_uart_dma": false
               },
               "usart_feature": {
-                "use_register_callback": false,
+                "use_register_callback": true,
                 "user_data": false,
                 "get_last_errors": false,
                 "clk_enable_model": "HAL_CLK_ENABLE_NO",
@@ -6681,7 +6681,7 @@
             "label_name": [],
             "basic": {
               "mode": "ALTERNATE",
-              "pull": "UP",
+              "pull": "NO",
               "enable_exti": false,
               "output_type": "PUSHPULL",
               "speed": "LOW"

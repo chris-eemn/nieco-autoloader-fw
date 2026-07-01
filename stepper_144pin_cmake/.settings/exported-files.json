@@ -1,7 +1,7 @@
 {
   "disclaimer": "Do not modify this file as it is used by STM32CubeMX2 to determine what and how to update your project with new configuration",
   "version": "1.0.0",
-  "timestamp": "2026-06-26T22:23:47.214Z",
+  "timestamp": "2026-07-01T17:38:19.104Z",
   "files": [
     {
       "fileGroup": "project_file",
@@ -407,7 +407,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "2f4f0c5cff01d161b2eeaf1d3f1eebff4cc4cd2bcae46c05ead79684af39026a"
+        "digest": "1f84788794223b6aa6c6ee2c443f39dceb1f6ad59fab769172013ca70773a7b0"
       },
       "file": "generated/hal/mx_usart3.c"
     },
@@ -431,7 +431,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "32e4c0f5862b38c9e5d5ae10f0392691dab7efce373b4fab18b72d906b6d5145"
+        "digest": "ac2f6036d2a3ca9ac6d18107f0a0a92d0b8a097dfd5e9fba39299968c91faa0f"
       },
       "file": "generated/hal/stm32c5xx_hal_conf.h"
     },

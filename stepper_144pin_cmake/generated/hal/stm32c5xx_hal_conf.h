@@ -620,7 +620,7 @@ extern "C" {
 /* ########################## HAL_UART Config ################################### */
 #define USE_HAL_UART_MODULE                     1U
 #define USE_HAL_UART_CLK_ENABLE_MODEL           HAL_CLK_ENABLE_NO
-#define USE_HAL_UART_REGISTER_CALLBACKS         0U
+#define USE_HAL_UART_REGISTER_CALLBACKS         1U
 #define USE_HAL_UART_USER_DATA                  0U
 #define USE_HAL_UART_GET_LAST_ERRORS            0U
 #define USE_HAL_UART_DMA                        0U
@@ -634,7 +634,7 @@ extern "C" {
 /* ########################## HAL_USART Config ################################## */
 #define USE_HAL_USART_MODULE                    0U
 #define USE_HAL_USART_CLK_ENABLE_MODEL          HAL_CLK_ENABLE_NO
-#define USE_HAL_USART_REGISTER_CALLBACKS        0U
+#define USE_HAL_USART_REGISTER_CALLBACKS        1U
 #define USE_HAL_USART_USER_DATA                 0U
 #define USE_HAL_USART_GET_LAST_ERRORS           0U
 #define USE_HAL_USART_DMA                       0U

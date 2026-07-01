@@ -23,6 +23,7 @@
 #include "pca9538a.h"
 #include "mx_i2c1.h"
 #include <stdio.h>
+#include "mb_regs.h"
 
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
@@ -82,6 +83,7 @@ int main(void) {
 
   app_console_init();
   app_console_commands_register();
+  mb_regs_init();
 
   BaseType_t task_ret = xTaskCreate(stepper_task,
                                     "StepperTask",

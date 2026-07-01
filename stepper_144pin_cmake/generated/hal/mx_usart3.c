@@ -77,7 +77,7 @@ hal_uart_handle_t *mx_usart3_uart_init(void)
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.pull        = HAL_GPIO_PULL_UP;
+  gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_11;
   HAL_GPIO_Init(PB4_PORT, PB4_PIN, &gpio_config);

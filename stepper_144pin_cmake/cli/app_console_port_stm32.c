@@ -17,7 +17,7 @@
  *******************************************************************************/
 
 #include "app_console_port.h"
-#include "mx_usart2.h" /* CubeMX-generated, provides mx_usart2_uart_gethandle() */
+#include "mx_usart2.h"
 
 #include "FreeRTOS.h"
 #include "semphr.h"
@@ -45,6 +45,8 @@ static volatile int32_t s_rxOk;
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
+static void console_uart_rx_cplt_cb(hal_uart_handle_t *huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event);
+static void console_uart_error_cb(hal_uart_handle_t *huart);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -55,6 +57,8 @@ void console_port_init(void) {
    * scheduler starts, so the peripheral itself needs no setup here. */
   s_rxDoneSem = xSemaphoreCreateBinary();
   configASSERT(s_rxDoneSem != NULL);
+  configASSERT(HAL_UART_RegisterRxCpltCallback(CONSOLE_UART_GETHANDLE(), console_uart_rx_cplt_cb) == HAL_OK);
+  configASSERT(HAL_UART_RegisterErrorCallback(CONSOLE_UART_GETHANDLE(), console_uart_error_cb) == HAL_OK);
 }
 
 int32_t console_port_transmit(const uint8_t* buf, uint16_t len, uint32_t timeout_ms) {
@@ -83,29 +87,32 @@ int32_t console_port_receive(uint8_t* byte, uint32_t timeout_ms) {
   return 0;
 }
 
-/* Called from USART2_IRQHandler context on successful byte receive. */
-void HAL_UART_RxCpltCallback(hal_uart_handle_t* huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event) {
-  (void)size_byte;
-  (void)rx_event;
-
-  if (huart == CONSOLE_UART_GETHANDLE()) {
-    BaseType_t higherPriorityTaskWoken = pdFALSE;
-    s_rxOk = 1;
-    xSemaphoreGiveFromISR(s_rxDoneSem, &higherPriorityTaskWoken);
-    portYIELD_FROM_ISR(higherPriorityTaskWoken);
-  }
-}
-
-/* Called from USART2_IRQHandler context on framing/parity/overrun/noise error. */
-void HAL_UART_ErrorCallback(hal_uart_handle_t* huart) {
-  if (huart == CONSOLE_UART_GETHANDLE()) {
-    BaseType_t higherPriorityTaskWoken = pdFALSE;
-    s_rxOk = 0;
-    xSemaphoreGiveFromISR(s_rxDoneSem, &higherPriorityTaskWoken);
-    portYIELD_FROM_ISR(higherPriorityTaskWoken);
-  }
-}
-
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
+
+/**
+ * @brief UART RX-complete callback registered on the console UART handle.
+ *        Called from IRQ context on successful single-byte receive.
+ */
+static void console_uart_rx_cplt_cb(hal_uart_handle_t *huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event) {
+  (void)huart;
+  (void)size_byte;
+  (void)rx_event;
+  BaseType_t higher_priority_task_woken = pdFALSE;
+  s_rxOk = 1;
+  xSemaphoreGiveFromISR(s_rxDoneSem, &higher_priority_task_woken);
+  portYIELD_FROM_ISR(higher_priority_task_woken);
+}
+
+/**
+ * @brief UART error callback registered on the console UART handle.
+ *        Called from IRQ context on framing/parity/overrun/noise error.
+ */
+static void console_uart_error_cb(hal_uart_handle_t *huart) {
+  (void)huart;
+  BaseType_t higher_priority_task_woken = pdFALSE;
+  s_rxOk = 0;
+  xSemaphoreGiveFromISR(s_rxDoneSem, &higher_priority_task_woken);
+  portYIELD_FROM_ISR(higher_priority_task_woken);
+}
