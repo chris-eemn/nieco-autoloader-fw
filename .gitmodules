@@ -1,0 +1,3 @@
+[submodule "stepper_144pin_cmake/modbus"]
+	path = stepper_144pin_cmake/modbus
+	url = git@github.com:Embedded-Design-Solutions/modbus.git
