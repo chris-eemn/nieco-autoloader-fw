@@ -67,7 +67,7 @@ typedef enum {
 static QueueHandle_t s_move_done_q = NULL;
 
 /* Private functions prototype -----------------------------------------------*/
-static void on_move_done_isr(void);
+static void on_move_done_isr(stepper_t *motor);
 static void stepper_task(void *pv_parameters);
 
 /** @brief The application entry point. */
@@ -106,7 +106,8 @@ void HardFault_Handler(void) {
 /**
  * @brief Stepper done callback — called from ISR context when a move completes.
  */
-static void on_move_done_isr(void) {
+static void on_move_done_isr(stepper_t *motor) {
+  (void)motor;
   stepper_status_enum status = STEPPER_OK;
   BaseType_t woken = pdFALSE;
   (void)xQueueSendFromISR(s_move_done_q, &status, &woken);
@@ -131,6 +132,7 @@ static void stepper_task(void *pv_parameters) {
   task_state_enum     state         = ST_INIT;
   hal_i2c_handle_t   *hi2c          = mx_i2c1_i2c_gethandle();
   hal_tim_handle_t   *penc          = NULL;
+  stepper_t          *motor         = NULL;
   stepper_status_enum move_status   = STEPPER_OK;
   stepper_cmd_enum    pending_cmd   = STEPPER_CMD_AUTO_START;
   uint32_t            counter       = 0U;
@@ -139,6 +141,14 @@ static void stepper_task(void *pv_parameters) {
   uint32_t            current_rpm   = 0U;
   uint32_t            current_steps = 0U;
   uint8_t             auto_mode     = 0U;
+
+  static const stepper_gpio_config_t k_m1_pins = {
+    .step   = { M1_STEP_PORT,   M1_STEP_PIN   },
+    .dir    = { M1_DIR_PORT,    M1_DIR_PIN    },
+    .en     = { M1_EN_PORT,     M1_EN_PIN     },
+    .nslp   = { M1_NSLP_PORT,  M1_NSLP_PIN   },
+    .nfault = { M1_NFAULT_PORT, M1_NFAULT_PIN },
+  };
 
   configASSERT(hi2c != NULL);
 
@@ -202,8 +212,11 @@ static void stepper_task(void *pv_parameters) {
 
         if (readback_out == expected_out) {
           app_console_print("PCA9538A OK: 0x%02X\r\n", readback_out);
-          stepper_init();
-          stepper_register_done_cb(on_move_done_isr);
+          stepper_module_init(step_timer_gethandle());
+          motor = stepper_init(&k_m1_pins);
+          configASSERT(motor != NULL);
+          stepper_register_done_cb(motor, on_move_done_isr);
+          stepper_ctrl_set_motor(motor);
           state = ST_IDLE;
         }
         else {
@@ -249,10 +262,17 @@ static void stepper_task(void *pv_parameters) {
           state = ST_IDLE;
           break;
         }
-        app_console_print("[INFO] MOVE CW — steps=%lu rpm=%lu\r\n", current_steps, current_rpm);
-        if (stepper_move_start(current_steps, current_rpm, STEPPER_DIR_CW) == STEPPER_OK) {
+        stepper_status_enum cw_ret = stepper_move_start(motor, current_steps, current_rpm,
+                                                        STEPPER_DIR_CW);
+        if (cw_ret == STEPPER_OK) {
+          app_console_print("[INFO] MOVE CW -- steps=%lu rpm=%lu\r\n", current_steps, current_rpm);
           last_counter = HAL_TIM_GetCounter(penc);
           state        = ST_WAIT_CW;
+        }
+        else {
+          app_console_print("[ERROR] CW start failed: %d (fault=%u busy=%u)\r\n",
+                            (int)cw_ret, stepper_is_fault(motor), stepper_is_busy(motor));
+          state = ST_IDLE;
         }
         break;
       }
@@ -307,10 +327,17 @@ static void stepper_task(void *pv_parameters) {
           state = ST_IDLE;
           break;
         }
-        app_console_print("[INFO] MOVE CCW — steps=%lu rpm=%lu\r\n", current_steps, current_rpm);
-        if (stepper_move_start(current_steps, current_rpm, STEPPER_DIR_CCW) == STEPPER_OK) {
+        stepper_status_enum ccw_ret = stepper_move_start(motor, current_steps, current_rpm,
+                                                         STEPPER_DIR_CCW);
+        if (ccw_ret == STEPPER_OK) {
+          app_console_print("[INFO] MOVE CCW -- steps=%lu rpm=%lu\r\n", current_steps, current_rpm);
           last_counter = HAL_TIM_GetCounter(penc);
           state        = ST_WAIT_CCW;
+        }
+        else {
+          app_console_print("[ERROR] CCW start failed: %d (fault=%u busy=%u)\r\n",
+                            (int)ccw_ret, stepper_is_fault(motor), stepper_is_busy(motor));
+          state = ST_IDLE;
         }
         break;
       }

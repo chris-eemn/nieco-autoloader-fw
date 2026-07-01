@@ -21,6 +21,7 @@
  *******************************************************************************/
 
 #include <stdint.h>
+#include "stepper.h"
 
 /*******************************************************************************
  * Module Macros
@@ -52,8 +53,16 @@ typedef enum {
 /**
  * @brief Initialise the control module and create internal FreeRTOS objects.
  *        Call once from the stepper task before entering the main loop.
+ *        The motor handle is bound separately via stepper_ctrl_set_motor().
  */
 void stepper_ctrl_init(void);
+
+/**
+ * @brief Bind a motor handle to this control instance.
+ *        Call after stepper_init() returns a valid handle, before any move commands.
+ * @param motor Handle returned by stepper_init(). Must not be NULL.
+ */
+void stepper_ctrl_set_motor(stepper_t *motor);
 
 /**
  * @brief Set the target RPM used for the next move.
