@@ -15,6 +15,7 @@ include(cmake/flags.cmake)
 include(cmake/components.cmake)
 add_subdirectory(cli)
 add_subdirectory(stepper)
+set(TARGET_NAME ${CMAKE_PROJECT_NAME}) # modbus cmakelists uses TARGET_NAME, so we need to set it here
 add_subdirectory(modbus/modbus_slave)
 add_subdirectory(modbus_app)
 
