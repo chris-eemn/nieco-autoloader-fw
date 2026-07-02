@@ -263,9 +263,9 @@ extern "C" {
   * @{
   */
 /* ########################## HAL_EXTI Config ################################### */
-#define USE_HAL_EXTI_MODULE                     0U
-#define USE_HAL_EXTI_REGISTER_CALLBACKS         0U
-#define USE_HAL_EXTI_USER_DATA                  0U
+#define USE_HAL_EXTI_MODULE                     1U
+#define USE_HAL_EXTI_REGISTER_CALLBACKS         1U
+#define USE_HAL_EXTI_USER_DATA                  1U
 /**
   * @}
   */

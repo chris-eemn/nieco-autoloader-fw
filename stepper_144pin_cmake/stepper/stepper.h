@@ -1,6 +1,11 @@
 /**
- * @file    stepper.h
- * @brief   Multi-axis stepper motor control via DRV8424 (Stepper 19 Click)
+ * @file stepper.h
+ * @author Chris Owens (cowens@eemn.io)
+ * @brief Multi-axis stepper motor control via DRV8424 (Stepper 19 Click).
+ * @version 0.1
+ * @date 2026-07-02
+ *
+ * @copyright Copyright (c) 2026 Embedded Design Solutions, LLC.  All Rights Reserved.
  *
  * Generates STEP pulses from a shared timer ISR at 100kHz tick rate.
  * DIR, nEN, nSLP, and nFAULT are controlled via GPIO.
@@ -20,52 +25,52 @@
  *   stepper_wait_done(m1, STEPPER_TIMEOUT_FOREVER);
  */
 
-#ifndef STEPPER_H
-#define STEPPER_H
+#ifndef STEPPER_H_
+#define STEPPER_H_
+
+/*******************************************************************************
+ * Includes
+ *******************************************************************************/
 
 #include <stdint.h>
 #include "stm32_hal.h"
 
-/* -----------------------------------------------------------------------
- * Configuration
- * ----------------------------------------------------------------------- */
+/*******************************************************************************
+ * Module Macros
+ *******************************************************************************/
 
 /** Maximum number of motor instances that can be registered. */
-#define STEPPER_MAX_MOTORS         8U
+#define STEPPER_MAX_MOTORS 8U
 
 /** Timer tick rate configured in CubeMX (Hz). ARR=1439 @ 144MHz = 100kHz */
-#define STEPPER_TIMER_TICK_HZ      100000UL
+#define STEPPER_TIMER_TICK_HZ 100000UL
 
 /** Microsteps per full step — must match M0/M1 jumper config on Stepper 19 Click */
-#define STEPPER_MICROSTEPS         8U
+#define STEPPER_MICROSTEPS 8U
 
 /** Full steps per revolution for this motor (1.8 deg/step) */
 #define STEPPER_FULL_STEPS_PER_REV 200U
 
 /** Derived: total microsteps per revolution */
-#define STEPPER_USTEPS_PER_REV     (STEPPER_FULL_STEPS_PER_REV * STEPPER_MICROSTEPS)
+#define STEPPER_USTEPS_PER_REV (STEPPER_FULL_STEPS_PER_REV * STEPPER_MICROSTEPS)
 
 /** Pass to stepper_wait_done() to block indefinitely */
-#define STEPPER_TIMEOUT_FOREVER    UINT32_MAX
-
-/* -----------------------------------------------------------------------
- * Direction
- * ----------------------------------------------------------------------- */
+#define STEPPER_TIMEOUT_FOREVER UINT32_MAX
 
 #define STEPPER_DIR_CW  1U
 #define STEPPER_DIR_CCW 0U
 
-/* -----------------------------------------------------------------------
- * Types
- * ----------------------------------------------------------------------- */
+/*******************************************************************************
+ * Module Typedefs
+ *******************************************************************************/
 
 typedef enum {
   STEPPER_OK      = 0,
   STEPPER_FAULT   = 1,
   STEPPER_BUSY    = 2,
   STEPPER_TIMEOUT = 3,
-  STEPPER_FULL    = 4,  /* Motor pool exhausted */
-  STEPPER_INVALID = 5,  /* NULL handle or config pointer */
+  STEPPER_FULL    = 4, /* Motor pool exhausted */
+  STEPPER_INVALID = 5, /* NULL handle or config pointer */
 } stepper_status_enum;
 
 /** A single GPIO port/pin pair. */
@@ -98,9 +103,21 @@ typedef struct stepper_s stepper_t;
  */
 typedef void (*stepper_done_cb_t)(stepper_t *motor);
 
-/* -----------------------------------------------------------------------
- * Module-level init (call once before any stepper_init)
- * ----------------------------------------------------------------------- */
+/**
+ * Callback invoked from ISR context when a fault is detected.
+ * Must be ISR-safe: no blocking, no FreeRTOS API except *FromISR variants.
+ *
+ * @param motor  Handle of the motor on which the fault was detected.
+ */
+typedef void (*stepper_fault_cb_t)(stepper_t *motor);
+
+/*******************************************************************************
+ * Module Variable Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ * Function Prototypes
+ *******************************************************************************/
 
 /**
  * @brief  Register the ISR callback and start the shared step timer.
@@ -110,10 +127,6 @@ typedef void (*stepper_done_cb_t)(stepper_t *motor);
  *               Must not be NULL.
  */
 void stepper_module_init(hal_tim_handle_t *htim);
-
-/* -----------------------------------------------------------------------
- * Per-motor API
- * ----------------------------------------------------------------------- */
 
 /**
  * @brief  Allocate and initialise a motor instance from the internal pool.
@@ -139,8 +152,7 @@ stepper_t *stepper_init(const stepper_gpio_config_t *pins);
  *         STEPPER_FAULT   if nFAULT is asserted,
  *         STEPPER_INVALID if motor is NULL.
  */
-stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_t rpm,
-                                       uint8_t direction);
+stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_t rpm, uint8_t direction);
 
 /**
  * @brief  Block the calling task until the current move completes.
@@ -149,7 +161,8 @@ stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_
  * @param  motor       Handle returned by stepper_init(). Must not be NULL.
  * @param  timeout_ms  Maximum wait time in milliseconds.
  *                     Pass STEPPER_TIMEOUT_FOREVER to wait indefinitely.
- * @return STEPPER_OK      on completion,
+ * @return STEPPER_OK      on normal completion,
+ *         STEPPER_FAULT   if the move was stopped by a latched fault,
  *         STEPPER_TIMEOUT if the wait expired,
  *         STEPPER_INVALID if motor is NULL.
  */
@@ -171,6 +184,39 @@ uint8_t stepper_is_busy(stepper_t *motor);
  * @param  cb     ISR-safe callback, or NULL.
  */
 void stepper_register_done_cb(stepper_t *motor, stepper_done_cb_t cb);
+
+/**
+ * @brief  Register an EXTI handle for continuous nFAULT monitoring.
+ *         Attaches an ISR-safe fault callback to the EXTI handle so that
+ *         any falling edge on nFAULT is detected and latched immediately,
+ *         even during a move. Call after stepper_init() but before any move.
+ *
+ * @param  motor  Handle returned by stepper_init(). Must not be NULL.
+ * @param  hexti  EXTI handle pre-configured for falling-edge on this motor's
+ *                nFAULT GPIO line (e.g. from m1_fault_exti_gethandle()).
+ *                Must not be NULL.
+ */
+void stepper_register_fault_exti(stepper_t *motor, hal_exti_handle_t *hexti);
+
+/**
+ * @brief  Register a callback invoked from ISR context when a fault is detected.
+ *         The callback fires for both EXTI-detected faults and faults latched
+ *         during stepper_move_start(). Pass NULL to clear a prior callback.
+ *
+ * @param  motor  Handle returned by stepper_init(). Must not be NULL.
+ * @param  cb     ISR-safe callback, or NULL.
+ */
+void stepper_register_fault_cb(stepper_t *motor, stepper_fault_cb_t cb);
+
+/**
+ * @brief  Clear the software fault latch.
+ *         Does NOT clear the DRV8424 hardware fault — the caller must also
+ *         perform a stepper_sleep() / stepper_wake() cycle to reset the
+ *         hardware (see stepper_sleep() note about latched-fault clearing).
+ *
+ * @param  motor  Handle returned by stepper_init(). Must not be NULL.
+ */
+void stepper_clear_fault(stepper_t *motor);
 
 /**
  * @brief  Immediately stop the motor and disable driver outputs.
@@ -209,10 +255,16 @@ void stepper_wake(stepper_t *motor);
 void stepper_sleep(stepper_t *motor);
 
 /**
- * @brief  Check the nFAULT pin.
+ * @brief  Check whether a fault has been latched for this motor.
+ *
+ *         Returns the latched fault state rather than sampling the live nFAULT pin.
+ *         The latch is set by:
+ *           - The EXTI ISR when nFAULT falls during or between moves (if registered),
+ *           - A live-pin check inside stepper_move_start() at move-start time.
+ *         The latch persists until stepper_clear_fault() is called explicitly.
  *
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
- * @return 1 if fault is asserted, 0 if clear or motor is NULL.
+ * @return 1 if a fault is latched, 0 if no fault or motor is NULL.
  */
 uint8_t stepper_is_fault(stepper_t *motor);
 
@@ -225,4 +277,4 @@ uint8_t stepper_is_fault(stepper_t *motor);
  */
 uint32_t stepper_rpm_to_ticks(uint32_t rpm);
 
-#endif /* STEPPER_H */
+#endif /* STEPPER_H_ */

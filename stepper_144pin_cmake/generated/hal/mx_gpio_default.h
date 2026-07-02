@@ -124,6 +124,10 @@ extern "C" {
 #define M1_NFAULT_PORT                                  HAL_GPIOD
 #define M1_NFAULT_PIN                                   HAL_GPIO_PIN_6
 
+/* EXTI aliases */
+#define M1_FAULT_EXTI_EXTI_LINE                         HAL_EXTI_LINE_6
+#define M1_FAULT_EXTI_EXTI_TRIGGER                      HAL_EXTI_TRIGGER_FALLING
+
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
@@ -142,6 +146,17 @@ system_status_t mx_gpio_default_init(void);
   * @brief  De-initialize gpio_default instance.
   */
 system_status_t mx_gpio_default_deinit(void);
+
+/**
+  * @brief  Get the EXTI6 object.
+  * @retval Pointer on the EXTI6 Handle
+  */
+hal_exti_handle_t *mx_gpio_default_exti6_gethandle(void);
+
+/******************************************************************************/
+/*                            EXTI Line6 interrupt                            */
+/******************************************************************************/
+void EXTI6_IRQHandler(void);
 
 #ifdef __cplusplus
 }

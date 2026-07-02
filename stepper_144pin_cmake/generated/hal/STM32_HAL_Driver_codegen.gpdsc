@@ -533,7 +533,7 @@
     <condition id="System files">
       <description>System files for codegen</description>
       <require Cclass="Device" Cgroup="STM32 HAL" Csub="CORTEX"/>
-      <require Cclass="Device" Cgroup="STM32 LL" Csub="EXTI"/>
+      <require Cclass="Device" Cgroup="STM32 HAL" Csub="EXTI"/>
       <require Cclass="Device" Cgroup="STM32 LL" Csub="PWR"/>
       <require Cclass="Device" Cgroup="STM32 HAL" Csub="RCC"/>
     </condition>

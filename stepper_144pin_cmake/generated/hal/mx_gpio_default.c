@@ -23,6 +23,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported variables by reference -------------------------------------------*/
+static hal_exti_handle_t hEXTI6;
 
 /******************************************************************************/
 /* Exported functions for GPIO in HAL layer                                   */
@@ -95,11 +96,34 @@ system_status_t mx_gpio_default_init(void)
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
+  hal_exti_config_t exti_config;
+
+  /* Initialize the EXTI for line 6 */
+  HAL_EXTI_Init(&hEXTI6, HAL_EXTI_LINE_6);
+
+  /* Set the trigger as FALLING for the GPIOD */
+  exti_config.trigger   = HAL_EXTI_TRIGGER_FALLING;
+  exti_config.gpio_port = HAL_EXTI_GPIOD;
+  HAL_EXTI_SetConfig(&hEXTI6, &exti_config);
+
+  /* Enable the INTERRUPT mode */
+  HAL_EXTI_Enable(&hEXTI6, HAL_EXTI_MODE_INTERRUPT);
+
+  /* Set line 6 Interrupt priority */
+  HAL_CORTEX_NVIC_SetPriority(EXTI6_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_EnableIRQ(EXTI6_IRQn);
+
   return SYSTEM_OK;
 }
 
 system_status_t mx_gpio_default_deinit(void)
 {
+  /* De-initialize the EXTI for GPIOD line6 */
+  HAL_EXTI_DeInit(&hEXTI6);
+
+  /* set line 6 Interrupt priority */
+  HAL_CORTEX_NVIC_DisableIRQ(EXTI6_IRQn);
+
   /* De-initialize pins of GPIOA port */
   HAL_GPIO_DeInit(HAL_GPIOA, PA0_PIN | PA10_PIN);
 
@@ -110,4 +134,17 @@ system_status_t mx_gpio_default_deinit(void)
   HAL_GPIO_DeInit(HAL_GPIOD, PD5_PIN | PD6_PIN);
 
   return SYSTEM_OK;
+}
+
+hal_exti_handle_t *mx_gpio_default_exti6_gethandle(void)
+{
+  return &hEXTI6;
+}
+
+/******************************************************************************/
+/*                            EXTI Line6 interrupt                            */
+/******************************************************************************/
+void EXTI6_IRQHandler(void)
+{
+  HAL_EXTI_IRQHandler(&hEXTI6);
 }

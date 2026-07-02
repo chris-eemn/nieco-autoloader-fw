@@ -237,6 +237,16 @@ extern "C" {
 
 /* ########### Aliases to get HAL handle functions ########### */
 
+  /* ***********************************************************
+      gpio_default/EXTI: aliases for EXTI get handle functions
+    *********************************************************** */
+
+/**
+  * @brief  Get the EXTI handle for EXTI6 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI6 used by gpio_default instance
+  */
+#define m1_fault_exti_gethandle mx_gpio_default_exti6_gethandle
+
   /* *************************************************************
     I2C1: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
