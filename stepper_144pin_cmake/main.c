@@ -19,6 +19,8 @@
 #include "main.h"
 #include "app_console.h"
 #include "stepper.h"
+#include "encoder.h"
+#include "axis.h"
 #include "stepper_ctrl.h"
 #include "pca9538a.h"
 #include "mx_i2c1.h"
@@ -28,7 +30,6 @@
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "queue.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -51,6 +52,9 @@ typedef enum {
 /** Number of 250 ms ticks that make up the 3-second inter-move pause. */
 #define PAUSE_TICK_COUNT 12U
 
+/** Maximum time to wait for a move to complete before declaring a timeout. */
+#define MOVE_WAIT_TIMEOUT_MS 30000U
+
 /* IO expander pin assignments */
 #define IO_EXPANDER_M0        0x01U
 #define IO_EXPANDER_M1        0x02U
@@ -62,12 +66,7 @@ typedef enum {
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-
-/* Signals move completion from the stepper ISR callback to the stepper task. */
-static QueueHandle_t s_move_done_q = NULL;
-
 /* Private functions prototype -----------------------------------------------*/
-static void on_move_done_isr(stepper_t *motor);
 static void stepper_task(void *pv_parameters);
 
 /** @brief The application entry point. */
@@ -104,25 +103,13 @@ void HardFault_Handler(void) {
 }
 
 /**
- * @brief Stepper done callback — called from ISR context when a move completes.
- */
-static void on_move_done_isr(stepper_t *motor) {
-  (void)motor;
-  stepper_status_enum status = STEPPER_OK;
-  BaseType_t woken = pdFALSE;
-  (void)xQueueSendFromISR(s_move_done_q, &status, &woken);
-  portYIELD_FROM_ISR(woken);
-}
-
-/**
  * @brief Stepper task state machine.
  *
- *  Sits idle after init. CLI commands drive all movement:
- *    auto 1  — continuous CW->3s pause->CCW->3s pause loop until auto 0
- *    cw  1   — one CW move then back to idle
- *    ccw 1   — one CCW move then back to idle
- *    auto 0  — immediate stop from any state
+ *  Sits idle after init, waiting for CLI commands routed via stepper_ctrl.
+ *  Manual single moves (CW/CCW) are issued directly by the CLI via the axis
+ *  API — the task only handles the auto-cycle (STEPPER_CMD_AUTO_START).
  *
+ *  Auto cycle: CW->3s pause->CCW->3s pause->repeat until auto 0.
  *  RPM and step count are snapshotted when a command is accepted so that
  *  CLI changes during a run take effect on the next command.
  */
@@ -131,12 +118,10 @@ static void stepper_task(void *pv_parameters) {
 
   task_state_enum     state         = ST_INIT;
   hal_i2c_handle_t   *hi2c          = mx_i2c1_i2c_gethandle();
-  hal_tim_handle_t   *penc          = NULL;
   stepper_t          *motor         = NULL;
-  stepper_status_enum move_status   = STEPPER_OK;
+  encoder_t          *enc           = NULL;
+  axis_t             *axis          = NULL;
   stepper_cmd_enum    pending_cmd   = STEPPER_CMD_AUTO_START;
-  uint32_t            counter       = 0U;
-  uint32_t            last_counter  = 0U;
   uint32_t            pause_ticks   = 0U;
   uint32_t            current_rpm   = 0U;
   uint32_t            current_steps = 0U;
@@ -150,20 +135,29 @@ static void stepper_task(void *pv_parameters) {
     .nfault = { M1_NFAULT_PORT, M1_NFAULT_PIN },
   };
 
+  static const axis_config_t k_m1_axis_cfg = {
+    .supervisor_period_ms = 25U,
+    .stationary_window_ms = 50U,
+    .stall_window_ms      = 50U,
+    .backoff_steps        = 800U,
+    .home_direction       = STEPPER_DIR_CW,
+    .home_rpm             = 10U,
+    .home_max_steps       = 50000U,
+  };
+
   configASSERT(hi2c != NULL);
 
-  s_move_done_q = xQueueCreate(1U, sizeof(stepper_status_enum));
-  configASSERT(s_move_done_q != NULL);
   stepper_ctrl_init();
 
   while (1) {
     switch (state) {
       /* ------------------------------------------------------------------ */
       case ST_INIT: {
-        hal_status_t io_ret;
-        hal_status_t enc_ret;
-        uint8_t expected_out = (IO_EXPANDER_M0 | IO_EXPANDER_M1);
-        uint8_t readback_out = 0x00U;
+        hal_status_t      io_ret;
+        hal_status_t      enc_ret;
+        hal_tim_handle_t *penc        = NULL;
+        uint8_t           expected_out = (IO_EXPANDER_M0 | IO_EXPANDER_M1);
+        uint8_t           readback_out = 0x00U;
 
         penc = m1_encoder_timer_init();
         if (penc == NULL) {
@@ -182,12 +176,19 @@ static void stepper_task(void *pv_parameters) {
           state = ST_ERROR;
           break;
         }
-        HAL_TIM_SetCounter(penc, 10000U);
         enc_ret = HAL_TIM_Start(penc);
         if (enc_ret != HAL_OK) {
           state = ST_ERROR;
           break;
         }
+
+        enc = encoder_init(penc);
+        if (enc == NULL) {
+          app_console_print("[ERROR] Encoder init failed.\r\n");
+          state = ST_ERROR;
+          break;
+        }
+        encoder_zero(enc);
 
         io_ret = pca9538a_init(hi2c, 0x00U);
         if (io_ret != HAL_OK) {
@@ -215,8 +216,9 @@ static void stepper_task(void *pv_parameters) {
           stepper_module_init(step_timer_gethandle());
           motor = stepper_init(&k_m1_pins);
           configASSERT(motor != NULL);
-          stepper_register_done_cb(motor, on_move_done_isr);
-          stepper_ctrl_set_motor(motor);
+          axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          configASSERT(axis != NULL);
+          stepper_ctrl_set_axis(axis);
           state = ST_IDLE;
         }
         else {
@@ -241,14 +243,6 @@ static void stepper_task(void *pv_parameters) {
               auto_mode = 1U;
               state     = ST_RUN_CW;
               break;
-            case STEPPER_CMD_RUN_CW:
-              auto_mode = 0U;
-              state     = ST_RUN_CW;
-              break;
-            case STEPPER_CMD_RUN_CCW:
-              auto_mode = 0U;
-              state     = ST_RUN_CCW;
-              break;
             default:
               break;
           }
@@ -262,16 +256,15 @@ static void stepper_task(void *pv_parameters) {
           state = ST_IDLE;
           break;
         }
-        stepper_status_enum cw_ret = stepper_move_start(motor, current_steps, current_rpm,
-                                                        STEPPER_DIR_CW);
+        stepper_status_enum cw_ret = axis_move(axis, current_steps, current_rpm,
+                                               STEPPER_DIR_CW);
         if (cw_ret == STEPPER_OK) {
           app_console_print("[INFO] MOVE CW -- steps=%lu rpm=%lu\r\n", current_steps, current_rpm);
-          last_counter = HAL_TIM_GetCounter(penc);
-          state        = ST_WAIT_CW;
+          state = ST_WAIT_CW;
         }
         else {
-          app_console_print("[ERROR] CW start failed: %d (fault=%u busy=%u)\r\n",
-                            (int)cw_ret, stepper_is_fault(motor), stepper_is_busy(motor));
+          app_console_print("[ERROR] CW start failed: %d (axis=%d)\r\n",
+                            (int)cw_ret, (int)axis_get_status(axis));
           state = ST_IDLE;
         }
         break;
@@ -279,29 +272,35 @@ static void stepper_task(void *pv_parameters) {
 
       /* ------------------------------------------------------------------ */
       case ST_WAIT_CW: {
-        if (stepper_ctrl_is_stop_requested() != 0U) {
+        stepper_status_enum wait_ret = stepper_wait_done(motor, MOVE_WAIT_TIMEOUT_MS);
+        int32_t             count    = encoder_get_count(enc);
+
+        if ((wait_ret == STEPPER_FAULT) || (wait_ret == STEPPER_TIMEOUT)) {
+          app_console_print("[ERROR] CW failed: %d. Encoder = %ld\r\n", (int)wait_ret, count);
           state = ST_IDLE;
           break;
         }
-        if (xQueueReceive(s_move_done_q, &move_status, pdMS_TO_TICKS(250U)) == pdTRUE) {
-          counter = HAL_TIM_GetCounter(penc);
-          app_console_print("[INFO] CW done. Encoder = %lu\r\n", counter);
-          last_counter = counter;
 
-          if ((auto_mode != 0U) && (stepper_ctrl_is_stop_requested() == 0U)) {
-            pause_ticks = PAUSE_TICK_COUNT;
-            state       = ST_PAUSE_POST_CW;
-          }
-          else {
-            state = ST_IDLE;
-          }
+        if (stepper_ctrl_is_stop_requested() != 0U) {
+          app_console_print("[INFO] CW stopped. Encoder = %ld\r\n", count);
+          state = ST_IDLE;
+          break;
+        }
+
+        if (axis_get_status(axis) == AXIS_STATUS_STALLED) {
+          app_console_print("[ERROR] CW stalled. Encoder = %ld\r\n", count);
+          state = ST_IDLE;
+          break;
+        }
+
+        app_console_print("[INFO] CW done. Encoder = %ld\r\n", count);
+
+        if ((auto_mode != 0U) && (stepper_ctrl_is_stop_requested() == 0U)) {
+          pause_ticks = PAUSE_TICK_COUNT;
+          state       = ST_PAUSE_POST_CW;
         }
         else {
-          counter = HAL_TIM_GetCounter(penc);
-          if (counter != last_counter) {
-            app_console_print("[INFO] Moving CW... Encoder = %lu\r\n", counter);
-            last_counter = counter;
-          }
+          state = ST_IDLE;
         }
         break;
       }
@@ -327,16 +326,15 @@ static void stepper_task(void *pv_parameters) {
           state = ST_IDLE;
           break;
         }
-        stepper_status_enum ccw_ret = stepper_move_start(motor, current_steps, current_rpm,
-                                                         STEPPER_DIR_CCW);
+        stepper_status_enum ccw_ret = axis_move(axis, current_steps, current_rpm,
+                                                STEPPER_DIR_CCW);
         if (ccw_ret == STEPPER_OK) {
           app_console_print("[INFO] MOVE CCW -- steps=%lu rpm=%lu\r\n", current_steps, current_rpm);
-          last_counter = HAL_TIM_GetCounter(penc);
-          state        = ST_WAIT_CCW;
+          state = ST_WAIT_CCW;
         }
         else {
-          app_console_print("[ERROR] CCW start failed: %d (fault=%u busy=%u)\r\n",
-                            (int)ccw_ret, stepper_is_fault(motor), stepper_is_busy(motor));
+          app_console_print("[ERROR] CCW start failed: %d (axis=%d)\r\n",
+                            (int)ccw_ret, (int)axis_get_status(axis));
           state = ST_IDLE;
         }
         break;
@@ -344,29 +342,35 @@ static void stepper_task(void *pv_parameters) {
 
       /* ------------------------------------------------------------------ */
       case ST_WAIT_CCW: {
-        if (stepper_ctrl_is_stop_requested() != 0U) {
+        stepper_status_enum wait_ret = stepper_wait_done(motor, MOVE_WAIT_TIMEOUT_MS);
+        int32_t             count    = encoder_get_count(enc);
+
+        if ((wait_ret == STEPPER_FAULT) || (wait_ret == STEPPER_TIMEOUT)) {
+          app_console_print("[ERROR] CCW failed: %d. Encoder = %ld\r\n", (int)wait_ret, count);
           state = ST_IDLE;
           break;
         }
-        if (xQueueReceive(s_move_done_q, &move_status, pdMS_TO_TICKS(250U)) == pdTRUE) {
-          counter = HAL_TIM_GetCounter(penc);
-          app_console_print("[INFO] CCW done. Encoder = %lu\r\n\r\n", counter);
-          last_counter = counter;
 
-          if ((auto_mode != 0U) && (stepper_ctrl_is_stop_requested() == 0U)) {
-            pause_ticks = PAUSE_TICK_COUNT;
-            state       = ST_PAUSE_POST_CCW;
-          }
-          else {
-            state = ST_IDLE;
-          }
+        if (stepper_ctrl_is_stop_requested() != 0U) {
+          app_console_print("[INFO] CCW stopped. Encoder = %ld\r\n", count);
+          state = ST_IDLE;
+          break;
+        }
+
+        if (axis_get_status(axis) == AXIS_STATUS_STALLED) {
+          app_console_print("[ERROR] CCW stalled. Encoder = %ld\r\n", count);
+          state = ST_IDLE;
+          break;
+        }
+
+        app_console_print("[INFO] CCW done. Encoder = %ld\r\n\r\n", count);
+
+        if ((auto_mode != 0U) && (stepper_ctrl_is_stop_requested() == 0U)) {
+          pause_ticks = PAUSE_TICK_COUNT;
+          state       = ST_PAUSE_POST_CCW;
         }
         else {
-          counter = HAL_TIM_GetCounter(penc);
-          if (counter != last_counter) {
-            app_console_print("[INFO] Moving CCW... Encoder = %lu\r\n", counter);
-            last_counter = counter;
-          }
+          state = ST_IDLE;
         }
         break;
       }

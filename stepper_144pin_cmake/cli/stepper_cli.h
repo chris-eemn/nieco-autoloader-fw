@@ -28,6 +28,8 @@ typedef enum {
   STEPPER_CLI_CCW,
   STEPPER_CLI_RPM,
   STEPPER_CLI_STEP,
+  STEPPER_CLI_CLEAR,
+  STEPPER_CLI_ENC,
   STEPPER_CLI_NUM_PARAMS,
 } stepper_cli_param_enum;
 

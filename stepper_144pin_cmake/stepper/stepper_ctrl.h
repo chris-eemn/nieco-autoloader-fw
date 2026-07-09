@@ -3,12 +3,13 @@
  * @author Chris Owens (cowens@eemn.io)
  * @brief Shared control interface between the CLI and stepper task.
  *
- *  CLI side  — calls stepper_ctrl_send_cmd() and stepper_ctrl_request_stop().
+ *  CLI side  — calls stepper_ctrl_send_cmd(), stepper_ctrl_request_stop(),
+ *              stepper_ctrl_get_axis(), stepper_ctrl_set/get_rpm/steps().
  *  Task side — calls stepper_ctrl_recv_cmd(), stepper_ctrl_is_stop_requested(),
- *              and stepper_ctrl_notify_idle().
+ *              stepper_ctrl_notify_idle(), stepper_ctrl_set_axis().
  *
- * @version 0.2
- * @date 2026-06-25
+ * @version 0.3
+ * @date 2026-07-02
  *
  * @copyright Copyright (c) 2026 Embedded Design Solutions, LLC.  All Rights Reserved.
  */
@@ -21,7 +22,7 @@
  *******************************************************************************/
 
 #include <stdint.h>
-#include "stepper.h"
+#include "axis.h"
 
 /*******************************************************************************
  * Module Macros
@@ -42,8 +43,6 @@
 
 typedef enum {
   STEPPER_CMD_AUTO_START = 0, /* begin continuous CW->pause->CCW->pause loop */
-  STEPPER_CMD_RUN_CW,         /* execute one CW move then return to idle     */
-  STEPPER_CMD_RUN_CCW,        /* execute one CCW move then return to idle    */
 } stepper_cmd_enum;
 
 /*******************************************************************************
@@ -53,16 +52,26 @@ typedef enum {
 /**
  * @brief Initialise the control module and create internal FreeRTOS objects.
  *        Call once from the stepper task before entering the main loop.
- *        The motor handle is bound separately via stepper_ctrl_set_motor().
+ *        The axis handle is bound separately via stepper_ctrl_set_axis().
  */
 void stepper_ctrl_init(void);
 
 /**
- * @brief Bind a motor handle to this control instance.
- *        Call after stepper_init() returns a valid handle, before any move commands.
- * @param motor Handle returned by stepper_init(). Must not be NULL.
+ * @brief Bind an axis handle to this control instance.
+ *        Call after axis_init() returns a valid handle, before any move commands.
+ *        Replaces the old stepper_ctrl_set_motor() — stop requests now go
+ *        through axis_stop() so the axis supervisor stays consistent.
+ * @param axis Handle returned by axis_init(). Must not be NULL.
  */
-void stepper_ctrl_set_motor(stepper_t *motor);
+void stepper_ctrl_set_axis(axis_t *axis);
+
+/**
+ * @brief Return the currently bound axis handle.
+ *        Returns NULL if stepper_ctrl_set_axis() has not been called yet.
+ *        Callers (e.g. CLI handlers) use this to invoke axis API directly
+ *        without coupling to the stepper task's internal state.
+ */
+axis_t *stepper_ctrl_get_axis(void);
 
 /**
  * @brief Set the target RPM used for the next move.
@@ -104,7 +113,7 @@ uint8_t stepper_ctrl_recv_cmd(stepper_cmd_enum *cmd_out, uint32_t timeout_ms);
 
 /**
  * @brief Request an immediate stop. Safe to call from any task context.
- *        Sets the stop flag and halts the motor immediately via stepper_stop().
+ *        Sets the stop flag and halts the motor via axis_stop().
  */
 void stepper_ctrl_request_stop(void);
 
@@ -122,7 +131,7 @@ uint8_t stepper_ctrl_is_stop_requested(void);
 void stepper_ctrl_notify_idle(void);
 
 /**
- * @brief Check whether a move or auto cycle is currently active.
+ * @brief Check whether an auto cycle is currently active.
  * @return 1 if running, 0 if idle or stopped.
  */
 uint8_t stepper_ctrl_is_running(void);

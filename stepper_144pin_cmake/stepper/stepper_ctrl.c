@@ -2,8 +2,8 @@
  * @file stepper_ctrl.c
  * @author Chris Owens (cowens@eemn.io)
  * @brief Shared control interface between the CLI and stepper task.
- * @version 0.2
- * @date 2026-06-25
+ * @version 0.3
+ * @date 2026-07-02
  *
  * @copyright Copyright (c) 2026 Embedded Design Solutions, LLC.  All Rights Reserved.
  */
@@ -13,7 +13,7 @@
  *******************************************************************************/
 
 #include "stepper_ctrl.h"
-#include "stepper.h"
+#include "axis.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -27,7 +27,7 @@ static volatile uint32_t s_steps          = STEPPER_CTRL_DEFAULT_STEPS;
 static volatile uint8_t  s_stop_requested = 0U;
 static volatile uint8_t  s_running        = 0U;
 static QueueHandle_t     s_cmd_q          = NULL;
-static stepper_t        *s_motor          = NULL;
+static axis_t           *s_axis           = NULL;
 
 /*******************************************************************************
  * Public Function Definitions
@@ -38,8 +38,12 @@ void stepper_ctrl_init(void) {
   configASSERT(s_cmd_q != NULL);
 }
 
-void stepper_ctrl_set_motor(stepper_t *motor) {
-  s_motor = motor;
+void stepper_ctrl_set_axis(axis_t *axis) {
+  s_axis = axis;
+}
+
+axis_t *stepper_ctrl_get_axis(void) {
+  return s_axis;
 }
 
 void stepper_ctrl_set_rpm(uint32_t rpm) {
@@ -79,8 +83,8 @@ void stepper_ctrl_request_stop(void) {
   s_running        = 0U;
   s_stop_requested = 1U;
 
-  if ((s_motor != NULL) && (stepper_is_busy(s_motor) != 0U)) {
-    stepper_stop(s_motor);
+  if (s_axis != NULL) {
+    axis_stop(s_axis);
   }
 }
 

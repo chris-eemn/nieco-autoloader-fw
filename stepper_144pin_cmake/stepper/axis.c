@@ -173,6 +173,14 @@ axis_status_enum axis_get_status(const axis_t *axis) {
   return axis->status;
 }
 
+int32_t axis_get_encoder_count(const axis_t *axis) {
+  if (axis == NULL) {
+    return 0;
+  }
+
+  return encoder_get_count(axis->encoder);
+}
+
 stepper_status_enum axis_move(axis_t *axis, uint32_t steps, uint32_t rpm, uint8_t direction) {
   if (axis == NULL) {
     return STEPPER_INVALID;
@@ -246,6 +254,32 @@ void axis_clear_fault(axis_t *axis) {
   axis->homing_substate      = HOMING_IDLE;
   axis->fault_from_isr       = 0U;
   axis->status               = AXIS_STATUS_NOT_HOMED;
+}
+
+void axis_fault_reset(axis_t *axis) {
+  if (axis == NULL) {
+    return;
+  }
+
+  axis_clear_fault(axis);
+  stepper_clear_fault(axis->motor);
+  stepper_sleep(axis->motor);
+  stepper_wake(axis->motor);
+}
+
+void axis_stop(axis_t *axis) {
+  if (axis == NULL) {
+    return;
+  }
+
+  stepper_stop(axis->motor);
+  axis->stall_count          = 0U;
+  axis->enc_stationary_count = 0U;
+
+  if (axis->status == AXIS_STATUS_HOMING) {
+    axis->homing_substate = HOMING_IDLE;
+    axis->status          = AXIS_STATUS_NOT_HOMED;
+  }
 }
 
 /*******************************************************************************
@@ -387,7 +421,7 @@ static void supervisor_tick(axis_t *axis) {
     axis->fault_from_isr  = 0U;
     axis->status          = AXIS_STATUS_FAULT;
     axis->homing_substate = HOMING_IDLE;
-    app_console_print("[AXIS] Stepper fault — axis halted.\r\n");
+    app_console_print("[AXIS] Stepper fault: axis halted.\r\n");
     return;
   }
 

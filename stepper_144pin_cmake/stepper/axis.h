@@ -63,7 +63,7 @@
 #define AXIS_MAX_INSTANCES 8U
 
 /** Default supervisor task period in ms, applied when config.supervisor_period_ms == 0. */
-#define AXIS_DEFAULT_SUPERVISOR_PERIOD_MS 50U
+#define AXIS_DEFAULT_SUPERVISOR_PERIOD_MS 25U
 
 /** Default stationary/stall window in ms, applied when the config field is 0. */
 #define AXIS_DEFAULT_WINDOW_MS 50U
@@ -167,6 +167,14 @@ axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti
 axis_status_enum axis_get_status(const axis_t *axis);
 
 /**
+ * @brief  Return the current encoder count for the axis.
+ *
+ * @param  axis  Handle returned by axis_init(). Must not be NULL.
+ * @return Signed encoder count, or 0 if axis is NULL.
+ */
+int32_t axis_get_encoder_count(const axis_t *axis);
+
+/**
  * @brief  Start a non-blocking move on the axis.
  *         Does NOT require the axis to have been homed first — AXIS_STATUS_NOT_HOMED
  *         only reflects that the encoder position reference is not yet zeroed;
@@ -212,5 +220,31 @@ stepper_status_enum axis_home(axis_t *axis);
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  */
 void axis_clear_fault(axis_t *axis);
+
+/**
+ * @brief  Full fault recovery sequence: clears the axis latch, clears the
+ *         stepper software fault latch, and performs a sleep/wake cycle to
+ *         reset the DRV8424 hardware.
+ *         Use this instead of calling axis_clear_fault() + stepper_clear_fault()
+ *         + stepper_sleep() + stepper_wake() individually when a complete
+ *         hardware reset is desired (e.g. from a CLI command). Must be called
+ *         from task context (stepper_wake() blocks 1 ms).
+ *         After this call the axis is in AXIS_STATUS_NOT_HOMED; re-home before
+ *         relying on an absolute encoder position.
+ *
+ * @param  axis  Handle returned by axis_init(). Must not be NULL.
+ */
+void axis_fault_reset(axis_t *axis);
+
+/**
+ * @brief  Immediately stop any in-progress move on the axis.
+ *         Clears stall/stationary counters. If the axis was homing, transitions
+ *         to AXIS_STATUS_NOT_HOMED (homing is aborted cleanly, not a fault).
+ *         For AXIS_STATUS_OK and AXIS_STATUS_NOT_HOMED the status is unchanged —
+ *         a voluntary stop is not a fault condition.
+ *
+ * @param  axis  Handle returned by axis_init(). Must not be NULL.
+ */
+void axis_stop(axis_t *axis);
 
 #endif /* AXIS_H_ */
