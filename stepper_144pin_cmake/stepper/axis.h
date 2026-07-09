@@ -212,25 +212,26 @@ stepper_status_enum axis_home(axis_t *axis);
 
 /**
  * @brief  Clear a latched AXIS_STATUS_STALLED or AXIS_STATUS_FAULT and return
- *         the axis to AXIS_STATUS_NOT_HOMED.
- *         For AXIS_STATUS_FAULT caused by a stepper fault, also call
- *         stepper_clear_fault() and perform a stepper_sleep()/stepper_wake()
- *         cycle to reset the DRV8424 hardware before re-homing.
+ *         the axis to AXIS_STATUS_NOT_HOMED. Intended for stall recovery where
+ *         no hardware reset is needed. For stepper fault recovery use
+ *         axis_fault_reset() instead, which also resets the DRV8424 hardware.
  *
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  */
 void axis_clear_fault(axis_t *axis);
 
 /**
- * @brief  Full fault recovery sequence: clears the axis latch, clears the
- *         stepper software fault latch, and performs a sleep/wake cycle to
- *         reset the DRV8424 hardware.
- *         Use this instead of calling axis_clear_fault() + stepper_clear_fault()
- *         + stepper_sleep() + stepper_wake() individually when a complete
- *         hardware reset is desired (e.g. from a CLI command). Must be called
- *         from task context (stepper_wake() blocks 1 ms).
- *         After this call the axis is in AXIS_STATUS_NOT_HOMED; re-home before
- *         relying on an absolute encoder position.
+ * @brief  Request a full fault recovery sequence.
+ *         Safe to call from any context (task or ISR) — sets a flag and
+ *         returns immediately. The supervisor task executes the actual reset
+ *         over two ticks:
+ *           Tick 1: asserts nSLP low (DRV8424 sleep).
+ *           Tick 2: deasserts nSLP, clears the stepper and axis fault latches,
+ *                   and transitions the axis to AXIS_STATUS_NOT_HOMED.
+ *         Using the supervisor period as the sleep pulse (≥25ms) satisfies the
+ *         DRV8424 minimum without requiring an explicit delay. Any nFAULT edge
+ *         that fires during the sleep pulse is consumed by the latch clear on
+ *         tick 2 and does not re-fault the axis.
  *
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  */

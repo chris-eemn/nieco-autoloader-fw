@@ -43,7 +43,8 @@ struct axis_s {
   axis_config_t     config;
 
   volatile axis_status_enum status;
-  volatile uint8_t          fault_from_isr; /* Set by fault ISR callback; observed by supervisor */
+  volatile uint8_t          fault_from_isr;     /* Set by fault ISR callback; observed by supervisor */
+  volatile uint8_t          fault_reset_pending; /* 1=sleep requested, 2=sleeping (wake next tick)   */
 
   /* Homing */
   homing_state_enum homing_substate;
@@ -140,6 +141,7 @@ axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti
 
   axis->status               = AXIS_STATUS_NOT_HOMED;
   axis->fault_from_isr       = 0U;
+  axis->fault_reset_pending  = 0U;
   axis->homing_substate      = HOMING_IDLE;
   axis->enc_stationary_count = 0U;
   axis->stall_count          = 0U;
@@ -261,10 +263,7 @@ void axis_fault_reset(axis_t *axis) {
     return;
   }
 
-  axis_clear_fault(axis);
-  stepper_clear_fault(axis->motor);
-  stepper_sleep(axis->motor);
-  stepper_wake(axis->motor);
+  axis->fault_reset_pending = 1U;
 }
 
 void axis_stop(axis_t *axis) {
@@ -416,6 +415,26 @@ static void handle_stall_tick(axis_t *axis, int32_t delta) {
  * @brief Process one supervisor tick for a single axis instance.
  */
 static void supervisor_tick(axis_t *axis) {
+  /* Two-tick hardware reset sequence driven by axis_fault_reset().
+   * Tick 1 (pending==1): assert nSLP low; the supervisor period (≥25ms) acts as
+   * the sleep pulse — no explicit delay needed.
+   * Tick 2 (pending==2): deassert nSLP, then clear all software latches so any
+   * fault_from_isr that fired during the sleep pulse is consumed here rather
+   * than immediately re-faulting the axis. */
+  if (axis->fault_reset_pending == 1U) {
+    stepper_sleep(axis->motor);
+    axis->fault_reset_pending = 2U;
+    return;
+  }
+  if (axis->fault_reset_pending == 2U) {
+    stepper_wake(axis->motor);
+    stepper_clear_fault(axis->motor);
+    axis_clear_fault(axis);
+    axis->fault_reset_pending = 0U;
+    app_console_print("[AXIS] Fault reset complete. Re-home before moving.\r\n");
+    return;
+  }
+
   /* Fault from ISR takes priority over all other state. */
   if (axis->fault_from_isr != 0U) {
     axis->fault_from_isr  = 0U;
