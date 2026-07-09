@@ -67,8 +67,10 @@ typedef enum {
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions prototype -----------------------------------------------*/
-static void stepper_task(void *pv_parameters);
+static void       stepper_task(void *pv_parameters);
+static encoder_t *encoder_start(hal_tim_handle_t *ptim);
 
+axis_t *axis2 = NULL;
 /** @brief The application entry point. */
 int main(void) {
   if (mx_system_init() != SYSTEM_OK) {
@@ -103,6 +105,33 @@ void HardFault_Handler(void) {
 }
 
 /**
+ * @brief Start an encoder timer and initialise the encoder instance.
+ *
+ * @param ptim  Timer handle already configured for encoder mode.
+ * @return      Pointer to the zeroed encoder instance, or NULL on any failure.
+ */
+static encoder_t *encoder_start(hal_tim_handle_t *ptim) {
+  if (ptim == NULL) {
+    return NULL;
+  }
+  if (HAL_TIM_IC_StartChannel(ptim, HAL_TIM_CHANNEL_1) != HAL_OK) {
+    return NULL;
+  }
+  if (HAL_TIM_IC_StartChannel(ptim, HAL_TIM_CHANNEL_2) != HAL_OK) {
+    return NULL;
+  }
+  if (HAL_TIM_Start(ptim) != HAL_OK) {
+    return NULL;
+  }
+  encoder_t *enc = encoder_init(ptim);
+  if (enc == NULL) {
+    return NULL;
+  }
+  encoder_zero(enc);
+  return enc;
+}
+
+/**
  * @brief Stepper task state machine.
  *
  *  Sits idle after init, waiting for CLI commands routed via stepper_ctrl.
@@ -120,6 +149,7 @@ static void stepper_task(void *pv_parameters) {
   hal_i2c_handle_t   *hi2c          = mx_i2c1_i2c_gethandle();
   stepper_t          *motor         = NULL;
   encoder_t          *enc           = NULL;
+  encoder_t          *enc2          = NULL;
   axis_t             *axis          = NULL;
   stepper_cmd_enum    pending_cmd   = STEPPER_CMD_AUTO_START;
   uint32_t            pause_ticks   = 0U;
@@ -138,13 +168,13 @@ static void stepper_task(void *pv_parameters) {
   static const axis_config_t k_m1_axis_cfg = {
     .supervisor_period_ms = 25U,
     .stationary_window_ms = 50U,
-    .stall_window_ms      = 50U,
+    .stall_window_ms      = 150U,
     .backoff_steps        = 800U,
     .home_direction       = STEPPER_DIR_CW,
     .home_rpm             = 10U,
     .home_max_steps       = 50000U,
   };
-
+  
   configASSERT(hi2c != NULL);
 
   stepper_ctrl_init();
@@ -154,42 +184,30 @@ static void stepper_task(void *pv_parameters) {
       /* ------------------------------------------------------------------ */
       case ST_INIT: {
         hal_status_t      io_ret;
-        hal_status_t      enc_ret;
-        hal_tim_handle_t *penc        = NULL;
+        hal_tim_handle_t *penc1        = NULL;
+        hal_tim_handle_t *penc2        = NULL;
         uint8_t           expected_out = (IO_EXPANDER_M0 | IO_EXPANDER_M1);
+        // uint8_t expected_out = 0;
         uint8_t           readback_out = 0x00U;
 
-        penc = m1_encoder_timer_init();
-        if (penc == NULL) {
-          app_console_print("[ERROR] Encoder timer init failed.\r\n");
-          state = ST_ERROR;
-          break;
-        }
+        penc1 = m1_encoder_timer_init();
+        penc2 = m2_encoder_timer_init();
 
-        enc_ret = HAL_TIM_IC_StartChannel(penc, HAL_TIM_CHANNEL_1);
-        if (enc_ret != HAL_OK) {
-          state = ST_ERROR;
-          break;
-        }
-        enc_ret = HAL_TIM_IC_StartChannel(penc, HAL_TIM_CHANNEL_2);
-        if (enc_ret != HAL_OK) {
-          state = ST_ERROR;
-          break;
-        }
-        enc_ret = HAL_TIM_Start(penc);
-        if (enc_ret != HAL_OK) {
-          state = ST_ERROR;
-          break;
-        }
-
-        enc = encoder_init(penc);
+        enc = encoder_start(penc1);
         if (enc == NULL) {
-          app_console_print("[ERROR] Encoder init failed.\r\n");
+          app_console_print("[ERROR] Encoder 1 init failed.\r\n");
           state = ST_ERROR;
           break;
         }
-        encoder_zero(enc);
 
+        enc2 = encoder_start(penc2);
+        if (enc2 == NULL) {
+          app_console_print("[ERROR] Encoder 2 init failed.\r\n");
+          state = ST_ERROR;
+          break;
+        }
+
+        #if 1
         io_ret = pca9538a_init(hi2c, 0x00U);
         if (io_ret != HAL_OK) {
           app_console_print("[ERROR] PCA9538A init failed.\r\n");
@@ -217,7 +235,9 @@ static void stepper_task(void *pv_parameters) {
           motor = stepper_init(&k_m1_pins);
           configASSERT(motor != NULL);
           axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          axis2 = axis_init(motor, enc2, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           configASSERT(axis != NULL);
+          configASSERT(axis2 != NULL);
           stepper_ctrl_set_axis(axis);
           state = ST_IDLE;
         }
@@ -226,6 +246,15 @@ static void stepper_task(void *pv_parameters) {
                             expected_out, readback_out);
           state = ST_ERROR;
         }
+        #else
+        stepper_module_init(step_timer_gethandle());
+        motor = stepper_init(&k_m1_pins);
+        configASSERT(motor != NULL);
+        axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+        configASSERT(axis != NULL);
+        stepper_ctrl_set_axis(axis);
+        state = ST_IDLE;
+        #endif
         break;
       }
 

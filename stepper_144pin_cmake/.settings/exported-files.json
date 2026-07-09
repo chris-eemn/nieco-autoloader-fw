@@ -1,7 +1,7 @@
 {
   "disclaimer": "Do not modify this file as it is used by STM32CubeMX2 to determine what and how to update your project with new configuration",
   "version": "1.0.0",
-  "timestamp": "2026-07-02T16:16:49.078Z",
+  "timestamp": "2026-07-09T20:31:04.383Z",
   "files": [
     {
       "fileGroup": "project_file",
@@ -247,7 +247,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "1f4a65b074f6e8ba3314aa0cd284e8311a9fca3dd72986ed10e4378bc8da554d"
+        "digest": "9bdaa824ad9839926cfec3ce5f008d4f0f84ec126a5c8a9b38352ac93660b06a"
       },
       "file": "generated/hal/mx_hal_def.h"
     },
@@ -311,7 +311,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "cad80050cbb8fb37043cce06248e0fdc0590428e2da12d471ef346a593ae9999"
+        "digest": "1017b5b9ee2ee7e830486b4bd09bb9023f181d35476fbdf43aac4372f2dd6012"
       },
       "file": "generated/hal/mx_system.c"
     },
@@ -391,6 +391,22 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
+        "digest": "af9740744635fa905110ca863cf9c39804481b05387a2dff4109098fd344cc4b"
+      },
+      "file": "generated/hal/mx_tim2.c"
+    },
+    {
+      "fileGroup": "generated",
+      "checksum": {
+        "algo": "sha256",
+        "digest": "1939ada1df14823e3e8a271073413935340cbc7747d97150ab87dd6b699d42c3"
+      },
+      "file": "generated/hal/mx_tim2.h"
+    },
+    {
+      "fileGroup": "generated",
+      "checksum": {
+        "algo": "sha256",
         "digest": "673af030e65425533d0838c5590795c619660b644ffd99994123efd487204ffc"
       },
       "file": "generated/hal/mx_usart2.c"
@@ -431,7 +447,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "d0296df42904e1b5511428ec818eeaa3a8c034cab02cd2c541ab030368489ce8"
+        "digest": "f9de669b2e689290b72ee6db99b1a7f1b864dd9d9c013fab9f74a5836654811f"
       },
       "file": "generated/hal/stm32c5xx_hal_conf.h"
     },
@@ -447,7 +463,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "18719c6ac70697d29824bb0bf81063b0e6945d071dacd0f93df9b24f0fc05abe"
+        "digest": "3ee6f6d021c51411443057c13562ad5a213a2b02f68a709dee61fbadc5fa57de"
       },
       "file": "generated/hal/STM32_HAL_Driver_codegen.cmake"
     },
@@ -455,7 +471,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "46863d23398a53ff45f46d70c4b9290711cade5c7cae01d9dafa9c1cb9f46dd5"
+        "digest": "9b75e0ac36476310244eaf2086e40a69f3b8a07ce1b5d41c02744e721b3ccd7c"
       },
       "file": "generated/hal/STM32_HAL_Driver_codegen.gpdsc"
     },

@@ -44,6 +44,7 @@ static const char *s_param_names[STEPPER_CLI_NUM_PARAMS] = {
   [STEPPER_CLI_ENC]   = "enc",
 };
 
+extern axis_t *axis2;
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -137,7 +138,7 @@ void stepper_cli_set_handler(char *param, int32_t val) {
           break;
         }
         axis_fault_reset(ax);
-        app_console_print("[STEPPER] Fault cleared. Axis NOT_HOMED — re-home before moving.\r\n");
+        app_console_print("[STEPPER] Fault reset requested — supervisor will complete in ~2 ticks.\r\n");
       }
       break;
 
@@ -179,7 +180,8 @@ void stepper_cli_get_handler(char *param) {
         app_console_print("[STEPPER] Axis not initialised.\r\n");
         break;
       }
-      app_console_print("[STEPPER] encoder count = %ld\r\n", axis_get_encoder_count(ax));
+      app_console_print("[STEPPER] encoder1 count = %ld\r\n", axis_get_encoder_count(ax));
+      app_console_print("[STEPPER] encoder2 count = %ld\r\n", axis_get_encoder_count(axis2));
       break;
     }
 
