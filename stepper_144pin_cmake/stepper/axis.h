@@ -66,7 +66,7 @@
 #define AXIS_DEFAULT_SUPERVISOR_PERIOD_MS 25U
 
 /** Default stationary/stall window in ms, applied when the config field is 0. */
-#define AXIS_DEFAULT_WINDOW_MS 50U
+#define AXIS_DEFAULT_WINDOW_MS 150U
 
 /*******************************************************************************
  * Module Typedefs
@@ -80,8 +80,8 @@
  *   HOMING    → FAULT  (homing timeout or stepper fault)
  *   OK        → STALLED (encoder stopped while commanded moving)
  *   OK/HOMING → FAULT  (stepper fault detected)
- *   STALLED   → OK     (via axis_clear_fault())
- *   FAULT     → OK     (via axis_clear_fault(), after sleep/wake cycle)
+ *   STALLED   → NOT_HOMED (via axis_clear_fault())
+ *   FAULT     → NOT_HOMED (via axis_fault_reset(), deferred over two supervisor ticks)
  */
 typedef enum {
   AXIS_STATUS_NOT_HOMED = 0, /*!< Initial state; encoder position has not been zeroed.
@@ -90,8 +90,9 @@ typedef enum {
                               *!< known absolute position/encoder reference. */
   AXIS_STATUS_HOMING,        /*!< Homing move in progress                      */
   AXIS_STATUS_OK,            /*!< Normal operating state                        */
-  AXIS_STATUS_STALLED,       /*!< Encoder did not move while motor was running  */
-  AXIS_STATUS_FAULT,         /*!< Stepper fault or homing timeout               */
+  AXIS_STATUS_STALLED=66,       /*!< Encoder did not move while motor was running  */
+  AXIS_STATUS_FAULT=99,         /*!< Stepper fault or homing timeout               */
+  AXIS_STATUS_INVALID=255,      /*!< Returned by axis_get_status() if axis is NULL */
 } axis_status_enum;
 
 /**

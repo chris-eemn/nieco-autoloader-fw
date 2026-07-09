@@ -169,7 +169,7 @@ axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti
 
 axis_status_enum axis_get_status(const axis_t *axis) {
   if (axis == NULL) {
-    return AXIS_STATUS_FAULT;
+    return AXIS_STATUS_INVALID;
   }
 
   return axis->status;
