@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
-  * @file           : mx_tim15.h
-  * @brief          : Header for mx_tim15.c file.
+  * @file           : mx_tim7.h
+  * @brief          : Header for mx_tim7.c file.
   ******************************************************************************
   * @attention
   *
@@ -16,8 +16,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef MX_TIM15_H
-#define MX_TIM15_H
+#ifndef MX_TIM7_H
+#define MX_TIM7_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,31 +36,31 @@ extern "C" {
 /* Exported functions for TIM in HAL layer */
 /******************************************************************************/
 /**
-  * @brief  mx_tim15 init function.
+  * @brief  mx_tim7 init function.
   *         This function configures the hardware resources used in this example.
   * @retval Pointer to handle
   * @retval NULL in case of failure
   */
-hal_tim_handle_t *mx_tim15_init(void);
+hal_tim_handle_t *mx_tim7_init(void);
 
 /**
-  * @brief  De-initialize mx_tim15 instance and return it.
+  * @brief  De-initialize mx_tim7 instance and return it.
   */
-void mx_tim15_deinit(void);
+void mx_tim7_deinit(void);
 
 /**
-  * @brief  Get the mx_tim15 object.
-  * @return Pointer on the mx_tim15 Handle
+  * @brief  Get the mx_tim7 object.
+  * @return Pointer on the mx_tim7 Handle
   */
-hal_tim_handle_t *mx_tim15_gethandle(void);
+hal_tim_handle_t *mx_tim7_gethandle(void);
 
 /******************************************************************************/
-/*                           TIM15 global interrupt                           */
+/*                           TIM7 global interrupt                            */
 /******************************************************************************/
-void TIM15_IRQHandler(void);
+void TIM7_IRQHandler(void);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* MX_TIM15_H */
+#endif /* MX_TIM7_H */

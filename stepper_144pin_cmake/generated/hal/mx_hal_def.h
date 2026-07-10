@@ -36,8 +36,8 @@ extern "C" {
 #include "mx_tim1.h"
 #include "mx_tim17.h"
 #include "mx_tim12.h"
-#include "mx_tim15.h"
 #include "mx_tim2.h"
+#include "mx_tim7.h"
 #include "mx_usart2.h"
 #include "mx_usart3.h"
 
@@ -115,18 +115,6 @@ extern "C" {
 #define step_timer_init mx_tim12_init
 
   /* ***********************************************************
-      TIM15: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_tim15 with HAL layer
-  *         Name of the User label:
-  *                   mb_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM15 instance
-  */
-#define mb_timer_init mx_tim15_init
-
-  /* ***********************************************************
       TIM2: aliases for initialization functions
     *********************************************************** */
 
@@ -137,6 +125,18 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM2 instance
   */
 #define m2_encoder_timer_init mx_tim2_init
+
+  /* ***********************************************************
+      TIM7: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_tim7 with HAL layer
+  *         Name of the User label:
+  *                   mb_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM7 instance
+  */
+#define mb_timer_init mx_tim7_init
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
@@ -219,17 +219,6 @@ extern "C" {
 #define step_timer_deinit mx_tim12_deinit
 
   /* ***********************************************************
-      TIM15: aliases for De-Initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  De-Initialize the mx_tim15 with HAL layer
-  *         Name of the User label:
-  *                   mb_timer
-  */
-#define mb_timer_deinit mx_tim15_deinit
-
-  /* ***********************************************************
       TIM2: aliases for De-Initialization functions
     *********************************************************** */
 
@@ -239,6 +228,17 @@ extern "C" {
   *                   m2_encoder_timer
   */
 #define m2_encoder_timer_deinit mx_tim2_deinit
+
+  /* ***********************************************************
+      TIM7: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_tim7 with HAL layer
+  *         Name of the User label:
+  *                   mb_timer
+  */
+#define mb_timer_deinit mx_tim7_deinit
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
@@ -310,16 +310,6 @@ extern "C" {
 #define step_timer_gethandle mx_tim12_gethandle
 
   /* ***********************************************************
-      TIM15: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM15
-  *         Name of the User label:
-  *                   mb_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM15 instance
-  */
-#define mb_timer_gethandle mx_tim15_gethandle
-
-  /* ***********************************************************
       TIM2: aliases for get handle functions
     *********************************************************** *//**
   * @brief  Get the HAL handle for TIM2
@@ -328,6 +318,16 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM2 instance
   */
 #define m2_encoder_timer_gethandle mx_tim2_gethandle
+
+  /* ***********************************************************
+      TIM7: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for TIM7
+  *         Name of the User label:
+  *                   mb_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM7 instance
+  */
+#define mb_timer_gethandle mx_tim7_gethandle
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance

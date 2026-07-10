@@ -137,14 +137,14 @@ system_status_t mx_system_init(void)
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
-  /** TIM15 */
-  if (mx_tim15_init() == NULL)
+  /** TIM2 */
+  if (mx_tim2_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
-  /** TIM2 */
-  if (mx_tim2_init() == NULL)
+  /** TIM7 */
+  if (mx_tim7_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }

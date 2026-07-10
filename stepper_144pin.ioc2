@@ -875,15 +875,15 @@
           "used": true
         },
         {
-          "id": 69,
-          "name": "TIM15",
+          "id": 23,
+          "name": "EXTI6",
           "priority": 5,
           "subpriority": 0,
           "used": true
         },
         {
-          "id": 23,
-          "name": "EXTI6",
+          "id": 53,
+          "name": "TIM7",
           "priority": 5,
           "subpriority": 0,
           "used": true
@@ -911,14 +911,14 @@
           "owner": "USART3"
         },
         {
-          "needId": "8bb0f9da-9e5b-42a4-b58f-a8a84b87f337",
-          "destination": "TIM15",
-          "owner": "TIM15"
-        },
-        {
           "needId": "8e7c2816-fb96-4f21-8867-15ec93cf996a",
           "destination": "EXTI6",
           "owner": "EXTI6"
+        },
+        {
+          "needId": "1490a757-0e6c-4588-86fd-dd27862b6272",
+          "destination": "TIM7",
+          "owner": "TIM7"
         }
       ]
     }
@@ -967,21 +967,21 @@
     {
       "needType": "need.interrupt.lines",
       "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
-      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
-      "componentInstanceId": "99bff453-ceea-4fda-b605-67323c2a896f",
-      "selector": "GLOBAL",
-      "id": "8bb0f9da-9e5b-42a4-b58f-a8a84b87f337",
-      "owner": "TIM15",
-      "propertyPath": ""
-    },
-    {
-      "needType": "need.interrupt.lines",
-      "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
       "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32 LL:EXTI@2.1.0#LL",
       "componentInstanceId": "b89383aa-5f33-46f3-8321-6f48caea622a",
       "selector": "*",
       "id": "8e7c2816-fb96-4f21-8867-15ec93cf996a",
       "owner": "EXTI6",
+      "propertyPath": ""
+    },
+    {
+      "needType": "need.interrupt.lines",
+      "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+      "componentInstanceId": "56494f57-e46b-42d1-a682-736127202c48",
+      "selector": "GLOBAL",
+      "id": "1490a757-0e6c-4588-86fd-dd27862b6272",
+      "owner": "TIM7",
       "propertyPath": ""
     }
   ],
@@ -3664,13 +3664,13 @@
       "driverConfigurationId": "071dfaa9-504e-496b-8e88-1f5b59d13551",
       "mode": "Async"
     },
-    "TIM15": {
-      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM",
-      "driverConfigurationId": "99bff453-ceea-4fda-b605-67323c2a896f"
-    },
     "TIM2": {
-      "driverConfigurationId": "b4b8a660-3967-4f01-9963-c98916c10641",
-      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM"
+      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM",
+      "driverConfigurationId": "b4b8a660-3967-4f01-9963-c98916c10641"
+    },
+    "TIM7": {
+      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM",
+      "driverConfigurationId": "56494f57-e46b-42d1-a682-736127202c48"
     }
   }
 }"""
@@ -5374,25 +5374,25 @@
                   "peripheral": "UART"
                 },
                 {
-                  "_foreignKey": "TIM15",
-                  "_rank": 7,
-                  "callable": true,
-                  "generated": true,
-                  "hw_instance": "TIM15",
-                  "layer": "HAL",
-                  "mode": "",
-                  "name": "mx_tim15_init",
-                  "peripheral": "TIM"
-                },
-                {
                   "_foreignKey": "TIM2",
-                  "_rank": 8,
+                  "_rank": 7,
                   "callable": true,
                   "generated": true,
                   "hw_instance": "TIM2",
                   "layer": "HAL",
                   "mode": "",
                   "name": "mx_tim2_init",
+                  "peripheral": "TIM"
+                },
+                {
+                  "_foreignKey": "TIM7",
+                  "_rank": 8,
+                  "callable": true,
+                  "generated": true,
+                  "hw_instance": "TIM7",
+                  "layer": "HAL",
+                  "mode": "",
+                  "name": "mx_tim7_init",
                   "peripheral": "TIM"
                 }
               ],
@@ -6155,209 +6155,6 @@
         },
         {
           "index": 15,
-          "instanceId": "99bff453-ceea-4fda-b605-67323c2a896f",
-          "name": "MyTIM_4",
-          "entity": "peripheral.tim",
-          "settings": {
-            "parameters": {
-              "info": {
-                "init_type": "called",
-                "labels": [
-                  "mb_timer"
-                ],
-                "layer": "HAL"
-              },
-              "system": {
-                "nvic": {
-                  "enable_interruption_global": true,
-                  "irq_handler_generation_global": true,
-                  "nvic_config_global": {
-                    "needs": [
-                      {
-                        "needType": "need.interrupt.lines",
-                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
-                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
-                        "componentInstanceId": "99bff453-ceea-4fda-b605-67323c2a896f",
-                        "selector": "GLOBAL",
-                        "id": "8bb0f9da-9e5b-42a4-b58f-a8a84b87f337",
-                        "owner": "TIM15"
-                      }
-                    ]
-                  }
-                },
-                "dma": {
-                  "enable_dma_upd": false,
-                  "enable_dma_cc1": false,
-                  "enable_dma_cc2": false,
-                  "enable_dma_com": false,
-                  "enable_dma_trgi": false
-                }
-              },
-              "channels": [
-                {
-                  "_foreignKey": "CC1",
-                  "use_channel": false
-                },
-                {
-                  "_foreignKey": "CC2",
-                  "use_channel": false
-                }
-              ],
-              "additional": {
-                "update_event": {
-                  "update_event_generation": true,
-                  "update_event_source": "REGULAR",
-                  "update_flag_remap": false
-                },
-                "ccdma_request_selection": "CC",
-                "dma_burst_configuration": {
-                  "use_dma_burst": false,
-                  "base_address": "CR1",
-                  "burst_length": "1TRANSFER",
-                  "burst_source": "UPD"
-                },
-                "hall_sensor_interface": {
-                  "commutation_event": {
-                    "commutation": false,
-                    "commutation_source": "SOFTWARE"
-                  },
-                  "xor_gate": {
-                    "enable_xor_gate": false,
-                    "xor_gate_position": "DIRECT",
-                    "xor_input1_inversion": false,
-                    "xor_input2_inversion": false
-                  }
-                },
-                "lock_level": "OFF",
-                "output_stage": {
-                  "break_configuration": {
-                    "use_break_function": false,
-                    "automatic_output": false,
-                    "off_state_idle_mode": false,
-                    "breaks": [
-                      {
-                        "use_break_line": false,
-                        "labels": [],
-                        "break_input_configuration": {
-                          "polarity": "LOW",
-                          "delayed_1_break_duration": 0,
-                          "delayed_2_break_duration": 0,
-                          "filter_break": "FDIV1",
-                          "mode": "INPUT"
-                        },
-                        "break_input_sources_configuration": [
-                          {
-                            "_foreignKey": "GPIO",
-                            "enable_break_input_source": false,
-                            "polarity": "NONINVERTED"
-                          },
-                          {
-                            "_foreignKey": "TIM17_BKIN",
-                            "enable_break_input_source": false
-                          },
-                          {
-                            "_foreignKey": "COMP1_OUT",
-                            "enable_break_input_source": false,
-                            "polarity": "NONINVERTED"
-                          },
-                          {
-                            "_foreignKey": "TIM1_BKIN",
-                            "enable_break_input_source": false
-                          },
-                          {
-                            "_foreignKey": "TIM8_BKIN",
-                            "enable_break_input_source": false
-                          },
-                          {
-                            "_foreignKey": "TIM16_BKIN",
-                            "enable_break_input_source": false
-                          }
-                        ],
-                        "enable_break_input": false,
-                        "_foreignKey": 1
-                      }
-                    ],
-                    "off_state_run_mode": false
-                  },
-                  "deadtime_configuration": {
-                    "use_deadtime": false,
-                    "deadtime_preload": false,
-                    "deadtime_rising": 0,
-                    "asymmetrical_deadtime": false,
-                    "deadtime_falling": 0
-                  },
-                  "ocref_clear": {
-                    "use_ocref_clear": false,
-                    "ocref_clear_source": {
-                      "id": "ocref_clr0__clear_signal_input_trigger",
-                      "direction": "input",
-                      "source": "comp1_out",
-                      "type": "clear signal input trigger",
-                      "instance": "COMP1",
-                      "ip_signal": "ocref_clr0",
-                      "source_destination": [
-                        "comp1_out"
-                      ],
-                      "entity": "peripheral.interconnect.clear signal input trigger",
-                      "queryId": "c4e789dd-0c05-4c06-94de-a17351ee5fc1"
-                    }
-                  }
-                },
-                "synchronization": {
-                  "master_mode": {
-                    "trigger_output_source": "DISABLED"
-                  },
-                  "slave_mode": {
-                    "mode": "DISABLED",
-                    "trigger_input": "ITR",
-                    "internal_trigger": {
-                      "id": "ITR0__internal_input_trigger",
-                      "direction": "input",
-                      "source": "tim1_trgo",
-                      "type": "internal input trigger",
-                      "instance": "TIM1",
-                      "ip_signal": "ITR0",
-                      "source_destination": [
-                        "tim1_trgo"
-                      ],
-                      "entity": "peripheral.interconnect.internal input trigger",
-                      "queryId": "8c04db04-e68a-4ea1-a353-ec42a6c311a2"
-                    }
-                  }
-                }
-              },
-              "basic": {
-                "time_base": {
-                  "clock_source_configuration": {
-                    "clock_source": "INTERNAL",
-                    "prescaler": 143,
-                    "kernel_clock_frequency": "144 MHz",
-                    "kernel_clock_source": "TIMx2_Input_Clock"
-                  },
-                  "counter": {
-                    "one_pulse_mode": false,
-                    "counter_mode": "UP",
-                    "dithering": false,
-                    "period_dithering_pattern": 0,
-                    "repetition_counter": 0,
-                    "period": 65535
-                  },
-                  "frequency": "15 Hz"
-                },
-                "autoreload_preload": false,
-                "sampling_clock": {
-                  "clock_division": 1,
-                  "clock_division2": 1,
-                  "dts_clock_frequency": "144 MHz",
-                  "dts2_clock_frequency": "144 MHz",
-                  "kernel_clock_frequency": "144 MHz"
-                }
-              }
-            }
-          }
-        },
-        {
-          "index": 16,
           "instanceId": "b4b8a660-3967-4f01-9963-c98916c10641",
           "name": "MyTIM_5",
           "entity": "peripheral.tim",
@@ -6612,6 +6409,76 @@
                   "dts2_clock_frequency": "144 MHz",
                   "kernel_clock_frequency": "144 MHz"
                 }
+              }
+            }
+          }
+        },
+        {
+          "index": 16,
+          "instanceId": "56494f57-e46b-42d1-a682-736127202c48",
+          "name": "MyTIM_6",
+          "entity": "peripheral.tim",
+          "settings": {
+            "parameters": {
+              "info": {
+                "init_type": "called",
+                "labels": [
+                  "mb_timer"
+                ],
+                "layer": "HAL"
+              },
+              "system": {
+                "nvic": {
+                  "enable_interruption_global": true,
+                  "irq_handler_generation_global": true,
+                  "nvic_config_global": {
+                    "needs": [
+                      {
+                        "needType": "need.interrupt.lines",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+                        "componentInstanceId": "56494f57-e46b-42d1-a682-736127202c48",
+                        "selector": "GLOBAL",
+                        "id": "1490a757-0e6c-4588-86fd-dd27862b6272",
+                        "owner": "TIM7"
+                      }
+                    ]
+                  }
+                },
+                "dma": {
+                  "enable_dma_upd": false
+                }
+              },
+              "additional": {
+                "update_event": {
+                  "update_event_generation": true,
+                  "update_event_source": "REGULAR",
+                  "update_flag_remap": false
+                },
+                "synchronization": {
+                  "master_mode": {
+                    "trigger_output_source": "DISABLED"
+                  }
+                }
+              },
+              "basic": {
+                "time_base": {
+                  "clock_source_configuration": {
+                    "clock_source": "INTERNAL",
+                    "prescaler": 143,
+                    "kernel_clock_frequency": "144 MHz",
+                    "kernel_clock_source": "TIMx_Input_Clock"
+                  },
+                  "counter": {
+                    "one_pulse_mode": false,
+                    "counter_mode": "UP",
+                    "dithering": false,
+                    "period_dithering_pattern": 0,
+                    "period": 65535
+                  },
+                  "frequency": "15 Hz"
+                },
+                "autoreload_preload": false
               }
             }
           }
