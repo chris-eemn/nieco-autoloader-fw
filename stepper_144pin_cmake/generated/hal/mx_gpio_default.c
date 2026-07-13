@@ -34,7 +34,7 @@ system_status_t mx_gpio_default_init(void)
 
   HAL_RCC_GPIOA_EnableClock();
 
-  HAL_RCC_GPIOC_EnableClock();
+  HAL_RCC_GPIOB_EnableClock();
 
   HAL_RCC_GPIOD_EnableClock();
 
@@ -56,15 +56,15 @@ system_status_t mx_gpio_default_init(void)
 
   /*
     GPIO pin labels :
-    PC6   ---------> PC6, M1_DIR, M1_DIR
+    PB5   ---------> PB5, M1_DIR, M1_DIR
     */
-  /* Configure PC6 GPIO pin in output mode */
+  /* Configure PB5 GPIO pin in output mode */
   gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
   gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.pull            = HAL_GPIO_PULL_NO;
   gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.init_state      = PC6_INIT_STATE;
-  if (HAL_GPIO_Init(PC6_PORT, PC6_PIN, &gpio_config) != HAL_OK)
+  gpio_config.init_state      = PB5_INIT_STATE;
+  if (HAL_GPIO_Init(PB5_PORT, PB5_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -127,8 +127,8 @@ system_status_t mx_gpio_default_deinit(void)
   /* De-initialize pins of GPIOA port */
   HAL_GPIO_DeInit(HAL_GPIOA, PA0_PIN | PA10_PIN);
 
-  /* De-initialize pins of GPIOC port */
-  HAL_GPIO_DeInit(PC6_PORT, PC6_PIN);
+  /* De-initialize pins of GPIOB port */
+  HAL_GPIO_DeInit(PB5_PORT, PB5_PIN);
 
   /* De-initialize pins of GPIOD port */
   HAL_GPIO_DeInit(HAL_GPIOD, PD5_PIN | PD6_PIN);

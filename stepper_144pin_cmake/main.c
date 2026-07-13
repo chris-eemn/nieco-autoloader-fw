@@ -74,6 +74,7 @@ axis_t *axis2 = NULL;
 axis_t *axis3 = NULL;
 axis_t *axis4 = NULL;
 axis_t *axis5 = NULL;
+axis_t *axis6 = NULL;
 /** @brief The application entry point. */
 int main(void) {
   if (mx_system_init() != SYSTEM_OK) {
@@ -156,6 +157,7 @@ static void stepper_task(void *pv_parameters) {
   encoder_t          *enc3          = NULL;
   encoder_t          *enc4          = NULL;
   encoder_t          *enc5          = NULL;
+  encoder_t          *enc6          = NULL;
   axis_t             *axis          = NULL;
   stepper_cmd_enum    pending_cmd   = STEPPER_CMD_AUTO_START;
   uint32_t            pause_ticks   = 0U;
@@ -195,6 +197,7 @@ static void stepper_task(void *pv_parameters) {
         hal_tim_handle_t *penc3        = NULL;
         hal_tim_handle_t *penc4        = NULL;
         hal_tim_handle_t *penc5        = NULL;
+        hal_tim_handle_t *penc6        = NULL;
         uint8_t           expected_out = (IO_EXPANDER_M0 | IO_EXPANDER_M1);
         // uint8_t expected_out = 0;
         uint8_t           readback_out = 0x00U;
@@ -204,12 +207,13 @@ static void stepper_task(void *pv_parameters) {
         penc3 = m3_encoder_timer_init();
         penc4 = m4_encoder_timer_init();
         penc5 = m5_encoder_timer_init();
+        penc6 = m6_encoder_timer_init();
 
-        hal_tim_handle_t *enc_timers[5] = {penc1, penc2, penc3, penc4, penc5};
-        encoder_t       **enc_out[5]    = {&enc, &enc2, &enc3, &enc4, &enc5};
+        hal_tim_handle_t *enc_timers[6] = {penc1, penc2, penc3, penc4, penc5, penc6};
+        encoder_t       **enc_out[6]    = {&enc, &enc2, &enc3, &enc4, &enc5, &enc6};
         uint8_t           enc_ok        = 1U;
 
-        for (uint8_t i = 0U; i < 5U; i++) {
+        for (uint8_t i = 0U; i < 6U; i++) {
           *enc_out[i] = encoder_start(enc_timers[i]);
           if (*enc_out[i] == NULL) {
             app_console_print("[ERROR] Encoder %u init failed.\r\n", (unsigned)(i + 1U));
@@ -254,11 +258,13 @@ static void stepper_task(void *pv_parameters) {
           axis3 = axis_init(motor, enc3, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           axis4 = axis_init(motor, enc4, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           axis5 = axis_init(motor, enc5, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          axis6 = axis_init(motor, enc6, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           configASSERT(axis3 != NULL);
           configASSERT(axis != NULL);
           configASSERT(axis2 != NULL);
           configASSERT(axis4 != NULL);
           configASSERT(axis5 != NULL);
+          configASSERT(axis6 != NULL);
           stepper_ctrl_set_axis(axis);
           state = ST_IDLE;
         }

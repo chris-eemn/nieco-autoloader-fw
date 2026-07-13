@@ -73,22 +73,22 @@ extern "C" {
 #define M1_EN_ACTIVE_STATE                              HAL_GPIO_PIN_SET
 #define M1_EN_INACTIVE_STATE                            HAL_GPIO_PIN_RESET
 
-/* Primary aliases for GPIO PC6 pin */
-#define PC6_PORT                                        HAL_GPIOC
-#define PC6_PIN                                         HAL_GPIO_PIN_6
-#define PC6_INIT_STATE                                  HAL_GPIO_PIN_RESET
-#define PC6_ACTIVE_STATE                                HAL_GPIO_PIN_SET
-#define PC6_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
+/* Primary aliases for GPIO PB5 pin */
+#define PB5_PORT                                        HAL_GPIOB
+#define PB5_PIN                                         HAL_GPIO_PIN_5
+#define PB5_INIT_STATE                                  HAL_GPIO_PIN_RESET
+#define PB5_ACTIVE_STATE                                HAL_GPIO_PIN_SET
+#define PB5_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
 
-/* Secondary aliases for GPIO PC6 pin */
-#define M1_DIR_PORT                                     HAL_GPIOC
-#define M1_DIR_PIN                                      HAL_GPIO_PIN_6
+/* Secondary aliases for GPIO PB5 pin */
+#define M1_DIR_PORT                                     HAL_GPIOB
+#define M1_DIR_PIN                                      HAL_GPIO_PIN_5
 #define M1_DIR_INIT_STATE                               HAL_GPIO_PIN_RESET
 #define M1_DIR_ACTIVE_STATE                             HAL_GPIO_PIN_SET
 #define M1_DIR_INACTIVE_STATE                           HAL_GPIO_PIN_RESET
 
-#define M1_DIR_PORT                                     HAL_GPIOC
-#define M1_DIR_PIN                                      HAL_GPIO_PIN_6
+#define M1_DIR_PORT                                     HAL_GPIOB
+#define M1_DIR_PIN                                      HAL_GPIO_PIN_5
 #define M1_DIR_INIT_STATE                               HAL_GPIO_PIN_RESET
 #define M1_DIR_ACTIVE_STATE                             HAL_GPIO_PIN_SET
 #define M1_DIR_INACTIVE_STATE                           HAL_GPIO_PIN_RESET

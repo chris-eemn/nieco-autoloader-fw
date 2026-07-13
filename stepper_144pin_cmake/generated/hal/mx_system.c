@@ -167,6 +167,12 @@ system_status_t mx_system_init(void)
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
+  /** TIM8 */
+  if (mx_tim8_init() == NULL)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
   if (post_system_init_hook() != SYSTEM_OK)
   {
     return SYSTEM_POSTSYSTEM_ERROR;
