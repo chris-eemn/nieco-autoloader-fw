@@ -45,6 +45,7 @@ static const char *s_param_names[STEPPER_CLI_NUM_PARAMS] = {
 };
 
 extern axis_t *axis2;
+extern axis_t *axis3;
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -182,6 +183,7 @@ void stepper_cli_get_handler(char *param) {
       }
       app_console_print("[STEPPER] encoder1 count = %ld\r\n", axis_get_encoder_count(ax));
       app_console_print("[STEPPER] encoder2 count = %ld\r\n", axis_get_encoder_count(axis2));
+      app_console_print("[STEPPER] encoder3 count = %ld\r\n", axis_get_encoder_count(axis3));
       break;
     }
 

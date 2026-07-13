@@ -639,7 +639,7 @@
     },
     "HAL_GPIO_PROJECT_USE_HAL": {
       "name": "HAL_GPIO_PROJECT_USE_HAL",
-      "value": 13,
+      "value": 15,
       "originator": "sw-config-semaphore"
     },
     "HAL_UART_PROJECT_USE_HAL": {
@@ -649,7 +649,7 @@
     },
     "HAL_TIM_PROJECT_USE_HAL": {
       "name": "HAL_TIM_PROJECT_USE_HAL",
-      "value": 5,
+      "value": 6,
       "originator": "sw-config-semaphore"
     },
     "FREERTOS_PROJECT_MAX_SYSCALL_IT_PRIO": {
@@ -1590,6 +1590,54 @@
       },
       {
         "signal": {
+          "instance": "TIM3",
+          "name": "TIM3_CH1",
+          "type": "alternate",
+          "alternateFunctionId": "AF2"
+        },
+        "pin": {
+          "name": "PA6",
+          "position": "42",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 6,
+          "port": "A"
+        },
+        "needId": "347b1aee-a3a1-4ee5-8f01-8f2902f48714",
+        "ownedByUser": false,
+        "pinned": false
+      },
+      {
+        "signal": {
+          "instance": "TIM3",
+          "name": "TIM3_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF2"
+        },
+        "pin": {
+          "name": "PA7",
+          "position": "43",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 7,
+          "port": "A"
+        },
+        "needId": "3bba1603-ff76-4813-98c6-7e58b36b1ba0",
+        "ownedByUser": false,
+        "pinned": false
+      },
+      {
+        "signal": {
           "instance": "TIM1",
           "name": "TIM1_CH1",
           "type": "alternate",
@@ -1658,6 +1706,30 @@
         },
         "needId": "03cd7113-69e5-4ac9-9588-859e52483b1b",
         "ownedByUser": true,
+        "pinned": true
+      },
+      {
+        "signal": {
+          "instance": "TIM2",
+          "name": "TIM2_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF1"
+        },
+        "pin": {
+          "name": "PB3(JTDO/TRACESWO)",
+          "position": "133",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 3,
+          "port": "B"
+        },
+        "needId": "2f8f5399-57df-45f5-92e8-d3e09678a302",
+        "ownedByUser": false,
         "pinned": true
       },
       {
@@ -1777,30 +1849,6 @@
         "needId": "6b825f5e-3115-449b-9ba0-965fdd7af68b",
         "ownedByUser": false,
         "pinned": false
-      },
-      {
-        "pin": {
-          "name": "PB3(JTDO/TRACESWO)",
-          "position": "133",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 3,
-          "port": "B"
-        },
-        "signal": {
-          "instance": "TIM2",
-          "name": "TIM2_CH2",
-          "type": "alternate",
-          "alternateFunctionId": "AF1"
-        },
-        "needId": "2f8f5399-57df-45f5-92e8-d3e09678a302",
-        "pinned": true,
-        "ownedByUser": false
       }
     ]
   },
@@ -2849,6 +2897,22 @@
       "softwareProjectId": "8788bd42-8f15-4186-8d87-14fe034f5d0d",
       "signal": "TIM2_CH2",
       "instanceName": "TIM2"
+    },
+    {
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+      "componentInstanceId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+      "needId": "347b1aee-a3a1-4ee5-8f01-8f2902f48714",
+      "softwareProjectId": "8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "signal": "TIM3_CH1",
+      "instanceName": "TIM3"
+    },
+    {
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+      "componentInstanceId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+      "needId": "3bba1603-ff76-4813-98c6-7e58b36b1ba0",
+      "softwareProjectId": "8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "signal": "TIM3_CH2",
+      "instanceName": "TIM3"
     }
   ],
   "pinout-user-settings": {
@@ -3671,6 +3735,10 @@
     "TIM7": {
       "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM",
       "driverConfigurationId": "56494f57-e46b-42d1-a682-736127202c48"
+    },
+    "TIM3": {
+      "driverConfigurationId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM"
     }
   }
 }"""
@@ -5394,6 +5462,17 @@
                   "mode": "",
                   "name": "mx_tim7_init",
                   "peripheral": "TIM"
+                },
+                {
+                  "_foreignKey": "TIM3",
+                  "_rank": 9,
+                  "callable": true,
+                  "generated": true,
+                  "hw_instance": "TIM3",
+                  "layer": "HAL",
+                  "mode": "",
+                  "name": "mx_tim3_init",
+                  "peripheral": "TIM"
                 }
               ],
               "code_generation": {
@@ -6482,6 +6561,266 @@
               }
             }
           }
+        },
+        {
+          "index": 17,
+          "instanceId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+          "name": "MyTIM_4",
+          "entity": "peripheral.tim",
+          "settings": {
+            "parameters": {
+              "info": {
+                "init_type": "called",
+                "labels": [
+                  "m3_encoder_timer"
+                ],
+                "layer": "HAL"
+              },
+              "system": {
+                "nvic": {
+                  "enable_interruption_global": false
+                },
+                "dma": {
+                  "enable_dma_upd": false,
+                  "enable_dma_cc1": false,
+                  "enable_dma_cc2": false,
+                  "enable_dma_cc3": false,
+                  "enable_dma_cc4": false,
+                  "enable_dma_trgi": false
+                },
+                "gpio": {
+                  "gpio_config_channel_1": {
+                    "needs": [
+                      {
+                        "needType": "need.pinout.signals",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+                        "componentInstanceId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+                        "selector": "CH1",
+                        "id": "347b1aee-a3a1-4ee5-8f01-8f2902f48714",
+                        "owner": "TIM3",
+                        "constraints": {
+                          "mode": {
+                            "const": "ALTERNATE"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "gpio_config_channel_2": {
+                    "needs": [
+                      {
+                        "needType": "need.pinout.signals",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+                        "componentInstanceId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+                        "selector": "CH2",
+                        "id": "3bba1603-ff76-4813-98c6-7e58b36b1ba0",
+                        "owner": "TIM3",
+                        "constraints": {
+                          "mode": {
+                            "const": "ALTERNATE"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "channels": [
+                {
+                  "_foreignKey": "CC1",
+                  "use_channel": true,
+                  "channel_direction": "Input",
+                  "input_configuration": {
+                    "icx_channel_configuration": {
+                      "use_channel": true,
+                      "filter_ic": "FDIV1",
+                      "input_selection": {
+                        "id": "ti1_in0__input_capture_trigger",
+                        "direction": "input",
+                        "source": "AFI",
+                        "type": "input capture trigger",
+                        "ip_signal": "ti1_in0",
+                        "source_destination": [
+                          "AFI"
+                        ],
+                        "resource_id": "CC1",
+                        "entity": "peripheral.interconnect.input capture trigger",
+                        "queryId": "9317dd7d-debe-451b-a9b1-4b81fc5913a0"
+                      },
+                      "labels": [],
+                      "polarity": "RISING"
+                    },
+                    "capture_unit_configuration": {
+                      "source": "DIRECT",
+                      "prescaler": 1
+                    }
+                  }
+                },
+                {
+                  "_foreignKey": "CC2",
+                  "use_channel": true,
+                  "channel_direction": "Input",
+                  "input_configuration": {
+                    "icx_channel_configuration": {
+                      "use_channel": true,
+                      "filter_ic": "FDIV1",
+                      "input_selection": {
+                        "id": "ti2_in0__input_capture_trigger",
+                        "direction": "input",
+                        "source": "AFI",
+                        "type": "input capture trigger",
+                        "ip_signal": "ti2_in0",
+                        "source_destination": [
+                          "AFI"
+                        ],
+                        "resource_id": "CC2",
+                        "entity": "peripheral.interconnect.input capture trigger",
+                        "queryId": "ea4a6c25-0f86-4821-b3e7-2adb8f9360c0"
+                      },
+                      "labels": [],
+                      "polarity": "RISING"
+                    },
+                    "capture_unit_configuration": {
+                      "source": "DIRECT",
+                      "prescaler": 1
+                    }
+                  }
+                },
+                {
+                  "_foreignKey": "CC3",
+                  "use_channel": false
+                },
+                {
+                  "_foreignKey": "CC4",
+                  "use_channel": false
+                }
+              ],
+              "additional": {
+                "update_event": {
+                  "update_event_generation": true,
+                  "update_event_source": "REGULAR",
+                  "update_flag_remap": false
+                },
+                "ccdma_request_selection": "CC",
+                "dma_burst_configuration": {
+                  "use_dma_burst": false,
+                  "base_address": "CR1",
+                  "burst_length": "1TRANSFER",
+                  "burst_source": "UPD"
+                },
+                "encoder_interface": {
+                  "slave_mode_preload": false,
+                  "slave_mode_preload_source": "UPDATE",
+                  "encoder_index": false,
+                  "encoder_index_configuration": {
+                    "index_direction": "UP_DOWN",
+                    "index_positioning": "DOWN_DOWN",
+                    "index_blanking": "ALWAYS",
+                    "counter_reset_trigger": "ALL"
+                  }
+                },
+                "external_trigger_configuration": {
+                  "use_external_trigger": false,
+                  "external_trigger": {
+                    "id": "ETR0__external_input_trigger",
+                    "direction": "input",
+                    "source": "AFI",
+                    "type": "external input trigger",
+                    "ip_signal": "ETR0",
+                    "source_destination": [
+                      "AFI"
+                    ],
+                    "entity": "peripheral.interconnect.external input trigger",
+                    "queryId": "18ef32dd-d038-4e28-a9ed-7277d47629b4"
+                  },
+                  "polarity": "NONINVERTED",
+                  "filter_etr": "FDIV1",
+                  "prescaler": 1,
+                  "sync_prescaler": 1
+                },
+                "hall_sensor_interface": {
+                  "xor_gate": {
+                    "enable_xor_gate": false,
+                    "xor_gate_position": "DIRECT",
+                    "xor_input1_inversion": false,
+                    "xor_input2_inversion": false,
+                    "xor_input3_inversion": false
+                  }
+                },
+                "output_stage": {
+                  "ocref_clear": {
+                    "use_ocref_clear": false,
+                    "ocref_clear_source": {
+                      "id": "ocref_clr0__clear_signal_input_trigger",
+                      "direction": "input",
+                      "source": "comp1_out",
+                      "type": "clear signal input trigger",
+                      "instance": "COMP1",
+                      "ip_signal": "ocref_clr0",
+                      "source_destination": [
+                        "comp1_out"
+                      ],
+                      "entity": "peripheral.interconnect.clear signal input trigger",
+                      "queryId": "dd7599cf-6716-49f1-acf7-8d900f28af46"
+                    },
+                    "ocref_clear_source_etr": false
+                  },
+                  "pulse_generator_configuration": {
+                    "prescaler": 1,
+                    "pulse_width": 0
+                  }
+                },
+                "synchronization": {
+                  "master_mode": {
+                    "trigger_output_source": "DISABLED"
+                  },
+                  "slave_mode": {
+                    "mode": "DISABLED",
+                    "trigger_input": "ITR",
+                    "internal_trigger": {
+                      "id": "ITR0__internal_input_trigger",
+                      "direction": "input",
+                      "source": "tim1_trgo",
+                      "type": "internal input trigger",
+                      "instance": "TIM1",
+                      "ip_signal": "ITR0",
+                      "source_destination": [
+                        "tim1_trgo"
+                      ],
+                      "entity": "peripheral.interconnect.internal input trigger",
+                      "queryId": "23df6703-039a-4c05-8077-0fd0a69244c9"
+                    }
+                  }
+                }
+              },
+              "basic": {
+                "time_base": {
+                  "clock_source_configuration": {
+                    "clock_source": "ENCODER_MODE",
+                    "prescaler": 0,
+                    "encoder_mode": "ENCODER_X4_TI12"
+                  },
+                  "counter": {
+                    "one_pulse_mode": false,
+                    "counter_mode": "UP",
+                    "dithering": false,
+                    "period_dithering_pattern": 0,
+                    "period": 4294967295
+                  }
+                },
+                "autoreload_preload": false,
+                "sampling_clock": {
+                  "clock_division": 1,
+                  "clock_division2": 1,
+                  "dts_clock_frequency": "144 MHz",
+                  "dts2_clock_frequency": "144 MHz",
+                  "kernel_clock_frequency": "144 MHz"
+                }
+              }
+            }
+          }
         }
       ],
       "STMicroelectronics.freertos.2.1.0$STMicroelectronics::RTOS:STM32CubeMX2 Config:FreeRTOS@2.1.0#FreeRTOS Init condition": [
@@ -6997,6 +7336,40 @@
           "rootId": "b4b8a660-3967-4f01-9963-c98916c10641",
           "needType": "need.pinout.signals",
           "parentId": "b4b8a660-3967-4f01-9963-c98916c10641",
+          "settings": {
+            "label_name": [],
+            "basic": {
+              "mode": "ALTERNATE",
+              "pull": "NO",
+              "enable_exti": false,
+              "output_type": "PUSHPULL",
+              "speed": "LOW"
+            }
+          }
+        },
+        {
+          "index": 13,
+          "needId": "347b1aee-a3a1-4ee5-8f01-8f2902f48714",
+          "rootId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+          "needType": "need.pinout.signals",
+          "parentId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+          "settings": {
+            "label_name": [],
+            "basic": {
+              "mode": "ALTERNATE",
+              "pull": "NO",
+              "enable_exti": false,
+              "output_type": "PUSHPULL",
+              "speed": "LOW"
+            }
+          }
+        },
+        {
+          "index": 14,
+          "needId": "3bba1603-ff76-4813-98c6-7e58b36b1ba0",
+          "rootId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
+          "needType": "need.pinout.signals",
+          "parentId": "a4f2edf0-b6c4-4fed-aa25-982d0a92690e",
           "settings": {
             "label_name": [],
             "basic": {

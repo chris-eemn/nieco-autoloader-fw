@@ -38,6 +38,7 @@ extern "C" {
 #include "mx_tim12.h"
 #include "mx_tim2.h"
 #include "mx_tim7.h"
+#include "mx_tim3.h"
 #include "mx_usart2.h"
 #include "mx_usart3.h"
 
@@ -137,6 +138,18 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM7 instance
   */
 #define mb_timer_init mx_tim7_init
+
+  /* ***********************************************************
+      TIM3: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_tim3 with HAL layer
+  *         Name of the User label:
+  *                   m3_encoder_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM3 instance
+  */
+#define m3_encoder_timer_init mx_tim3_init
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
@@ -240,6 +253,17 @@ extern "C" {
   */
 #define mb_timer_deinit mx_tim7_deinit
 
+  /* ***********************************************************
+      TIM3: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_tim3 with HAL layer
+  *         Name of the User label:
+  *                   m3_encoder_timer
+  */
+#define m3_encoder_timer_deinit mx_tim3_deinit
+
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
@@ -328,6 +352,16 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM7 instance
   */
 #define mb_timer_gethandle mx_tim7_gethandle
+
+  /* ***********************************************************
+      TIM3: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for TIM3
+  *         Name of the User label:
+  *                   m3_encoder_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM3 instance
+  */
+#define m3_encoder_timer_gethandle mx_tim3_gethandle
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance

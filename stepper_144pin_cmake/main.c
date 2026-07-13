@@ -71,6 +71,7 @@ static void       stepper_task(void *pv_parameters);
 static encoder_t *encoder_start(hal_tim_handle_t *ptim);
 
 axis_t *axis2 = NULL;
+axis_t *axis3 = NULL;
 /** @brief The application entry point. */
 int main(void) {
   if (mx_system_init() != SYSTEM_OK) {
@@ -150,6 +151,7 @@ static void stepper_task(void *pv_parameters) {
   stepper_t          *motor         = NULL;
   encoder_t          *enc           = NULL;
   encoder_t          *enc2          = NULL;
+  encoder_t          *enc3          = NULL;
   axis_t             *axis          = NULL;
   stepper_cmd_enum    pending_cmd   = STEPPER_CMD_AUTO_START;
   uint32_t            pause_ticks   = 0U;
@@ -186,23 +188,28 @@ static void stepper_task(void *pv_parameters) {
         hal_status_t      io_ret;
         hal_tim_handle_t *penc1        = NULL;
         hal_tim_handle_t *penc2        = NULL;
+        hal_tim_handle_t *penc3        = NULL;
         uint8_t           expected_out = (IO_EXPANDER_M0 | IO_EXPANDER_M1);
         // uint8_t expected_out = 0;
         uint8_t           readback_out = 0x00U;
 
         penc1 = m1_encoder_timer_init();
         penc2 = m2_encoder_timer_init();
+        penc3 = m3_encoder_timer_init();
 
-        enc = encoder_start(penc1);
-        if (enc == NULL) {
-          app_console_print("[ERROR] Encoder 1 init failed.\r\n");
-          state = ST_ERROR;
-          break;
+        hal_tim_handle_t *enc_timers[3] = {penc1, penc2, penc3};
+        encoder_t       **enc_out[3]    = {&enc, &enc2, &enc3};
+        uint8_t           enc_ok        = 1U;
+
+        for (uint8_t i = 0U; i < 3U; i++) {
+          *enc_out[i] = encoder_start(enc_timers[i]);
+          if (*enc_out[i] == NULL) {
+            app_console_print("[ERROR] Encoder %u init failed.\r\n", (unsigned)(i + 1U));
+            enc_ok = 0U;
+            break;
+          }
         }
-
-        enc2 = encoder_start(penc2);
-        if (enc2 == NULL) {
-          app_console_print("[ERROR] Encoder 2 init failed.\r\n");
+        if (enc_ok == 0U) {
           state = ST_ERROR;
           break;
         }
@@ -236,6 +243,8 @@ static void stepper_task(void *pv_parameters) {
           configASSERT(motor != NULL);
           axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           axis2 = axis_init(motor, enc2, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          axis3 = axis_init(motor, enc3, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          configASSERT(axis3 != NULL);
           configASSERT(axis != NULL);
           configASSERT(axis2 != NULL);
           stepper_ctrl_set_axis(axis);
