@@ -14,7 +14,7 @@
  * This module is intentionally "dumb" — it is a position source only.
  * Homing, stall detection, and closed-loop logic belong in axis.c.
  *
- * Typical call sequence:
+ * Typical call sequence (TIM-backed encoder):
  *   hal_tim_handle_t *htim = m1_encoder_timer_init();
  *   HAL_TIM_IC_StartChannel(htim, HAL_TIM_CHANNEL_1);
  *   HAL_TIM_IC_StartChannel(htim, HAL_TIM_CHANNEL_2);
@@ -24,6 +24,16 @@
  *   encoder_zero(enc);
  *
  *   int32_t pos = encoder_get_count(enc);
+ *
+ * Typical call sequence (LPTIM-backed encoder, e.g. m8_encoder_timer):
+ *   hal_lptim_handle_t *hlptim = m8_encoder_timer_init();
+ *   HAL_LPTIM_Start(hlptim);
+ *
+ *   encoder_t *enc = encoder_init_lptim(hlptim);
+ *   encoder_zero(enc);
+ *
+ * Once created, an encoder_t behaves identically to callers (axis.c, CLI)
+ * regardless of which timer peripheral backs it.
  */
 
 #ifndef ENCODER_H_
@@ -59,7 +69,7 @@ typedef struct encoder_s encoder_t;
  *******************************************************************************/
 
 /**
- * @brief  Allocate and initialise an encoder instance from the internal pool.
+ * @brief  Allocate and initialise a TIM-backed encoder instance from the internal pool.
  *         The timer must already be configured in encoder mode and started.
  *
  * @param  htim  Pointer to the timer handle configured in encoder mode (x4).
@@ -68,6 +78,18 @@ typedef struct encoder_s encoder_t;
  *         NULL if htim is NULL or the encoder pool is exhausted.
  */
 encoder_t *encoder_init(hal_tim_handle_t *htim);
+
+/**
+ * @brief  Allocate and initialise an LPTIM-backed encoder instance from the internal pool.
+ *         The LPTIM must already be configured in encoder mode and started
+ *         (e.g. via m8_encoder_timer_init() followed by HAL_LPTIM_Start()).
+ *
+ * @param  hlptim  Pointer to the LPTIM handle configured in encoder mode.
+ *                 Must not be NULL.
+ * @return Opaque encoder handle on success.
+ *         NULL if hlptim is NULL or the encoder pool is exhausted.
+ */
+encoder_t *encoder_init_lptim(hal_lptim_handle_t *hlptim);
 
 /**
  * @brief  Read the current accumulated encoder count since the last zero.
@@ -94,11 +116,14 @@ int32_t encoder_get_delta(encoder_t *enc);
 
 /**
  * @brief  Zero the encoder position reference.
- *         Sets the hardware counter to 0x8000 (mid-range of the 16-bit counter)
- *         to allow symmetric bidirectional travel before wrap-around, then
- *         resets the software accumulator to zero.
+ *         For a TIM-backed encoder, sets the hardware counter to 0x8000 (mid-range
+ *         of the 16-bit counter) to allow symmetric bidirectional travel before
+ *         wrap-around. For an LPTIM-backed encoder (no arbitrary SetCounter in the
+ *         HAL API), resets the hardware counter to 0 instead — position deltas are
+ *         still computed via unsigned 16-bit wraparound, so this does not affect
+ *         correctness. Either way, the software accumulator is reset to zero.
  *
- * @param  enc  Handle returned by encoder_init(). Must not be NULL.
+ * @param  enc  Handle returned by encoder_init() or encoder_init_lptim(). Must not be NULL.
  */
 void encoder_zero(encoder_t *enc);
 

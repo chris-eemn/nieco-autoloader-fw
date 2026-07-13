@@ -109,5 +109,9 @@ system_status_t mx_rcc_peripherals_clock_config(void)
     USART3
   */
 
+  /* Peripherals using PCLK3 (144 MHz):
+    LPTIM1
+  */
+
   return SYSTEM_OK;
 }

@@ -32,6 +32,7 @@ extern "C" {
 #include "mx_gpio_default.h"
 #include "mx_i2c1.h"
 #include "mx_icache.h"
+#include "mx_lptim1.h"
 #include "mx_rcc.h"
 #include "mx_tim1.h"
 #include "mx_tim17.h"
@@ -82,6 +83,18 @@ extern "C" {
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_icache_init
     ************************************************************* */
+
+  /* ***********************************************************
+      LPTIM1: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_lptim1 with HAL layer
+  *         Name of the User label:
+  *                   m8_encoder_timer
+  * @retval hal_lptim_handle_t Pointer on the handle on the LPTIM1 instance
+  */
+#define m8_encoder_timer_init mx_lptim1_init
 
   /* *************************************************************
     RCC: No software label has been defined for this peripheral instance
@@ -256,6 +269,17 @@ extern "C" {
     ************************************************************* */
 
   /* ***********************************************************
+      LPTIM1: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_lptim1 with HAL layer
+  *         Name of the User label:
+  *                   m8_encoder_timer
+  */
+#define m8_encoder_timer_deinit mx_lptim1_deinit
+
+  /* ***********************************************************
       TIM1: aliases for De-Initialization functions
     *********************************************************** */
 
@@ -402,6 +426,16 @@ extern "C" {
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_icache_gethandle
     ************************************************************* */
+
+  /* ***********************************************************
+      LPTIM1: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for LPTIM1
+  *         Name of the User label:
+  *                   m8_encoder_timer
+  * @retval hal_lptim_handle_t Pointer on the handle on the LPTIM1 instance
+  */
+#define m8_encoder_timer_gethandle mx_lptim1_gethandle
 
   /* ***********************************************************
       TIM1: aliases for get handle functions

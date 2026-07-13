@@ -398,6 +398,11 @@ static void handle_stall_tick(axis_t *axis, int32_t delta) {
    * accommodates adding it here without reworking the supervisor loop. */
   if (delta == 0) {
     axis->stall_count++;
+    if (axis->stall_count % 10 == 0U) {
+      app_console_print("[AXIS] Warning: potential stall detected . "
+            "Stall count = %lu/%lu, Encoder ticks = %ld\r\n",
+            axis->stall_count, axis->stall_samples, (long)encoder_get_count(axis->encoder));
+    }
   }
   else {
     axis->stall_count = 0U;

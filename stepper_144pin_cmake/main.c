@@ -69,6 +69,7 @@ typedef enum {
 /* Private functions prototype -----------------------------------------------*/
 static void       stepper_task(void *pv_parameters);
 static encoder_t *encoder_start(hal_tim_handle_t *ptim);
+static encoder_t *lptim_encoder_start(hal_lptim_handle_t *plptim);
 
 axis_t *axis2 = NULL;
 axis_t *axis3 = NULL;
@@ -76,6 +77,7 @@ axis_t *axis4 = NULL;
 axis_t *axis5 = NULL;
 axis_t *axis6 = NULL;
 axis_t *axis7 = NULL;
+axis_t *axis8 = NULL;
 /** @brief The application entry point. */
 int main(void) {
   if (mx_system_init() != SYSTEM_OK) {
@@ -137,6 +139,32 @@ static encoder_t *encoder_start(hal_tim_handle_t *ptim) {
 }
 
 /**
+ * @brief Start an LPTIM-backed encoder timer and initialise the encoder instance.
+ *
+ *        LPTIM encoder mode is started differently than TIM encoder mode: it has
+ *        no per-channel HAL_TIM_IC_StartChannel() equivalent — a single HAL_LPTIM_Start()
+ *        enables both quadrature inputs configured via HAL_LPTIM_SetConfigEncoder()
+ *        (done in m8_encoder_timer_init()).
+ *
+ * @param plptim  LPTIM handle already configured for encoder mode.
+ * @return        Pointer to the zeroed encoder instance, or NULL on any failure.
+ */
+static encoder_t *lptim_encoder_start(hal_lptim_handle_t *plptim) {
+  if (plptim == NULL) {
+    return NULL;
+  }
+  if (HAL_LPTIM_Start(plptim) != HAL_OK) {
+    return NULL;
+  }
+  encoder_t *enc = encoder_init_lptim(plptim);
+  if (enc == NULL) {
+    return NULL;
+  }
+  encoder_zero(enc);
+  return enc;
+}
+
+/**
  * @brief Stepper task state machine.
  *
  *  Sits idle after init, waiting for CLI commands routed via stepper_ctrl.
@@ -160,6 +188,7 @@ static void stepper_task(void *pv_parameters) {
   encoder_t          *enc5          = NULL;
   encoder_t          *enc6          = NULL;
   encoder_t          *enc7          = NULL;
+  encoder_t          *enc8          = NULL;
   axis_t             *axis          = NULL;
   stepper_cmd_enum    pending_cmd   = STEPPER_CMD_AUTO_START;
   uint32_t            pause_ticks   = 0U;
@@ -178,7 +207,7 @@ static void stepper_task(void *pv_parameters) {
   static const axis_config_t k_m1_axis_cfg = {
     .supervisor_period_ms = 25U,
     .stationary_window_ms = 50U,
-    .stall_window_ms      = 150U,
+    .stall_window_ms      = 1050U,
     .backoff_steps        = 800U,
     .home_direction       = STEPPER_DIR_CW,
     .home_rpm             = 10U,
@@ -201,6 +230,7 @@ static void stepper_task(void *pv_parameters) {
         hal_tim_handle_t *penc5        = NULL;
         hal_tim_handle_t *penc6        = NULL;
         hal_tim_handle_t *penc7        = NULL;
+        hal_lptim_handle_t *penc8        = NULL;
         uint8_t           expected_out = (IO_EXPANDER_M0 | IO_EXPANDER_M1);
         // uint8_t expected_out = 0;
         uint8_t           readback_out = 0x00U;
@@ -212,6 +242,7 @@ static void stepper_task(void *pv_parameters) {
         penc5 = m5_encoder_timer_init();
         penc6 = m6_encoder_timer_init();
         penc7 = m7_encoder_timer_init();
+        penc8 = m8_encoder_timer_init();
 
         hal_tim_handle_t *enc_timers[7] = {penc1, penc2, penc3, penc4, penc5, penc6, penc7};
         encoder_t       **enc_out[7]    = {&enc, &enc2, &enc3, &enc4, &enc5, &enc6, &enc7};
@@ -226,6 +257,15 @@ static void stepper_task(void *pv_parameters) {
           }
         }
         if (enc_ok == 0U) {
+          state = ST_ERROR;
+          break;
+        }
+
+        /* Encoder 8 is LPTIM-backed (different HAL API than TIM) and so is started
+         * separately rather than folded into the enc_timers[] loop above. */
+        enc8 = lptim_encoder_start(penc8);
+        if (enc8 == NULL) {
+          app_console_print("[ERROR] Encoder 8 init failed.\r\n");
           state = ST_ERROR;
           break;
         }
@@ -258,19 +298,21 @@ static void stepper_task(void *pv_parameters) {
           motor = stepper_init(&k_m1_pins);
           configASSERT(motor != NULL);
           axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          axis2 = axis_init(motor, enc2, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          axis3 = axis_init(motor, enc3, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          axis4 = axis_init(motor, enc4, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          axis5 = axis_init(motor, enc5, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          axis6 = axis_init(motor, enc6, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          axis7 = axis_init(motor, enc7, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          configASSERT(axis3 != NULL);
+          // axis2 = axis_init(motor, enc2, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          // axis3 = axis_init(motor, enc3, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          // axis4 = axis_init(motor, enc4, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          // axis5 = axis_init(motor, enc5, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          // axis6 = axis_init(motor, enc6, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          // axis7 = axis_init(motor, enc7, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          axis8 = axis_init(motor, enc8, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          // configASSERT(axis3 != NULL);
           configASSERT(axis != NULL);
-          configASSERT(axis2 != NULL);
-          configASSERT(axis4 != NULL);
-          configASSERT(axis5 != NULL);
-          configASSERT(axis6 != NULL);
-          configASSERT(axis7 != NULL);
+          // configASSERT(axis2 != NULL);
+          // configASSERT(axis4 != NULL);
+          // configASSERT(axis5 != NULL);
+          // configASSERT(axis6 != NULL);
+          // configASSERT(axis7 != NULL);
+          configASSERT(axis8 != NULL);
           stepper_ctrl_set_axis(axis);
           state = ST_IDLE;
         }

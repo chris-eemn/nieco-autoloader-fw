@@ -50,6 +50,7 @@ extern axis_t *axis4;
 extern axis_t *axis5;
 extern axis_t *axis6;
 extern axis_t *axis7;
+extern axis_t *axis8;
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -192,6 +193,7 @@ void stepper_cli_get_handler(char *param) {
       app_console_print("[STEPPER] encoder5 count = %ld\r\n", axis_get_encoder_count(axis5));
       app_console_print("[STEPPER] encoder6 count = %ld\r\n", axis_get_encoder_count(axis6));
       app_console_print("[STEPPER] encoder7 count = %ld\r\n", axis_get_encoder_count(axis7));
+      app_console_print("[STEPPER] encoder8 count = %ld\r\n", axis_get_encoder_count(axis8));
       break;
     }
 
