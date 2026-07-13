@@ -39,6 +39,8 @@ extern "C" {
 #include "mx_tim2.h"
 #include "mx_tim7.h"
 #include "mx_tim3.h"
+#include "mx_tim4.h"
+#include "mx_tim5.h"
 #include "mx_usart2.h"
 #include "mx_usart3.h"
 
@@ -150,6 +152,30 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM3 instance
   */
 #define m3_encoder_timer_init mx_tim3_init
+
+  /* ***********************************************************
+      TIM4: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_tim4 with HAL layer
+  *         Name of the User label:
+  *                   m4_encoder_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM4 instance
+  */
+#define m4_encoder_timer_init mx_tim4_init
+
+  /* ***********************************************************
+      TIM5: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_tim5 with HAL layer
+  *         Name of the User label:
+  *                   m5_encoder_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM5 instance
+  */
+#define m5_encoder_timer_init mx_tim5_init
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
@@ -264,6 +290,28 @@ extern "C" {
   */
 #define m3_encoder_timer_deinit mx_tim3_deinit
 
+  /* ***********************************************************
+      TIM4: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_tim4 with HAL layer
+  *         Name of the User label:
+  *                   m4_encoder_timer
+  */
+#define m4_encoder_timer_deinit mx_tim4_deinit
+
+  /* ***********************************************************
+      TIM5: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_tim5 with HAL layer
+  *         Name of the User label:
+  *                   m5_encoder_timer
+  */
+#define m5_encoder_timer_deinit mx_tim5_deinit
+
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
@@ -362,6 +410,26 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM3 instance
   */
 #define m3_encoder_timer_gethandle mx_tim3_gethandle
+
+  /* ***********************************************************
+      TIM4: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for TIM4
+  *         Name of the User label:
+  *                   m4_encoder_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM4 instance
+  */
+#define m4_encoder_timer_gethandle mx_tim4_gethandle
+
+  /* ***********************************************************
+      TIM5: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for TIM5
+  *         Name of the User label:
+  *                   m5_encoder_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM5 instance
+  */
+#define m5_encoder_timer_gethandle mx_tim5_gethandle
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
