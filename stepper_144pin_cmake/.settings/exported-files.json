@@ -1,7 +1,7 @@
 {
   "disclaimer": "Do not modify this file as it is used by STM32CubeMX2 to determine what and how to update your project with new configuration",
   "version": "1.0.0",
-  "timestamp": "2026-07-13T19:18:41.304Z",
+  "timestamp": "2026-07-13T19:31:44.197Z",
   "files": [
     {
       "fileGroup": "project_file",
@@ -247,7 +247,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "7f7ab4d680a24dda1fedc08ada2df50477cc87334a8fced2112cfc03ce6c1acd"
+        "digest": "ce95e31ec2a32212313cea7024dd36d48942f6978e92507b0141b6239977ffd3"
       },
       "file": "generated/hal/mx_hal_def.h"
     },
@@ -311,7 +311,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "fda6318a41c74faed45dc97fe69e79a8ba5107f0b343f67ba7604d77418570d2"
+        "digest": "8de949307a16c78b7d7d1770a1718298be34af463b92ae104731ce92eac7affe"
       },
       "file": "generated/hal/mx_system.c"
     },
@@ -354,6 +354,22 @@
         "digest": "f73c081b0514b41ceaf77954783d55e226a44d2a091c66793554dd682ce196fb"
       },
       "file": "generated/hal/mx_tim12.h"
+    },
+    {
+      "fileGroup": "generated",
+      "checksum": {
+        "algo": "sha256",
+        "digest": "c882f6c34df82a6861cc82d427d8bb3484307aef97cacf8ae2c47feaf5a8d20d"
+      },
+      "file": "generated/hal/mx_tim15.c"
+    },
+    {
+      "fileGroup": "generated",
+      "checksum": {
+        "algo": "sha256",
+        "digest": "746317b08124ddfb3271cc3fb0c536036f99eea88cbe7b426b5652ba05e4605a"
+      },
+      "file": "generated/hal/mx_tim15.h"
     },
     {
       "fileGroup": "generated",
@@ -527,7 +543,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "6699bca4da1b3524797eff1b901af60cd3ce4bd886f8d8d85016cae4cc210d5d"
+        "digest": "08aa01f4825a5dac8b62b168f156e619f97b2d03fc3da60aa4075ca3b79d22fa"
       },
       "file": "generated/hal/STM32_HAL_Driver_codegen.cmake"
     },
@@ -535,7 +551,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "a7460e1553779a5da69aeabc1944e3611013adbd6fa046309411cc0a75966a72"
+        "digest": "41da94c5b50510c93131315eb88fd330e4c14ca3967e0de6a634564d794fce31"
       },
       "file": "generated/hal/STM32_HAL_Driver_codegen.gpdsc"
     },

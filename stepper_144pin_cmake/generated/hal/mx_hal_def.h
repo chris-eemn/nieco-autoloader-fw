@@ -42,6 +42,7 @@ extern "C" {
 #include "mx_tim4.h"
 #include "mx_tim5.h"
 #include "mx_tim8.h"
+#include "mx_tim15.h"
 #include "mx_usart2.h"
 #include "mx_usart3.h"
 
@@ -190,6 +191,18 @@ extern "C" {
   */
 #define m6_encoder_timer_init mx_tim8_init
 
+  /* ***********************************************************
+      TIM15: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_tim15 with HAL layer
+  *         Name of the User label:
+  *                   m7_encoder_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM15 instance
+  */
+#define m7_encoder_timer_init mx_tim15_init
+
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
@@ -336,6 +349,17 @@ extern "C" {
   */
 #define m6_encoder_timer_deinit mx_tim8_deinit
 
+  /* ***********************************************************
+      TIM15: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_tim15 with HAL layer
+  *         Name of the User label:
+  *                   m7_encoder_timer
+  */
+#define m7_encoder_timer_deinit mx_tim15_deinit
+
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
@@ -464,6 +488,16 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM8 instance
   */
 #define m6_encoder_timer_gethandle mx_tim8_gethandle
+
+  /* ***********************************************************
+      TIM15: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for TIM15
+  *         Name of the User label:
+  *                   m7_encoder_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM15 instance
+  */
+#define m7_encoder_timer_gethandle mx_tim15_gethandle
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
