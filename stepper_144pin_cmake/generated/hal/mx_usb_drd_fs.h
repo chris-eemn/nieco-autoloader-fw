@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
-  * @file           : mx_lptim1.h
-  * @brief          : Header for mx_lptim1.c file.
+  * @file           : mx_usb_drd_fs.h
+  * @brief          : Header for mx_usb_drd_fs.c file.
   ******************************************************************************
   * @attention
   *
@@ -16,8 +16,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef MX_LPTIM1_H
-#define MX_LPTIM1_H
+#ifndef MX_USB_DRD_FS_H
+#define MX_USB_DRD_FS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,57 +25,51 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32_hal.h"
+#include "mx_def.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-/** Primary aliases for LPTIM1_CH2 pin */
-#define PD10_PORT                             HAL_GPIOD
-#define PD10_PIN                              HAL_GPIO_PIN_10
+/** Primary aliases for USB_DM pin */
+#define USB_FS_N_PORT                         HAL_GPIOA
+#define USB_FS_N_PIN                          HAL_GPIO_PIN_11
 
-/** Primary aliases for LPTIM1_IN1 pin */
-#define PG12_PORT                             HAL_GPIOG
-#define PG12_PIN                              HAL_GPIO_PIN_12
-
-/** Primary aliases for LPTIM1_IN2 pin */
-#define PE1_PORT                              HAL_GPIOE
-#define PE1_PIN                               HAL_GPIO_PIN_1
-
-/** Primary aliases for LPTIM1_CH1 pin */
-#define PG13_PORT                             HAL_GPIOG
-#define PG13_PIN                              HAL_GPIO_PIN_13
-
-#define M8_ENCODER_TIMER_IRQN       EXTI14_IRQn
-#define M8_ENCODER_TIMER_IRQHANDLER EXTI14_IRQHandler
-#define MYLPTIM_1_IRQN       M8_ENCODER_TIMER_IRQN
-#define MYLPTIM_1_IRQHANDLER M8_ENCODER_TIMER_IRQHANDLER
-/* Exported macros -----------------------------------------------------------*/
+/** Primary aliases for USB_DP pin */
+#define USB_FS_P_PORT                         HAL_GPIOA
+#define USB_FS_P_PIN                          HAL_GPIO_PIN_12
+/* Exported macro ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-
 /******************************************************************************/
-/* Exported functions for SW instance in HAL layer */
+/* Exported functions for USB_DRD_FS HOST (HCD) in HAL layer */
 /******************************************************************************/
 /**
-  * @brief mx_lptim1 init function
+  * @brief mx_usb_drd_fs_host init function
   * This function configures the hardware resources used in this example
   * @retval pointer to handle or NULL in case of failure
   */
-hal_lptim_handle_t *mx_lptim1_init(void);
+hal_hcd_handle_t *mx_usb_drd_fs_host_init(void);
 
 /**
-  * @brief  De-initialize mx_lptim1 instance and return it.
+  * @brief  De-initialize usb_drd_fs instance and return it.
   */
-void mx_lptim1_deinit(void);
+void mx_usb_drd_fs_host_deinit(void);
 
 /**
-  * @brief  Get the mx_lptim1 object.
-  * @retval Pointer on the mx_lptim1 Handle
+  * @brief  Get the USB_DRD_FS object.
+  * @retval Pointer on the USB_DRD_FS Handle
   */
-hal_lptim_handle_t *mx_lptim1_gethandle(void);
+hal_hcd_handle_t *mx_usb_drd_fs_host_gethandle(void);
+
+/**
+  * @brief Handling USB event interrupt request
+  * @param None
+  * @retval None
+  */
+void USB_DRD_FS_IRQHandler(void);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* MX_LPTIM1_H */
+#endif /* MX_USB_DRD_FS_H */

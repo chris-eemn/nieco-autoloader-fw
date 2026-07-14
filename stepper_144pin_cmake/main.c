@@ -181,6 +181,7 @@ static void stepper_task(void *pv_parameters) {
   task_state_enum     state         = ST_INIT;
   hal_i2c_handle_t   *hi2c          = mx_i2c1_i2c_gethandle();
   stepper_t          *motor         = NULL;
+  stepper_t          *motor2        = NULL;
   encoder_t          *enc           = NULL;
   encoder_t          *enc2          = NULL;
   encoder_t          *enc3          = NULL;
@@ -204,10 +205,18 @@ static void stepper_task(void *pv_parameters) {
     .nfault = { M1_NFAULT_PORT, M1_NFAULT_PIN },
   };
 
+  static const stepper_gpio_config_t k_m2_pins = {
+    .step   = { M2_STEP_PORT,   M2_STEP_PIN   },
+    .dir    = { M2_DIR_PORT,    M2_DIR_PIN    },
+    .en     = { M2_EN_PORT,     M2_EN_PIN     },
+    .nslp   = { M2_NSLP_PORT,  M2_NSLP_PIN   },
+    .nfault = { M2_NFAULT_PORT, M2_NFAULT_PIN },
+  };
+
   static const axis_config_t k_m1_axis_cfg = {
     .supervisor_period_ms = 25U,
     .stationary_window_ms = 50U,
-    .stall_window_ms      = 1050U,
+    .stall_window_ms      = 100U,
     .backoff_steps        = 800U,
     .home_direction       = STEPPER_DIR_CW,
     .home_rpm             = 10U,
@@ -296,23 +305,20 @@ static void stepper_task(void *pv_parameters) {
           app_console_print("PCA9538A OK: 0x%02X\r\n", readback_out);
           stepper_module_init(step_timer_gethandle());
           motor = stepper_init(&k_m1_pins);
+          motor2 = stepper_init(&k_m2_pins);
           configASSERT(motor != NULL);
+          configASSERT(motor2 != NULL);
           axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          // axis2 = axis_init(motor, enc2, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
+          axis2 = axis_init(motor2, enc2, m2_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis3 = axis_init(motor, enc3, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis4 = axis_init(motor, enc4, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis5 = axis_init(motor, enc5, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis6 = axis_init(motor, enc6, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis7 = axis_init(motor, enc7, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          axis8 = axis_init(motor, enc8, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
-          // configASSERT(axis3 != NULL);
+          // axis8 = axis_init(motor, enc8, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           configASSERT(axis != NULL);
-          // configASSERT(axis2 != NULL);
-          // configASSERT(axis4 != NULL);
-          // configASSERT(axis5 != NULL);
-          // configASSERT(axis6 != NULL);
-          // configASSERT(axis7 != NULL);
-          configASSERT(axis8 != NULL);
+          configASSERT(axis2 != NULL);
+
           stepper_ctrl_set_axis(axis);
           state = ST_IDLE;
         }

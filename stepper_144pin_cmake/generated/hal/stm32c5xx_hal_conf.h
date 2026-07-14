@@ -338,7 +338,7 @@ extern "C" {
   * @{
   */
 /* ########################## HAL_HCD Config #################################### */
-#define USE_HAL_HCD_MODULE                      0U
+#define USE_HAL_HCD_MODULE                      1U
 #define USE_HAL_HCD_REGISTER_CALLBACKS          0U
 #define USE_HAL_HCD_USER_DATA                   0U
 #define USE_HAL_HCD_GET_LAST_ERRORS             0U

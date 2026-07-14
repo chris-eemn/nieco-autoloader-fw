@@ -30,6 +30,7 @@ extern "C" {
 #include "mx_cortex_mpu.h"
 #include "mx_cortex_nvic.h"
 #include "mx_gpio_default.h"
+#include "mx_usb_drd_fs.h"
 #include "mx_i2c1.h"
 #include "mx_icache.h"
 #include "mx_lptim1.h"
@@ -70,6 +71,12 @@ extern "C" {
     gpio_default: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_gpio_default_init
+    ************************************************************* */
+
+  /* *************************************************************
+    USB_DRD_FS_HOST: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_usb_drd_fs_host_init
     ************************************************************* */
 
   /* *************************************************************
@@ -257,6 +264,12 @@ extern "C" {
     ************************************************************* */
 
   /* *************************************************************
+    USB_DRD_FS_HOST: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_usb_drd_fs_host_deinit
+    ************************************************************* */
+
+  /* *************************************************************
     I2C1: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_i2c1_i2c_deinit
@@ -414,6 +427,18 @@ extern "C" {
   * @retval hal_exti_handle_t Pointer on the handle on the EXTI6 used by gpio_default instance
   */
 #define m1_fault_exti_gethandle mx_gpio_default_exti6_gethandle
+
+/**
+  * @brief  Get the EXTI handle for EXTI14 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI14 used by gpio_default instance
+  */
+#define m2_fault_exti_gethandle mx_gpio_default_exti14_gethandle
+
+  /* *************************************************************
+    USB_DRD_FS_HOST: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_usb_drd_fs_host_gethandle
+    ************************************************************* */
 
   /* *************************************************************
     I2C1: No software label has been defined for this peripheral instance

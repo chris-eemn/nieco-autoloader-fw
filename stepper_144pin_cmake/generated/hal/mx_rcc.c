@@ -113,5 +113,13 @@ system_status_t mx_rcc_peripherals_clock_config(void)
     LPTIM1
   */
 
+  /* Peripherals using HSIDIV3 (48 MHz):
+    USB_DRD_FS
+  */
+  if (HAL_RCC_HSIDIV3_Enable() != HAL_OK)
+  {
+    return SYSTEM_CLOCK_ERROR;
+  }
+
   return SYSTEM_OK;
 }

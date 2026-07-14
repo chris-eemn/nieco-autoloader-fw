@@ -24,6 +24,7 @@
 /* Private functions ---------------------------------------------------------*/
 /* Exported variables by reference -------------------------------------------*/
 static hal_exti_handle_t hEXTI6;
+static hal_exti_handle_t hEXTI14;
 
 /******************************************************************************/
 /* Exported functions for GPIO in HAL layer                                   */
@@ -36,7 +37,11 @@ system_status_t mx_gpio_default_init(void)
 
   HAL_RCC_GPIOB_EnableClock();
 
+  HAL_RCC_GPIOC_EnableClock();
+
   HAL_RCC_GPIOD_EnableClock();
+
+  HAL_RCC_GPIOF_EnableClock();
 
   /*
     GPIO pin labels :
@@ -65,6 +70,23 @@ system_status_t mx_gpio_default_init(void)
   gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.init_state      = PB5_INIT_STATE;
   if (HAL_GPIO_Init(PB5_PORT, PB5_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /*
+    GPIO pin labels :
+    PC7   ---------> PC7, M2_EN, M2_EN
+    PC8   ---------> PC8, M2_DIR, M2_DIR
+    PC9   ---------> PC9, M2_STEP, M2_STEP
+    */
+  /* Configure PC7, PC8, PC9 GPIO pins in output mode */
+  gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
+  gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
+  gpio_config.pull            = HAL_GPIO_PULL_NO;
+  gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
+  gpio_config.init_state      = HAL_GPIO_PIN_RESET;
+  if (HAL_GPIO_Init(HAL_GPIOC, PC7_PIN | PC8_PIN | PC9_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -113,6 +135,45 @@ system_status_t mx_gpio_default_init(void)
   HAL_CORTEX_NVIC_SetPriority(EXTI6_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
   HAL_CORTEX_NVIC_EnableIRQ(EXTI6_IRQn);
 
+  /*
+    GPIO pin labels :
+    PF14  ---------> PF14, M2_NFAULT, M2_NFAULT
+    */
+  /* Configure PF14 GPIO pin in input mode */
+  gpio_config.mode            = HAL_GPIO_MODE_INPUT;
+  gpio_config.pull            = HAL_GPIO_PULL_UP;
+  if (HAL_GPIO_Init(PF14_PORT, PF14_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /* Initialize the EXTI for line 14 */
+  HAL_EXTI_Init(&hEXTI14, HAL_EXTI_LINE_14);
+
+  /* Set the trigger as FALLING for the GPIOF */
+  exti_config.trigger   = HAL_EXTI_TRIGGER_FALLING;
+  exti_config.gpio_port = HAL_EXTI_GPIOF;
+  HAL_EXTI_SetConfig(&hEXTI14, &exti_config);
+
+  /* Set line 14 Interrupt priority */
+  HAL_CORTEX_NVIC_SetPriority(EXTI14_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_0, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_EnableIRQ(EXTI14_IRQn);
+
+  /*
+    GPIO pin labels :
+    PF15  ---------> PF15, M2_NSLP, M2_NSLP
+    */
+  /* Configure PF15 GPIO pin in output mode */
+  gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
+  gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
+  gpio_config.pull            = HAL_GPIO_PULL_NO;
+  gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
+  gpio_config.init_state      = PF15_INIT_STATE;
+  if (HAL_GPIO_Init(PF15_PORT, PF15_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
   return SYSTEM_OK;
 }
 
@@ -124,14 +185,26 @@ system_status_t mx_gpio_default_deinit(void)
   /* set line 6 Interrupt priority */
   HAL_CORTEX_NVIC_DisableIRQ(EXTI6_IRQn);
 
+  /* De-initialize the EXTI for GPIOF line14 */
+  HAL_EXTI_DeInit(&hEXTI14);
+
+  /* set line 14 Interrupt priority */
+  HAL_CORTEX_NVIC_DisableIRQ(EXTI14_IRQn);
+
   /* De-initialize pins of GPIOA port */
   HAL_GPIO_DeInit(HAL_GPIOA, PA0_PIN | PA10_PIN);
 
   /* De-initialize pins of GPIOB port */
   HAL_GPIO_DeInit(PB5_PORT, PB5_PIN);
 
+  /* De-initialize pins of GPIOC port */
+  HAL_GPIO_DeInit(HAL_GPIOC, PC7_PIN | PC8_PIN | PC9_PIN);
+
   /* De-initialize pins of GPIOD port */
   HAL_GPIO_DeInit(HAL_GPIOD, PD5_PIN | PD6_PIN);
+
+  /* De-initialize pins of GPIOF port */
+  HAL_GPIO_DeInit(HAL_GPIOF, PF14_PIN | PF15_PIN);
 
   return SYSTEM_OK;
 }
@@ -141,10 +214,23 @@ hal_exti_handle_t *mx_gpio_default_exti6_gethandle(void)
   return &hEXTI6;
 }
 
+hal_exti_handle_t *mx_gpio_default_exti14_gethandle(void)
+{
+  return &hEXTI14;
+}
+
 /******************************************************************************/
 /*                            EXTI Line6 interrupt                            */
 /******************************************************************************/
 void EXTI6_IRQHandler(void)
 {
   HAL_EXTI_IRQHandler(&hEXTI6);
+}
+
+/******************************************************************************/
+/*                           EXTI Line14 interrupt                            */
+/******************************************************************************/
+void EXTI14_IRQHandler(void)
+{
+  HAL_EXTI_IRQHandler(&hEXTI14);
 }
