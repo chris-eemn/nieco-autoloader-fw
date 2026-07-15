@@ -37,6 +37,9 @@
 /** Pass to stepper_ctrl_recv_cmd() to block indefinitely. */
 #define STEPPER_CTRL_WAIT_FOREVER  UINT32_MAX
 
+/** Maximum number of independently addressable motors (1-based motor_num range). */
+#define STEPPER_CTRL_MAX_MOTORS    8U
+
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -57,21 +60,24 @@ typedef enum {
 void stepper_ctrl_init(void);
 
 /**
- * @brief Bind an axis handle to this control instance.
+ * @brief Bind an axis handle to a motor slot on this control instance.
  *        Call after axis_init() returns a valid handle, before any move commands.
- *        Replaces the old stepper_ctrl_set_motor() — stop requests now go
- *        through axis_stop() so the axis supervisor stays consistent.
- * @param axis Handle returned by axis_init(). Must not be NULL.
+ *        Stop requests go through axis_stop() so the axis supervisor stays consistent.
+ * @param motor_num 1-based motor number (1..STEPPER_CTRL_MAX_MOTORS). Out-of-range
+ *                  values are ignored.
+ * @param axis      Handle returned by axis_init(). Must not be NULL.
  */
-void stepper_ctrl_set_axis(axis_t *axis);
+void stepper_ctrl_set_axis(uint8_t motor_num, axis_t *axis);
 
 /**
- * @brief Return the currently bound axis handle.
- *        Returns NULL if stepper_ctrl_set_axis() has not been called yet.
+ * @brief Return the axis handle bound to a motor slot.
+ *        Returns NULL if motor_num is out of range or no axis has been bound
+ *        to that slot yet via stepper_ctrl_set_axis().
  *        Callers (e.g. CLI handlers) use this to invoke axis API directly
  *        without coupling to the stepper task's internal state.
+ * @param motor_num 1-based motor number (1..STEPPER_CTRL_MAX_MOTORS).
  */
-axis_t *stepper_ctrl_get_axis(void);
+axis_t *stepper_ctrl_get_axis(uint8_t motor_num);
 
 /**
  * @brief Set the target RPM used for the next move.
@@ -113,7 +119,7 @@ uint8_t stepper_ctrl_recv_cmd(stepper_cmd_enum *cmd_out, uint32_t timeout_ms);
 
 /**
  * @brief Request an immediate stop. Safe to call from any task context.
- *        Sets the stop flag and halts the motor via axis_stop().
+ *        Sets the stop flag and halts every bound axis via axis_stop().
  */
 void stepper_ctrl_request_stop(void);
 

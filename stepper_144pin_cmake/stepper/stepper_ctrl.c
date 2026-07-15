@@ -27,7 +27,7 @@ static volatile uint32_t s_steps          = STEPPER_CTRL_DEFAULT_STEPS;
 static volatile uint8_t  s_stop_requested = 0U;
 static volatile uint8_t  s_running        = 0U;
 static QueueHandle_t     s_cmd_q          = NULL;
-static axis_t           *s_axis           = NULL;
+static axis_t           *s_axes[STEPPER_CTRL_MAX_MOTORS] = { NULL };
 
 /*******************************************************************************
  * Public Function Definitions
@@ -38,12 +38,20 @@ void stepper_ctrl_init(void) {
   configASSERT(s_cmd_q != NULL);
 }
 
-void stepper_ctrl_set_axis(axis_t *axis) {
-  s_axis = axis;
+void stepper_ctrl_set_axis(uint8_t motor_num, axis_t *axis) {
+  if ((motor_num < 1U) || (motor_num > STEPPER_CTRL_MAX_MOTORS)) {
+    return;
+  }
+
+  s_axes[motor_num - 1U] = axis;
 }
 
-axis_t *stepper_ctrl_get_axis(void) {
-  return s_axis;
+axis_t *stepper_ctrl_get_axis(uint8_t motor_num) {
+  if ((motor_num < 1U) || (motor_num > STEPPER_CTRL_MAX_MOTORS)) {
+    return NULL;
+  }
+
+  return s_axes[motor_num - 1U];
 }
 
 void stepper_ctrl_set_rpm(uint32_t rpm) {
@@ -83,8 +91,10 @@ void stepper_ctrl_request_stop(void) {
   s_running        = 0U;
   s_stop_requested = 1U;
 
-  if (s_axis != NULL) {
-    axis_stop(s_axis);
+  for (uint8_t i = 0U; i < STEPPER_CTRL_MAX_MOTORS; i++) {
+    if (s_axes[i] != NULL) {
+      axis_stop(s_axes[i]);
+    }
   }
 }
 

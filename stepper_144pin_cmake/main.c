@@ -319,7 +319,8 @@ static void stepper_task(void *pv_parameters) {
           configASSERT(axis != NULL);
           configASSERT(axis2 != NULL);
 
-          stepper_ctrl_set_axis(axis);
+          stepper_ctrl_set_axis(1U, axis);
+          stepper_ctrl_set_axis(2U, axis2);
           state = ST_IDLE;
         }
         else {
@@ -333,7 +334,7 @@ static void stepper_task(void *pv_parameters) {
         configASSERT(motor != NULL);
         axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
         configASSERT(axis != NULL);
-        stepper_ctrl_set_axis(axis);
+        stepper_ctrl_set_axis(1U, axis);
         state = ST_IDLE;
         #endif
         break;
