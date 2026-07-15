@@ -182,6 +182,7 @@ static void stepper_task(void *pv_parameters) {
   hal_i2c_handle_t   *hi2c          = mx_i2c1_i2c_gethandle();
   stepper_t          *motor         = NULL;
   stepper_t          *motor2        = NULL;
+  stepper_t          *motor3        = NULL;
   encoder_t          *enc           = NULL;
   encoder_t          *enc2          = NULL;
   encoder_t          *enc3          = NULL;
@@ -213,10 +214,18 @@ static void stepper_task(void *pv_parameters) {
     .nfault = { M2_NFAULT_PORT, M2_NFAULT_PIN },
   };
 
+  static const stepper_gpio_config_t k_m3_pins = {
+    .step   = { M3_STEP_PORT,   M3_STEP_PIN   },
+    .dir    = { M3_DIR_PORT,    M3_DIR_PIN    },
+    .en     = { M3_EN_PORT,     M3_EN_PIN     },
+    .nslp   = { M3_NSLP_PORT,  M3_NSLP_PIN   },
+    .nfault = { M3_NFAULT_PORT, M3_NFAULT_PIN },
+  };
+
   static const axis_config_t k_m1_axis_cfg = {
     .supervisor_period_ms = 25U,
     .stationary_window_ms = 50U,
-    .stall_window_ms      = 100U,
+    .stall_window_ms      = 2000U,
     .backoff_steps        = 800U,
     .home_direction       = STEPPER_DIR_CW,
     .home_rpm             = 10U,
@@ -306,10 +315,13 @@ static void stepper_task(void *pv_parameters) {
           stepper_module_init(step_timer_gethandle());
           motor = stepper_init(&k_m1_pins);
           motor2 = stepper_init(&k_m2_pins);
+          motor3 = stepper_init(&k_m3_pins);
           configASSERT(motor != NULL);
           configASSERT(motor2 != NULL);
+          configASSERT(motor3 != NULL);
           axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           axis2 = axis_init(motor2, enc2, m2_fault_exti_gethandle(), &k_m1_axis_cfg);
+          axis3 = axis_init(motor3, enc3, m3_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis3 = axis_init(motor, enc3, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis4 = axis_init(motor, enc4, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis5 = axis_init(motor, enc5, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
@@ -318,9 +330,11 @@ static void stepper_task(void *pv_parameters) {
           // axis8 = axis_init(motor, enc8, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           configASSERT(axis != NULL);
           configASSERT(axis2 != NULL);
+          configASSERT(axis3 != NULL);
 
           stepper_ctrl_set_axis(1U, axis);
           stepper_ctrl_set_axis(2U, axis2);
+          stepper_ctrl_set_axis(3U, axis3);
           state = ST_IDLE;
         }
         else {

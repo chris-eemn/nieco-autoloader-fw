@@ -1841,25 +1841,6 @@
       },
       {
         "pin": {
-          "name": "PD8",
-          "position": "77",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 8,
-          "port": "D"
-        },
-        "signal": {
-          "instance": "GPIOD",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true
-      },
-      {
-        "pin": {
           "name": "PD0",
           "position": "114",
           "type": "gpio",
@@ -1973,6 +1954,27 @@
           "ioType": "I/O",
           "ioStructure": "FT",
           "index": 0,
+          "port": "B"
+        },
+        "signal": {
+          "instance": "GPIOB",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PB8",
+          "position": "139",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 8,
           "port": "B"
         },
         "signal": {
@@ -3169,12 +3171,6 @@
       ]
     },
     {
-      "position": "139",
-      "labels": [
-        "PB8"
-      ]
-    },
-    {
       "position": "48",
       "labels": [
         "PB2"
@@ -3474,13 +3470,6 @@
       ]
     },
     {
-      "position": "77",
-      "labels": [
-        "PD8",
-        "M3_STEP"
-      ]
-    },
-    {
       "position": "114",
       "labels": [
         "PD0",
@@ -3520,6 +3509,19 @@
       "labels": [
         "PB0",
         "M4_DIR"
+      ]
+    },
+    {
+      "position": "77",
+      "labels": [
+        "PD8"
+      ]
+    },
+    {
+      "position": "139",
+      "labels": [
+        "PB8",
+        "M3_STEP"
       ]
     }
   ],
@@ -3677,6 +3679,56 @@
           "ioStructure": "FT",
           "index": 5,
           "port": "H"
+        },
+        {
+          "name": "PC10",
+          "position": "111",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 10,
+          "port": "C"
+        },
+        {
+          "name": "PC11",
+          "position": "112",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 11,
+          "port": "C"
+        },
+        {
+          "name": "PD0",
+          "position": "114",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 0,
+          "port": "D"
+        },
+        {
+          "name": "PB8",
+          "position": "139",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 8,
+          "port": "B"
         }
       ]
     }
@@ -9492,6 +9544,21 @@
                   ]
                 },
                 {
+                  "_foreignKey": "PB8",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "SET",
+                    "output_init_state": "RESET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "M3_STEP"
+                  ]
+                },
+                {
                   "_foreignKey": "PC7",
                   "basic": {
                     "mode": "OUTPUT",
@@ -9534,6 +9601,51 @@
                   },
                   "label_name": [
                     "M2_STEP"
+                  ]
+                },
+                {
+                  "_foreignKey": "PC10",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "SET",
+                    "output_init_state": "RESET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "M3_EN"
+                  ]
+                },
+                {
+                  "_foreignKey": "PC11",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "SET",
+                    "output_init_state": "RESET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "M3_nSLP"
+                  ]
+                },
+                {
+                  "_foreignKey": "PD0",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "SET",
+                    "output_init_state": "RESET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "M3_DIR"
                   ]
                 },
                 {
@@ -10491,7 +10603,9 @@
                 }
               }
             },
-            "labels": []
+            "labels": [
+              "M3_FAULT_EXTI"
+            ]
           }
         },
         {

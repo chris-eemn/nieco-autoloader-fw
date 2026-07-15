@@ -23,8 +23,10 @@
 /* Private define ------------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported variables by reference -------------------------------------------*/
+static hal_exti_handle_t hEXTI2;
 static hal_exti_handle_t hEXTI6;
 static hal_exti_handle_t hEXTI14;
+static hal_exti_handle_t hEXTI5;
 
 /******************************************************************************/
 /* Exported functions for GPIO in HAL layer                                   */
@@ -42,6 +44,8 @@ system_status_t mx_gpio_default_init(void)
   HAL_RCC_GPIOD_EnableClock();
 
   HAL_RCC_GPIOF_EnableClock();
+
+  HAL_RCC_GPIOH_EnableClock();
 
   /*
     GPIO pin labels :
@@ -62,14 +66,15 @@ system_status_t mx_gpio_default_init(void)
   /*
     GPIO pin labels :
     PB5   ---------> PB5, M1_DIR, M1_DIR
+    PB8   ---------> PB8, M3_STEP, M3_STEP
     */
-  /* Configure PB5 GPIO pin in output mode */
+  /* Configure PB5, PB8 GPIO pins in output mode */
   gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
   gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.pull            = HAL_GPIO_PULL_NO;
   gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.init_state      = PB5_INIT_STATE;
-  if (HAL_GPIO_Init(PB5_PORT, PB5_PIN, &gpio_config) != HAL_OK)
+  gpio_config.init_state      = HAL_GPIO_PIN_RESET;
+  if (HAL_GPIO_Init(HAL_GPIOB, PB5_PIN | PB8_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -79,46 +84,62 @@ system_status_t mx_gpio_default_init(void)
     PC7   ---------> PC7, M2_EN, M2_EN
     PC8   ---------> PC8, M2_DIR, M2_DIR
     PC9   ---------> PC9, M2_STEP, M2_STEP
+    PC10  ---------> PC10, M3_EN, M3_EN
+    PC11  ---------> PC11, M3_NSLP, M3_NSLP
     */
-  /* Configure PC7, PC8, PC9 GPIO pins in output mode */
+  /* Configure PC7, PC8, PC9, PC10, PC11 GPIO pins in output mode */
   gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
   gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.pull            = HAL_GPIO_PULL_NO;
   gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.init_state      = HAL_GPIO_PIN_RESET;
-  if (HAL_GPIO_Init(HAL_GPIOC, PC7_PIN | PC8_PIN | PC9_PIN, &gpio_config) != HAL_OK)
+  if (HAL_GPIO_Init(HAL_GPIOC, PC7_PIN | PC8_PIN | PC9_PIN | PC10_PIN | PC11_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
   /*
     GPIO pin labels :
+    PD0   ---------> PD0, M3_DIR, M3_DIR
     PD5   ---------> PD5, M1_STEP, M1_STEP
     */
-  /* Configure PD5 GPIO pin in output mode */
+  /* Configure PD0, PD5 GPIO pins in output mode */
   gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
   gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.pull            = HAL_GPIO_PULL_NO;
   gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.init_state      = PD5_INIT_STATE;
-  if (HAL_GPIO_Init(PD5_PORT, PD5_PIN, &gpio_config) != HAL_OK)
+  gpio_config.init_state      = HAL_GPIO_PIN_RESET;
+  if (HAL_GPIO_Init(HAL_GPIOD, PD0_PIN | PD5_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
   /*
     GPIO pin labels :
+    PD2   ---------> PD2, M3_NFAULT, M3_NFAULT
     PD6   ---------> PD6, M1_NFAULT, M1_NFAULT
     */
-  /* Configure PD6 GPIO pin in input mode */
+  /* Configure PD2, PD6 GPIO pins in input mode */
   gpio_config.mode            = HAL_GPIO_MODE_INPUT;
   gpio_config.pull            = HAL_GPIO_PULL_UP;
-  if (HAL_GPIO_Init(PD6_PORT, PD6_PIN, &gpio_config) != HAL_OK)
+  if (HAL_GPIO_Init(HAL_GPIOD, PD2_PIN | PD6_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
   hal_exti_config_t exti_config;
+
+  /* Initialize the EXTI for line 2 */
+  HAL_EXTI_Init(&hEXTI2, HAL_EXTI_LINE_2);
+
+  /* Set the trigger as RISING for the GPIOD */
+  exti_config.trigger   = HAL_EXTI_TRIGGER_RISING;
+  exti_config.gpio_port = HAL_EXTI_GPIOD;
+  HAL_EXTI_SetConfig(&hEXTI2, &exti_config);
+
+  /* Set line 2 Interrupt priority */
+  HAL_CORTEX_NVIC_SetPriority(EXTI2_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_0, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_EnableIRQ(EXTI2_IRQn);
 
   /* Initialize the EXTI for line 6 */
   HAL_EXTI_Init(&hEXTI6, HAL_EXTI_LINE_6);
@@ -174,11 +195,40 @@ system_status_t mx_gpio_default_init(void)
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
+  /*
+    GPIO pin labels :
+    PH5   ---------> PH5, M4_NFAULT, M4_NFAULT
+    */
+  /* Configure PH5 GPIO pin in input mode */
+  gpio_config.mode            = HAL_GPIO_MODE_INPUT;
+  gpio_config.pull            = HAL_GPIO_PULL_UP;
+  if (HAL_GPIO_Init(PH5_PORT, PH5_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /* Initialize the EXTI for line 5 */
+  HAL_EXTI_Init(&hEXTI5, HAL_EXTI_LINE_5);
+
+  /* Set the trigger as RISING for the GPIOH */
+  exti_config.trigger   = HAL_EXTI_TRIGGER_RISING;
+  exti_config.gpio_port = HAL_EXTI_GPIOH;
+  HAL_EXTI_SetConfig(&hEXTI5, &exti_config);
+
+  /* Set line 5 Interrupt priority */
+  HAL_CORTEX_NVIC_SetPriority(EXTI5_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_0, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_EnableIRQ(EXTI5_IRQn);
+
   return SYSTEM_OK;
 }
 
 system_status_t mx_gpio_default_deinit(void)
 {
+  /* De-initialize the EXTI for GPIOD line2 */
+  HAL_EXTI_DeInit(&hEXTI2);
+
+  /* set line 2 Interrupt priority */
+  HAL_CORTEX_NVIC_DisableIRQ(EXTI2_IRQn);
   /* De-initialize the EXTI for GPIOD line6 */
   HAL_EXTI_DeInit(&hEXTI6);
 
@@ -191,22 +241,36 @@ system_status_t mx_gpio_default_deinit(void)
   /* set line 14 Interrupt priority */
   HAL_CORTEX_NVIC_DisableIRQ(EXTI14_IRQn);
 
+  /* De-initialize the EXTI for GPIOH line5 */
+  HAL_EXTI_DeInit(&hEXTI5);
+
+  /* set line 5 Interrupt priority */
+  HAL_CORTEX_NVIC_DisableIRQ(EXTI5_IRQn);
+
   /* De-initialize pins of GPIOA port */
   HAL_GPIO_DeInit(HAL_GPIOA, PA0_PIN | PA10_PIN);
 
   /* De-initialize pins of GPIOB port */
-  HAL_GPIO_DeInit(PB5_PORT, PB5_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOB, PB5_PIN | PB8_PIN);
 
   /* De-initialize pins of GPIOC port */
-  HAL_GPIO_DeInit(HAL_GPIOC, PC7_PIN | PC8_PIN | PC9_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOC, PC7_PIN | PC8_PIN | PC9_PIN | PC10_PIN | PC11_PIN);
 
   /* De-initialize pins of GPIOD port */
-  HAL_GPIO_DeInit(HAL_GPIOD, PD5_PIN | PD6_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOD, PD0_PIN | PD2_PIN | PD5_PIN | PD6_PIN);
 
   /* De-initialize pins of GPIOF port */
   HAL_GPIO_DeInit(HAL_GPIOF, PF14_PIN | PF15_PIN);
 
+  /* De-initialize pins of GPIOH port */
+  HAL_GPIO_DeInit(PH5_PORT, PH5_PIN);
+
   return SYSTEM_OK;
+}
+
+hal_exti_handle_t *mx_gpio_default_exti2_gethandle(void)
+{
+  return &hEXTI2;
 }
 
 hal_exti_handle_t *mx_gpio_default_exti6_gethandle(void)
@@ -217,6 +281,19 @@ hal_exti_handle_t *mx_gpio_default_exti6_gethandle(void)
 hal_exti_handle_t *mx_gpio_default_exti14_gethandle(void)
 {
   return &hEXTI14;
+}
+
+hal_exti_handle_t *mx_gpio_default_exti5_gethandle(void)
+{
+  return &hEXTI5;
+}
+
+/******************************************************************************/
+/*                            EXTI Line2 interrupt                            */
+/******************************************************************************/
+void EXTI2_IRQHandler(void)
+{
+  HAL_EXTI_IRQHandler(&hEXTI2);
 }
 
 /******************************************************************************/
@@ -233,4 +310,12 @@ void EXTI6_IRQHandler(void)
 void EXTI14_IRQHandler(void)
 {
   HAL_EXTI_IRQHandler(&hEXTI14);
+}
+
+/******************************************************************************/
+/*                            EXTI Line5 interrupt                            */
+/******************************************************************************/
+void EXTI5_IRQHandler(void)
+{
+  HAL_EXTI_IRQHandler(&hEXTI5);
 }
