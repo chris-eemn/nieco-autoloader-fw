@@ -104,40 +104,10 @@ hal_tim_handle_t *mx_tim4_init(void)
   {
     return NULL;
   }
-  /* External Trigger Configuration */
-  hal_tim_ext_trig_config_t ext_trig;
-  ext_trig.source     = HAL_TIM_EXT_TRIG_TIM4_GPIO;
-  ext_trig.polarity   = HAL_TIM_EXT_TRIG_NONINVERTED;
-  ext_trig.filter     = HAL_TIM_FDIV1;
-  ext_trig.prescaler  = HAL_TIM_EXT_TRIG_DIV1;
-  ext_trig.sync_prescaler = HAL_TIM_EXT_TRIG_SYNC_DIV1;
-  if (HAL_TIM_SetExternalTriggerInput(&hTIM4, &ext_trig) != HAL_OK)
-  {
-    return NULL;
-  }
-
   /* Master Mode Configuration */
-  /* Encoder Index Configuration */
-  hal_tim_encoder_index_config_t encoder_index;
-  encoder_index.dir       = HAL_TIM_ENCODER_INDEX_UP_DOWN;
-  encoder_index.pos       = HAL_TIM_ENCODER_INDEX_POS_DOWN_DOWN;
-  encoder_index.blanking  = HAL_TIM_ENCODER_INDEX_BLANK_ALWAYS;
-  encoder_index.idx       = HAL_TIM_ENCODER_INDEX_ALL;
-  if (HAL_TIM_SetConfigEncoderIndex(&hTIM4, &encoder_index) != HAL_OK)
-  {
-    return NULL;
-  }
-
-  if (HAL_TIM_EnableEncoderIndex(&hTIM4) != HAL_OK)
-  {
-    return NULL;
-  }
-
   /* ### TIM4 GPIO Configuration ########################### */
   /* GPIO Clocks activation */
   HAL_RCC_GPIOD_EnableClock();
-
-  HAL_RCC_GPIOE_EnableClock();
 
   hal_gpio_config_t  gpio_config;
 
@@ -154,18 +124,6 @@ hal_tim_handle_t *mx_tim4_init(void)
   gpio_config.alternate   = HAL_GPIO_AF_2;
   HAL_GPIO_Init(HAL_GPIOD, PD12_PIN | PD13_PIN, &gpio_config);
 
-  /**
-    [GPIO Pin] ------> [Signal Name] ------> [Labels]
-
-       PE0     ------>   TIM4_ETR   ------>  PE0
-    **/
-  gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
-  gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.pull        = HAL_GPIO_PULL_NO;
-  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
-  gpio_config.alternate   = HAL_GPIO_AF_2;
-  HAL_GPIO_Init(PE0_PORT, PE0_PIN, &gpio_config);
-
   return &hTIM4;
 }
 
@@ -179,9 +137,6 @@ void mx_tim4_deinit(void)
 
   /* De-initialize all GPIOD pins associated with TIM4 */
   HAL_GPIO_DeInit(HAL_GPIOD, PD12_PIN | PD13_PIN);
-
-  /* De-initialize all GPIOE pins associated with TIM4 */
-  HAL_GPIO_DeInit(PE0_PORT, PE0_PIN);
 }
 
 hal_tim_handle_t *mx_tim4_gethandle(void)

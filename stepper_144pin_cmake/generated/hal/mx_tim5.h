@@ -37,10 +37,6 @@ extern "C" {
 #define PG5_PORT                              HAL_GPIOG
 #define PG5_PIN                               HAL_GPIO_PIN_5
 
-/** Primary aliases for TIM5_ETR pin */
-#define PA9_PORT                              HAL_GPIOA
-#define PA9_PIN                               HAL_GPIO_PIN_9
-
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

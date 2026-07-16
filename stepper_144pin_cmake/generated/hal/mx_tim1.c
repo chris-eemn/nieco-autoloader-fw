@@ -104,34 +104,6 @@ hal_tim_handle_t *mx_tim1_init(void)
   {
     return NULL;
   }
-  /* External Trigger Configuration */
-  hal_tim_ext_trig_config_t ext_trig;
-  ext_trig.source     = HAL_TIM_EXT_TRIG_TIM1_GPIO;
-  ext_trig.polarity   = HAL_TIM_EXT_TRIG_NONINVERTED;
-  ext_trig.filter     = HAL_TIM_FDIV1;
-  ext_trig.prescaler  = HAL_TIM_EXT_TRIG_DIV1;
-  ext_trig.sync_prescaler = HAL_TIM_EXT_TRIG_SYNC_DIV1;
-  if (HAL_TIM_SetExternalTriggerInput(&hTIM1, &ext_trig) != HAL_OK)
-  {
-    return NULL;
-  }
-
-  /* Encoder Index Configuration */
-  hal_tim_encoder_index_config_t encoder_index;
-  encoder_index.dir       = HAL_TIM_ENCODER_INDEX_UP_DOWN;
-  encoder_index.pos       = HAL_TIM_ENCODER_INDEX_POS_DOWN_DOWN;
-  encoder_index.blanking  = HAL_TIM_ENCODER_INDEX_BLANK_ALWAYS;
-  encoder_index.idx       = HAL_TIM_ENCODER_INDEX_ALL;
-  if (HAL_TIM_SetConfigEncoderIndex(&hTIM1, &encoder_index) != HAL_OK)
-  {
-    return NULL;
-  }
-
-  if (HAL_TIM_EnableEncoderIndex(&hTIM1) != HAL_OK)
-  {
-    return NULL;
-  }
-
   /* ### TIM1 GPIO Configuration ########################### */
   /* GPIO Clocks activation */
   HAL_RCC_GPIOA_EnableClock();
@@ -155,7 +127,6 @@ hal_tim_handle_t *mx_tim1_init(void)
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PE7     ------>   TIM1_ETR   ------>  PE7
        PE11    ------>   TIM1_CH2   ------>  PE11
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
@@ -163,7 +134,7 @@ hal_tim_handle_t *mx_tim1_init(void)
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_1;
-  HAL_GPIO_Init(HAL_GPIOE, PE7_PIN | PE11_PIN, &gpio_config);
+  HAL_GPIO_Init(PE11_PORT, PE11_PIN, &gpio_config);
 
   return &hTIM1;
 }
@@ -180,7 +151,7 @@ void mx_tim1_deinit(void)
   HAL_GPIO_DeInit(PA8_PORT, PA8_PIN);
 
   /* De-initialize all GPIOE pins associated with TIM1 */
-  HAL_GPIO_DeInit(HAL_GPIOE, PE7_PIN | PE11_PIN);
+  HAL_GPIO_DeInit(PE11_PORT, PE11_PIN);
 }
 
 hal_tim_handle_t *mx_tim1_gethandle(void)
