@@ -71,6 +71,7 @@ static void       stepper_task(void *pv_parameters);
 static encoder_t *encoder_start(hal_tim_handle_t *ptim);
 static encoder_t *lptim_encoder_start(hal_lptim_handle_t *plptim);
 
+axis_t *axis  = NULL;
 axis_t *axis2 = NULL;
 axis_t *axis3 = NULL;
 axis_t *axis4 = NULL;
@@ -183,6 +184,7 @@ static void stepper_task(void *pv_parameters) {
   stepper_t          *motor         = NULL;
   stepper_t          *motor2        = NULL;
   stepper_t          *motor3        = NULL;
+  stepper_t          *motor4        = NULL;
   encoder_t          *enc           = NULL;
   encoder_t          *enc2          = NULL;
   encoder_t          *enc3          = NULL;
@@ -191,7 +193,6 @@ static void stepper_task(void *pv_parameters) {
   encoder_t          *enc6          = NULL;
   encoder_t          *enc7          = NULL;
   encoder_t          *enc8          = NULL;
-  axis_t             *axis          = NULL;
   stepper_cmd_enum    pending_cmd   = STEPPER_CMD_AUTO_START;
   uint32_t            pause_ticks   = 0U;
   uint32_t            current_rpm   = 0U;
@@ -220,6 +221,14 @@ static void stepper_task(void *pv_parameters) {
     .en     = { M3_EN_PORT,     M3_EN_PIN     },
     .nslp   = { M3_NSLP_PORT,  M3_NSLP_PIN   },
     .nfault = { M3_NFAULT_PORT, M3_NFAULT_PIN },
+  };
+
+  static const stepper_gpio_config_t k_m4_pins = {
+    .step   = { M4_STEP_PORT,   M4_STEP_PIN   },
+    .dir    = { M4_DIR_PORT,    M4_DIR_PIN    },
+    .en     = { M4_EN_PORT,     M4_EN_PIN     },
+    .nslp   = { M4_NSLP_PORT,  M4_NSLP_PIN   },
+    .nfault = { M4_NFAULT_PORT, M4_NFAULT_PIN },
   };
 
   static const axis_config_t k_m1_axis_cfg = {
@@ -316,12 +325,16 @@ static void stepper_task(void *pv_parameters) {
           motor = stepper_init(&k_m1_pins);
           motor2 = stepper_init(&k_m2_pins);
           motor3 = stepper_init(&k_m3_pins);
+          motor4 = stepper_init(&k_m4_pins);
           configASSERT(motor != NULL);
           configASSERT(motor2 != NULL);
           configASSERT(motor3 != NULL);
+          configASSERT(motor4 != NULL);
           axis = axis_init(motor, enc, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           axis2 = axis_init(motor2, enc2, m2_fault_exti_gethandle(), &k_m1_axis_cfg);
           axis3 = axis_init(motor3, enc3, m3_fault_exti_gethandle(), &k_m1_axis_cfg);
+          // connecting to enc6 (TIM8)
+          axis4 = axis_init(motor4, enc6, m4_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis3 = axis_init(motor, enc3, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis4 = axis_init(motor, enc4, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
           // axis5 = axis_init(motor, enc5, m1_fault_exti_gethandle(), &k_m1_axis_cfg);
@@ -335,6 +348,7 @@ static void stepper_task(void *pv_parameters) {
           stepper_ctrl_set_axis(1U, axis);
           stepper_ctrl_set_axis(2U, axis2);
           stepper_ctrl_set_axis(3U, axis3);
+          stepper_ctrl_set_axis(4U, axis4);
           state = ST_IDLE;
         }
         else {

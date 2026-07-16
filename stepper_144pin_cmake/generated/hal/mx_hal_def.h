@@ -440,11 +440,11 @@ extern "C" {
   */
 #define m3_fault_exti_gethandle mx_gpio_default_exti2_gethandle
 
-  /* *************************************************************
-    gpio_default / EXTI5: No EXTI software label has been defined for this peripheral instance
-      in the STM32CubeMX2 configuration panel.
-      As a result, no aliases are generated for mx_gpio_default_exti5_gethandle
-    ************************************************************* */
+/**
+  * @brief  Get the EXTI handle for EXTI5 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI5 used by gpio_default instance
+  */
+#define m4_fault_exti_gethandle mx_gpio_default_exti5_gethandle
 
   /* *************************************************************
     USB_DRD_FS_HOST: No software label has been defined for this peripheral instance

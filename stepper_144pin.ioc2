@@ -3729,6 +3729,58 @@
           "ioStructure": "FT",
           "index": 8,
           "port": "B"
+        },
+        {
+          "name": "PA4",
+          "position": "40",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "TT",
+          "index": 4,
+          "port": "A"
+        },
+        {
+          "name": "PB0",
+          "position": "46",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 0,
+          "port": "B"
+        },
+        {
+          "name": "PB9",
+          "position": "140",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 9,
+          "port": "B"
+        },
+        {
+          "name": "PH4",
+          "position": "30",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 4,
+          "port": "H"
         }
       ]
     }
@@ -9514,6 +9566,21 @@
                   ]
                 },
                 {
+                  "_foreignKey": "PA4",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "SET",
+                    "output_init_state": "RESET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "M4_STEP"
+                  ]
+                },
+                {
                   "_foreignKey": "PA10",
                   "basic": {
                     "mode": "OUTPUT",
@@ -9526,6 +9593,21 @@
                   },
                   "label_name": [
                     "M1_EN"
+                  ]
+                },
+                {
+                  "_foreignKey": "PB0",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "SET",
+                    "output_init_state": "RESET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "M4_DIR"
                   ]
                 },
                 {
@@ -9556,6 +9638,21 @@
                   },
                   "label_name": [
                     "M3_STEP"
+                  ]
+                },
+                {
+                  "_foreignKey": "PB9",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "SET",
+                    "output_init_state": "RESET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "M4_EN"
                   ]
                 },
                 {
@@ -9748,6 +9845,21 @@
                   },
                   "label_name": [
                     "M2_nSLP"
+                  ]
+                },
+                {
+                  "_foreignKey": "PH4",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "SET",
+                    "output_init_state": "RESET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "M4_nSLP"
                   ]
                 },
                 {
@@ -10636,7 +10748,9 @@
                 }
               }
             },
-            "labels": []
+            "labels": [
+              "M4_FAULT_EXTI"
+            ]
           }
         }
       ]

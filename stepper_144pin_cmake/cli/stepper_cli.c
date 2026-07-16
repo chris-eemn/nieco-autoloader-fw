@@ -9,16 +9,17 @@
  *   test set ccw   <motor>    -- run one CCW move on <motor> (1..STEPPER_CTRL_MAX_MOTORS), then idle
  *   test set rpm   <value>    -- set move speed in RPM (shared by all motors)
  *   test set step  <value>    -- set microstep count per leg (shared by all motors)
- *   test set clear <motor>    -- full fault reset for <motor> (axis latch + DRV8424 sleep/wake)
+ *   test set clear <ignored>  -- full fault reset for all motors (axis latch + DRV8424 sleep/wake)
  *   test get enc              -- print the current encoder count for every motor
  *   test get <param>          -- print the current value
  *   test list                 -- list all parameters
  *
- * cw/ccw/clear on different motor numbers may be issued back-to-back — each
+ * cw/ccw on different motor numbers may be issued back-to-back — each
  * addresses an independent axis/stepper instance, and the shared step-timer ISR
  * (see stepper.c) advances every running motor on every tick, so e.g.
  * "test set cw 1" followed immediately by "test set cw 2" runs both motors
- * concurrently rather than queuing one behind the other.
+ * concurrently rather than queuing one behind the other. "test set clear"
+ * resets faults on every motor at once, regardless of the value argument.
  *
  * @version 0.3
  * @date 2026-07-02
@@ -133,13 +134,14 @@ void stepper_cli_set_handler(char *param, int32_t val) {
       break;
 
     case STEPPER_CLI_CLEAR: {
-      axis_t *ax = stepper_cli_lookup_axis(val);
-      if (ax == NULL) {
-        break;
+      for (uint8_t motor_num = 1U; motor_num <= STEPPER_CTRL_MAX_MOTORS; motor_num++) {
+        axis_t *ax = stepper_ctrl_get_axis(motor_num);
+        if (ax != NULL) {
+          axis_fault_reset(ax);
+        }
       }
-      axis_fault_reset(ax);
-      app_console_print("[STEPPER] Motor %ld: fault reset requested — supervisor will complete in ~2 ticks.\r\n",
-                        val);
+      app_console_print(
+          "[STEPPER] All motors: fault reset requested — supervisor will complete in ~2 ticks.\r\n");
       break;
     }
 
@@ -201,7 +203,7 @@ void stepper_cli_list_handler(void) {
                     STEPPER_CTRL_DEFAULT_RPM);
   app_console_print("  step  <value>  microsteps per leg, shared by all motors (default %u)\r\n",
                     STEPPER_CTRL_DEFAULT_STEPS);
-  app_console_print("  clear <motor>  full fault reset for <motor> (axis latch + DRV8424 sleep/wake)\r\n");
+  app_console_print("  clear <ignored>  full fault reset for all motors (axis latch + DRV8424 sleep/wake)\r\n");
   app_console_print("  enc            current encoder count for every motor\r\n");
 }
 

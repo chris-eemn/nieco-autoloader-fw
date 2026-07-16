@@ -50,31 +50,34 @@ system_status_t mx_gpio_default_init(void)
   /*
     GPIO pin labels :
     PA0   ---------> PA0, M1_NSLP, M1_NSLP
+    PA4   ---------> PA4, M4_STEP, M4_STEP
     PA10  ---------> PA10, M1_EN, M1_EN
     */
-  /* Configure PA0, PA10 GPIO pins in output mode */
+  /* Configure PA0, PA4, PA10 GPIO pins in output mode */
   gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
   gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.pull            = HAL_GPIO_PULL_NO;
   gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.init_state      = HAL_GPIO_PIN_RESET;
-  if (HAL_GPIO_Init(HAL_GPIOA, PA0_PIN | PA10_PIN, &gpio_config) != HAL_OK)
+  if (HAL_GPIO_Init(HAL_GPIOA, PA0_PIN | PA4_PIN | PA10_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
   /*
     GPIO pin labels :
+    PB0   ---------> PB0, M4_DIR, M4_DIR
     PB5   ---------> PB5, M1_DIR, M1_DIR
     PB8   ---------> PB8, M3_STEP, M3_STEP
+    PB9   ---------> PB9, M4_EN, M4_EN
     */
-  /* Configure PB5, PB8 GPIO pins in output mode */
+  /* Configure PB0, PB5, PB8, PB9 GPIO pins in output mode */
   gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
   gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.pull            = HAL_GPIO_PULL_NO;
   gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.init_state      = HAL_GPIO_PIN_RESET;
-  if (HAL_GPIO_Init(HAL_GPIOB, PB5_PIN | PB8_PIN, &gpio_config) != HAL_OK)
+  if (HAL_GPIO_Init(HAL_GPIOB, PB0_PIN | PB5_PIN | PB8_PIN | PB9_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -197,6 +200,21 @@ system_status_t mx_gpio_default_init(void)
 
   /*
     GPIO pin labels :
+    PH4   ---------> PH4, M4_NSLP, M4_NSLP
+    */
+  /* Configure PH4 GPIO pin in output mode */
+  gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
+  gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
+  gpio_config.pull            = HAL_GPIO_PULL_NO;
+  gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
+  gpio_config.init_state      = PH4_INIT_STATE;
+  if (HAL_GPIO_Init(PH4_PORT, PH4_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /*
+    GPIO pin labels :
     PH5   ---------> PH5, M4_NFAULT, M4_NFAULT
     */
   /* Configure PH5 GPIO pin in input mode */
@@ -248,10 +266,10 @@ system_status_t mx_gpio_default_deinit(void)
   HAL_CORTEX_NVIC_DisableIRQ(EXTI5_IRQn);
 
   /* De-initialize pins of GPIOA port */
-  HAL_GPIO_DeInit(HAL_GPIOA, PA0_PIN | PA10_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOA, PA0_PIN | PA4_PIN | PA10_PIN);
 
   /* De-initialize pins of GPIOB port */
-  HAL_GPIO_DeInit(HAL_GPIOB, PB5_PIN | PB8_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOB, PB0_PIN | PB5_PIN | PB8_PIN | PB9_PIN);
 
   /* De-initialize pins of GPIOC port */
   HAL_GPIO_DeInit(HAL_GPIOC, PC7_PIN | PC8_PIN | PC9_PIN | PC10_PIN | PC11_PIN);
@@ -263,7 +281,7 @@ system_status_t mx_gpio_default_deinit(void)
   HAL_GPIO_DeInit(HAL_GPIOF, PF14_PIN | PF15_PIN);
 
   /* De-initialize pins of GPIOH port */
-  HAL_GPIO_DeInit(PH5_PORT, PH5_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOH, PH4_PIN | PH5_PIN);
 
   return SYSTEM_OK;
 }

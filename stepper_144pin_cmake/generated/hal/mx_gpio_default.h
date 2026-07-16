@@ -53,6 +53,26 @@ extern "C" {
 #define M1_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
 #define M1_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
 
+/* Primary aliases for GPIO PA4 pin */
+#define PA4_PORT                                        HAL_GPIOA
+#define PA4_PIN                                         HAL_GPIO_PIN_4
+#define PA4_INIT_STATE                                  HAL_GPIO_PIN_RESET
+#define PA4_ACTIVE_STATE                                HAL_GPIO_PIN_SET
+#define PA4_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
+
+/* Secondary aliases for GPIO PA4 pin */
+#define M4_STEP_PORT                                    HAL_GPIOA
+#define M4_STEP_PIN                                     HAL_GPIO_PIN_4
+#define M4_STEP_INIT_STATE                              HAL_GPIO_PIN_RESET
+#define M4_STEP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
+#define M4_STEP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
+
+#define M4_STEP_PORT                                    HAL_GPIOA
+#define M4_STEP_PIN                                     HAL_GPIO_PIN_4
+#define M4_STEP_INIT_STATE                              HAL_GPIO_PIN_RESET
+#define M4_STEP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
+#define M4_STEP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
+
 /* Primary aliases for GPIO PA10 pin */
 #define PA10_PORT                                       HAL_GPIOA
 #define PA10_PIN                                        HAL_GPIO_PIN_10
@@ -72,6 +92,26 @@ extern "C" {
 #define M1_EN_INIT_STATE                                HAL_GPIO_PIN_RESET
 #define M1_EN_ACTIVE_STATE                              HAL_GPIO_PIN_SET
 #define M1_EN_INACTIVE_STATE                            HAL_GPIO_PIN_RESET
+
+/* Primary aliases for GPIO PB0 pin */
+#define PB0_PORT                                        HAL_GPIOB
+#define PB0_PIN                                         HAL_GPIO_PIN_0
+#define PB0_INIT_STATE                                  HAL_GPIO_PIN_RESET
+#define PB0_ACTIVE_STATE                                HAL_GPIO_PIN_SET
+#define PB0_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
+
+/* Secondary aliases for GPIO PB0 pin */
+#define M4_DIR_PORT                                     HAL_GPIOB
+#define M4_DIR_PIN                                      HAL_GPIO_PIN_0
+#define M4_DIR_INIT_STATE                               HAL_GPIO_PIN_RESET
+#define M4_DIR_ACTIVE_STATE                             HAL_GPIO_PIN_SET
+#define M4_DIR_INACTIVE_STATE                           HAL_GPIO_PIN_RESET
+
+#define M4_DIR_PORT                                     HAL_GPIOB
+#define M4_DIR_PIN                                      HAL_GPIO_PIN_0
+#define M4_DIR_INIT_STATE                               HAL_GPIO_PIN_RESET
+#define M4_DIR_ACTIVE_STATE                             HAL_GPIO_PIN_SET
+#define M4_DIR_INACTIVE_STATE                           HAL_GPIO_PIN_RESET
 
 /* Primary aliases for GPIO PB5 pin */
 #define PB5_PORT                                        HAL_GPIOB
@@ -112,6 +152,26 @@ extern "C" {
 #define M3_STEP_INIT_STATE                              HAL_GPIO_PIN_RESET
 #define M3_STEP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
 #define M3_STEP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
+
+/* Primary aliases for GPIO PB9 pin */
+#define PB9_PORT                                        HAL_GPIOB
+#define PB9_PIN                                         HAL_GPIO_PIN_9
+#define PB9_INIT_STATE                                  HAL_GPIO_PIN_RESET
+#define PB9_ACTIVE_STATE                                HAL_GPIO_PIN_SET
+#define PB9_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
+
+/* Secondary aliases for GPIO PB9 pin */
+#define M4_EN_PORT                                      HAL_GPIOB
+#define M4_EN_PIN                                       HAL_GPIO_PIN_9
+#define M4_EN_INIT_STATE                                HAL_GPIO_PIN_RESET
+#define M4_EN_ACTIVE_STATE                              HAL_GPIO_PIN_SET
+#define M4_EN_INACTIVE_STATE                            HAL_GPIO_PIN_RESET
+
+#define M4_EN_PORT                                      HAL_GPIOB
+#define M4_EN_PIN                                       HAL_GPIO_PIN_9
+#define M4_EN_INIT_STATE                                HAL_GPIO_PIN_RESET
+#define M4_EN_ACTIVE_STATE                              HAL_GPIO_PIN_SET
+#define M4_EN_INACTIVE_STATE                            HAL_GPIO_PIN_RESET
 
 /* Primary aliases for GPIO PC7 pin */
 #define PC7_PORT                                        HAL_GPIOC
@@ -318,6 +378,26 @@ extern "C" {
 #define M2_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
 #define M2_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
 
+/* Primary aliases for GPIO PH4 pin */
+#define PH4_PORT                                        HAL_GPIOH
+#define PH4_PIN                                         HAL_GPIO_PIN_4
+#define PH4_INIT_STATE                                  HAL_GPIO_PIN_RESET
+#define PH4_ACTIVE_STATE                                HAL_GPIO_PIN_SET
+#define PH4_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
+
+/* Secondary aliases for GPIO PH4 pin */
+#define M4_NSLP_PORT                                    HAL_GPIOH
+#define M4_NSLP_PIN                                     HAL_GPIO_PIN_4
+#define M4_NSLP_INIT_STATE                              HAL_GPIO_PIN_RESET
+#define M4_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
+#define M4_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
+
+#define M4_NSLP_PORT                                    HAL_GPIOH
+#define M4_NSLP_PIN                                     HAL_GPIO_PIN_4
+#define M4_NSLP_INIT_STATE                              HAL_GPIO_PIN_RESET
+#define M4_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
+#define M4_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
+
 /* Primary aliases for GPIO PH5 pin */
 #define PH5_PORT                                        HAL_GPIOH
 #define PH5_PIN                                         HAL_GPIO_PIN_5
@@ -328,6 +408,10 @@ extern "C" {
 
 #define M4_NFAULT_PORT                                  HAL_GPIOH
 #define M4_NFAULT_PIN                                   HAL_GPIO_PIN_5
+
+/* EXTI aliases */
+#define M4_FAULT_EXTI_EXTI_LINE                         HAL_EXTI_LINE_5
+#define M4_FAULT_EXTI_EXTI_TRIGGER                      HAL_EXTI_TRIGGER_RISING
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
