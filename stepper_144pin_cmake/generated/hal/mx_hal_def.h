@@ -435,16 +435,16 @@ extern "C" {
 #define m2_fault_exti_gethandle mx_gpio_default_exti14_gethandle
 
 /**
-  * @brief  Get the EXTI handle for EXTI2 used for gpio_default
-  * @retval hal_exti_handle_t Pointer on the handle on the EXTI2 used by gpio_default instance
-  */
-#define m3_fault_exti_gethandle mx_gpio_default_exti2_gethandle
-
-/**
   * @brief  Get the EXTI handle for EXTI5 used for gpio_default
   * @retval hal_exti_handle_t Pointer on the handle on the EXTI5 used by gpio_default instance
   */
 #define m4_fault_exti_gethandle mx_gpio_default_exti5_gethandle
+
+/**
+  * @brief  Get the EXTI handle for EXTI1 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI1 used by gpio_default instance
+  */
+#define m3_fault_exti_gethandle mx_gpio_default_exti1_gethandle
 
   /* *************************************************************
     USB_DRD_FS_HOST: No software label has been defined for this peripheral instance

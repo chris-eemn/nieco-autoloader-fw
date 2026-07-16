@@ -37,6 +37,10 @@ extern "C" {
 #define PC6_PORT                              HAL_GPIOC
 #define PC6_PIN                               HAL_GPIO_PIN_6
 
+/** Primary aliases for TIM8_ETR pin */
+#define PG8_PORT                              HAL_GPIOG
+#define PG8_PIN                               HAL_GPIO_PIN_8
+
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

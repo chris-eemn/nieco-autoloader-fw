@@ -37,6 +37,10 @@ extern "C" {
 #define DBGIN_SWO_PORT                        HAL_GPIOB
 #define DBGIN_SWO_PIN                         HAL_GPIO_PIN_3
 
+/** Primary aliases for TIM2_ETR pin */
+#define PA0_PORT                              HAL_GPIOA
+#define PA0_PIN                               HAL_GPIO_PIN_0
+
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

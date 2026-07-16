@@ -33,9 +33,13 @@ extern "C" {
 #define PA8_PORT                              HAL_GPIOA
 #define PA8_PIN                               HAL_GPIO_PIN_8
 
+/** Primary aliases for TIM1_ETR pin */
+#define PE7_PORT                              HAL_GPIOE
+#define PE7_PIN                               HAL_GPIO_PIN_7
+
 /** Primary aliases for TIM1_CH2 pin */
-#define PA9_PORT                              HAL_GPIOA
-#define PA9_PIN                               HAL_GPIO_PIN_9
+#define PE11_PORT                             HAL_GPIOE
+#define PE11_PIN                              HAL_GPIO_PIN_11
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/

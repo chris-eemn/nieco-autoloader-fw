@@ -33,26 +33,6 @@ extern "C" {
 /* Exported defines for gpio_default in HAL layer                             */
 /******************************************************************************/
 
-/* Primary aliases for GPIO PA0 pin */
-#define PA0_PORT                                        HAL_GPIOA
-#define PA0_PIN                                         HAL_GPIO_PIN_0
-#define PA0_INIT_STATE                                  HAL_GPIO_PIN_RESET
-#define PA0_ACTIVE_STATE                                HAL_GPIO_PIN_SET
-#define PA0_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
-
-/* Secondary aliases for GPIO PA0 pin */
-#define M1_NSLP_PORT                                    HAL_GPIOA
-#define M1_NSLP_PIN                                     HAL_GPIO_PIN_0
-#define M1_NSLP_INIT_STATE                              HAL_GPIO_PIN_RESET
-#define M1_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
-#define M1_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
-
-#define M1_NSLP_PORT                                    HAL_GPIOA
-#define M1_NSLP_PIN                                     HAL_GPIO_PIN_0
-#define M1_NSLP_INIT_STATE                              HAL_GPIO_PIN_RESET
-#define M1_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
-#define M1_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
-
 /* Primary aliases for GPIO PA4 pin */
 #define PA4_PORT                                        HAL_GPIOA
 #define PA4_PIN                                         HAL_GPIO_PIN_4
@@ -113,6 +93,21 @@ extern "C" {
 #define M4_DIR_ACTIVE_STATE                             HAL_GPIO_PIN_SET
 #define M4_DIR_INACTIVE_STATE                           HAL_GPIO_PIN_RESET
 
+/* Primary aliases for GPIO PB1 pin */
+#define PB1_PORT                                        HAL_GPIOB
+#define PB1_PIN                                         HAL_GPIO_PIN_1
+
+/* Secondary aliases for GPIO PB1 pin */
+#define M3_NFAULT_PORT                                  HAL_GPIOB
+#define M3_NFAULT_PIN                                   HAL_GPIO_PIN_1
+
+#define M3_NFAULT_PORT                                  HAL_GPIOB
+#define M3_NFAULT_PIN                                   HAL_GPIO_PIN_1
+
+/* EXTI aliases */
+#define M3_FAULT_EXTI_EXTI_LINE                         HAL_EXTI_LINE_1
+#define M3_FAULT_EXTI_EXTI_TRIGGER                      HAL_EXTI_TRIGGER_RISING
+
 /* Primary aliases for GPIO PB5 pin */
 #define PB5_PORT                                        HAL_GPIOB
 #define PB5_PIN                                         HAL_GPIO_PIN_5
@@ -172,6 +167,26 @@ extern "C" {
 #define M4_EN_INIT_STATE                                HAL_GPIO_PIN_RESET
 #define M4_EN_ACTIVE_STATE                              HAL_GPIO_PIN_SET
 #define M4_EN_INACTIVE_STATE                            HAL_GPIO_PIN_RESET
+
+/* Primary aliases for GPIO PB12 pin */
+#define PB12_PORT                                       HAL_GPIOB
+#define PB12_PIN                                        HAL_GPIO_PIN_12
+#define PB12_INIT_STATE                                 HAL_GPIO_PIN_RESET
+#define PB12_ACTIVE_STATE                               HAL_GPIO_PIN_SET
+#define PB12_INACTIVE_STATE                             HAL_GPIO_PIN_RESET
+
+/* Secondary aliases for GPIO PB12 pin */
+#define M1_NSLP_PORT                                    HAL_GPIOB
+#define M1_NSLP_PIN                                     HAL_GPIO_PIN_12
+#define M1_NSLP_INIT_STATE                              HAL_GPIO_PIN_RESET
+#define M1_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
+#define M1_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
+
+#define M1_NSLP_PORT                                    HAL_GPIOB
+#define M1_NSLP_PIN                                     HAL_GPIO_PIN_12
+#define M1_NSLP_INIT_STATE                              HAL_GPIO_PIN_RESET
+#define M1_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
+#define M1_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
 
 /* Primary aliases for GPIO PC7 pin */
 #define PC7_PORT                                        HAL_GPIOC
@@ -292,21 +307,6 @@ extern "C" {
 #define M3_DIR_INIT_STATE                               HAL_GPIO_PIN_RESET
 #define M3_DIR_ACTIVE_STATE                             HAL_GPIO_PIN_SET
 #define M3_DIR_INACTIVE_STATE                           HAL_GPIO_PIN_RESET
-
-/* Primary aliases for GPIO PD2 pin */
-#define PD2_PORT                                        HAL_GPIOD
-#define PD2_PIN                                         HAL_GPIO_PIN_2
-
-/* Secondary aliases for GPIO PD2 pin */
-#define M3_NFAULT_PORT                                  HAL_GPIOD
-#define M3_NFAULT_PIN                                   HAL_GPIO_PIN_2
-
-#define M3_NFAULT_PORT                                  HAL_GPIOD
-#define M3_NFAULT_PIN                                   HAL_GPIO_PIN_2
-
-/* EXTI aliases */
-#define M3_FAULT_EXTI_EXTI_LINE                         HAL_EXTI_LINE_2
-#define M3_FAULT_EXTI_EXTI_TRIGGER                      HAL_EXTI_TRIGGER_RISING
 
 /* Primary aliases for GPIO PD5 pin */
 #define PD5_PORT                                        HAL_GPIOD
@@ -433,10 +433,10 @@ system_status_t mx_gpio_default_init(void);
 system_status_t mx_gpio_default_deinit(void);
 
 /**
-  * @brief  Get the EXTI2 object.
-  * @retval Pointer on the EXTI2 Handle
+  * @brief  Get the EXTI1 object.
+  * @retval Pointer on the EXTI1 Handle
   */
-hal_exti_handle_t *mx_gpio_default_exti2_gethandle(void);
+hal_exti_handle_t *mx_gpio_default_exti1_gethandle(void);
 
 /**
   * @brief  Get the EXTI6 object.
@@ -457,9 +457,9 @@ hal_exti_handle_t *mx_gpio_default_exti14_gethandle(void);
 hal_exti_handle_t *mx_gpio_default_exti5_gethandle(void);
 
 /******************************************************************************/
-/*                            EXTI Line2 interrupt                            */
+/*                            EXTI Line1 interrupt                            */
 /******************************************************************************/
-void EXTI2_IRQHandler(void);
+void EXTI1_IRQHandler(void);
 
 /******************************************************************************/
 /*                            EXTI Line6 interrupt                            */
