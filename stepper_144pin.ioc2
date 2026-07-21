@@ -2468,6 +2468,56 @@
         "ownedByUser": false
       },
       {
+        "id": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
+        "needId": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
+        "pin": {
+          "name": "PC2",
+          "position": "28",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 2,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "SPI2",
+          "name": "SPI2_MISO",
+          "type": "alternate",
+          "alternateFunctionId": "AF5"
+        },
+        "pinned": true,
+        "ownedByUser": true
+      },
+      {
+        "id": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
+        "needId": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
+        "pin": {
+          "name": "PC3",
+          "position": "29",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 3,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "SPI2",
+          "name": "SPI2_MOSI",
+          "type": "alternate",
+          "alternateFunctionId": "AF5"
+        },
+        "pinned": true,
+        "ownedByUser": true
+      },
+      {
         "id": "b0dfe781-c953-4c40-bead-e9e5c7b2ce5f",
         "needId": "b0dfe781-c953-4c40-bead-e9e5c7b2ce5f",
         "pin": {
@@ -2773,56 +2823,6 @@
         },
         "pinned": false,
         "ownedByUser": false
-      },
-      {
-        "id": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
-        "pin": {
-          "name": "PC2",
-          "position": "28",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "a"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 2,
-          "port": "C"
-        },
-        "signal": {
-          "instance": "SPI2",
-          "name": "SPI2_MISO",
-          "type": "alternate",
-          "alternateFunctionId": "AF5"
-        },
-        "needId": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
-        "pinned": true,
-        "ownedByUser": true
-      },
-      {
-        "id": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
-        "pin": {
-          "name": "PC3",
-          "position": "29",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "a"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 3,
-          "port": "C"
-        },
-        "signal": {
-          "instance": "SPI2",
-          "name": "SPI2_MOSI",
-          "type": "alternate",
-          "alternateFunctionId": "AF5"
-        },
-        "needId": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
-        "pinned": true,
-        "ownedByUser": true
       }
     ]
   },
@@ -5099,8 +5099,8 @@
       "driverConfigurationId": "533a0976-0a17-4310-a54d-fe1d26d85b24"
     },
     "SPI2": {
-      "driverConfigurationId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
       "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:SPI",
+      "driverConfigurationId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
       "mode": "SPI"
     }
   }
