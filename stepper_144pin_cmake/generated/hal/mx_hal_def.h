@@ -35,6 +35,7 @@ extern "C" {
 #include "mx_icache.h"
 #include "mx_lptim1.h"
 #include "mx_rcc.h"
+#include "mx_spi2.h"
 #include "mx_tim1.h"
 #include "mx_tim17.h"
 #include "mx_tim12.h"
@@ -108,6 +109,18 @@ extern "C" {
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_rcc_init
     ************************************************************* */
+
+  /* ***********************************************************
+      SPI2: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_spi2 with HAL layer
+  *         Name of the User label:
+  *                   SPI_FLASH_BUS
+  * @retval hal_spi_handle_t Pointer on the handle on the SPI2 instance
+  */
+#define spi_flash_bus_init mx_spi2_init
 
   /* ***********************************************************
       TIM1: aliases for initialization functions
@@ -293,6 +306,17 @@ extern "C" {
 #define m8_encoder_timer_deinit mx_lptim1_deinit
 
   /* ***********************************************************
+      SPI2: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_spi2 with HAL layer
+  *         Name of the User label:
+  *                   SPI_FLASH_BUS
+  */
+#define spi_flash_bus_deinit mx_spi2_deinit
+
+  /* ***********************************************************
       TIM1: aliases for De-Initialization functions
     *********************************************************** */
 
@@ -473,6 +497,16 @@ extern "C" {
   * @retval hal_lptim_handle_t Pointer on the handle on the LPTIM1 instance
   */
 #define m8_encoder_timer_gethandle mx_lptim1_gethandle
+
+  /* ***********************************************************
+      SPI2: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for SPI2
+  *         Name of the User label:
+  *                   SPI_FLASH_BUS
+  * @retval hal_spi_handle_t Pointer on the handle on the SPI2 instance
+  */
+#define spi_flash_bus_gethandle mx_spi2_gethandle
 
   /* ***********************************************************
       TIM1: aliases for get handle functions

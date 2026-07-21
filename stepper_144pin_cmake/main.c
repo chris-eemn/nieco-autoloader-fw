@@ -26,6 +26,7 @@
 #include "mx_i2c1.h"
 #include <stdio.h>
 #include "mb_regs.h"
+#include "w25q.h"
 
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
@@ -86,6 +87,16 @@ int main(void) {
     while (1);
   }
 
+
+  hal_spi_handle_t *hspi_flash_test = spi_flash_bus_gethandle();
+  uint8_t test_tx[4] = { 0xAA, 0x55, 0xAA, 0x55 };
+
+  HAL_GPIO_WritePin(SPI_FLASH_CS_PORT, SPI_FLASH_CS_PIN, HAL_GPIO_PIN_RESET);
+  hal_status_t test_status = HAL_SPI_Transmit(hspi_flash_test, test_tx, sizeof(test_tx), 100U);
+  HAL_GPIO_WritePin(SPI_FLASH_CS_PORT, SPI_FLASH_CS_PIN, HAL_GPIO_PIN_SET);
+
+  // __NOP(); /* <-- put a breakpoint here and inspect test_status */
+
 #if defined(USE_TRACE) && USE_TRACE != 0
   mx_basic_stdio_init();
 #endif
@@ -93,6 +104,10 @@ int main(void) {
   app_console_init();
   app_console_commands_register();
   mb_regs_init();
+
+  w25q_initialize();
+
+
 
   BaseType_t task_ret = xTaskCreate(stepper_task,
                                     "StepperTask",
@@ -242,7 +257,16 @@ static void stepper_task(void *pv_parameters) {
   };
   
   configASSERT(hi2c != NULL);
-
+  uint8_t dataRd[32] = {0};
+  uint8_t data[] = "abc123";
+  w25q_write(data, sizeof(data), 0x000000);
+  app_console_print("[INFO] W25Q write: %s\r\n", data);
+  vTaskDelay(pdMS_TO_TICKS(100U));
+  w25q_read((uint8_t*)dataRd, sizeof(dataRd), 0x000000);
+  while(w25q_get_transfer_status() == W25Q_TRANSFER_STATUS_BUSY) {
+    vTaskDelay(pdMS_TO_TICKS(10U));
+  }
+  app_console_print("[INFO] W25Q readback: %s\r\n", dataRd);
   stepper_ctrl_init();
 
   while (1) {

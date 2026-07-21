@@ -49,6 +49,21 @@ system_status_t mx_gpio_default_init(void)
 
   /*
     GPIO pin labels :
+    PA0   ---------> PA0, SPI_FLASH_CS, SPI_FLASH_CS
+    */
+  /* Configure PA0 GPIO pin in output mode */
+  gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
+  gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
+  gpio_config.pull            = HAL_GPIO_PULL_NO;
+  gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
+  gpio_config.init_state      = PA0_INIT_STATE;
+  if (HAL_GPIO_Init(PA0_PORT, PA0_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /*
+    GPIO pin labels :
     PA4   ---------> PA4, M4_STEP, M4_STEP
     PA10  ---------> PA10, M1_EN, M1_EN
     */
@@ -278,7 +293,7 @@ system_status_t mx_gpio_default_deinit(void)
   HAL_CORTEX_NVIC_DisableIRQ(EXTI5_IRQn);
 
   /* De-initialize pins of GPIOA port */
-  HAL_GPIO_DeInit(HAL_GPIOA, PA4_PIN | PA10_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOA, PA0_PIN | PA4_PIN | PA10_PIN);
 
   /* De-initialize pins of GPIOB port */
   HAL_GPIO_DeInit(HAL_GPIOB, PB0_PIN | PB1_PIN | PB5_PIN | PB8_PIN | PB9_PIN | PB12_PIN);

@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
-  * @file           : mx_i2c1.h
-  * @brief          : Header for mx_i2c1.c file.
+  * @file           : mx_spi2.h
+  * @brief          : Header for mx_spi2.c file.
   ******************************************************************************
   * @attention
   *
@@ -16,8 +16,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef MX_I2C1_H
-#define MX_I2C1_H
+#ifndef MX_SPI2_H
+#define MX_SPI2_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,56 +29,61 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-/** Primary aliases for I2C1_SCL pin */
-#define PB6_PORT                              HAL_GPIOB
-#define PB6_PIN                               HAL_GPIO_PIN_6
+/** Primary aliases for SPI2_SCK pin */
+#define PA9_PORT                              HAL_GPIOA
+#define PA9_PIN                               HAL_GPIO_PIN_9
 
-/** Secondary aliases for I2C1_SCL pin */
-#define M1_I2C_SCL_PORT                       HAL_GPIOB
-#define M1_I2C_SCL_PIN                        HAL_GPIO_PIN_6
+/** Secondary aliases for SPI2_SCK pin */
+#define SPI_FLASH_SCK_PORT                    HAL_GPIOA
+#define SPI_FLASH_SCK_PIN                     HAL_GPIO_PIN_9
 
-/** Primary aliases for I2C1_SDA pin */
-#define PB7_PORT                              HAL_GPIOB
-#define PB7_PIN                               HAL_GPIO_PIN_7
+/** Primary aliases for SPI2_MISO pin */
+#define PC2_PORT                              HAL_GPIOC
+#define PC2_PIN                               HAL_GPIO_PIN_2
 
-/** Secondary aliases for I2C1_SDA pin */
-#define M1_I2C_SDA_PORT                       HAL_GPIOB
-#define M1_I2C_SDA_PIN                        HAL_GPIO_PIN_7
+/** Secondary aliases for SPI2_MISO pin */
+#define SPI_FLASH_MISO_PORT                   HAL_GPIOC
+#define SPI_FLASH_MISO_PIN                    HAL_GPIO_PIN_2
+
+/** Primary aliases for SPI2_MOSI pin */
+#define PC3_PORT                              HAL_GPIOC
+#define PC3_PIN                               HAL_GPIO_PIN_3
+
+/** Secondary aliases for SPI2_MOSI pin */
+#define SPI_FLASH_MOSI_PORT                   HAL_GPIOC
+#define SPI_FLASH_MOSI_PIN                    HAL_GPIO_PIN_3
+
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 /******************************************************************************/
-/* Exported functions for I2C in HAL layer */
+/* Exported functions for SPI in HAL layer */
 /******************************************************************************/
 /**
-  * @brief mx_i2c1_i2c init function
+  * @brief mx_spi2 init function
   * This function configures the hardware resources used in this example
   * @retval pointer to handle or NULL in case of failure
   */
-hal_i2c_handle_t *mx_i2c1_i2c_init(void);
+hal_spi_handle_t *mx_spi2_init(void);
 
 /**
-  * @brief  De-initialize i2c1 instance and return it.
+  * @brief  De-initialize spi2 instance and return it.
   */
-void mx_i2c1_i2c_deinit(void);
+void mx_spi2_deinit(void);
 
 /**
-  * @brief  Get the I2C1 object.
-  * @retval Pointer on the I2C1 Handle
+  * @brief  Get the SPI2 object.
+  * @retval Pointer on the SPI2 Handle
   */
-hal_i2c_handle_t *mx_i2c1_i2c_gethandle(void);
+hal_spi_handle_t *mx_spi2_gethandle(void);
 
 /******************************************************************************/
-/*                            I2C1 event interrupt                            */
+/*                           SPI2 global interrupt                            */
 /******************************************************************************/
-void I2C1_EV_IRQHandler(void);
+void SPI2_IRQHandler(void);
 
-/******************************************************************************/
-/*                            I2C1 error interrupt                            */
-/******************************************************************************/
-void I2C1_ERR_IRQHandler(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* MX_I2C1_H */
+#endif /* MX_SPI2_H */

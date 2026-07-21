@@ -115,15 +115,15 @@
     },
     {
       "id": "DAC1SH_Clock_Source",
-      "value": "LSE_inputid",
+      "value": "LSI_inputid",
       "isLocked": false,
-      "outFrequency": 32768
+      "outFrequency": 32000
     },
     {
       "id": "DAC1SH_Input_Clock",
-      "value": "32768",
+      "value": 32000,
       "isLocked": false,
-      "outFrequency": 32768
+      "outFrequency": 32000
     },
     {
       "id": "SPI1_Clock_Source",
@@ -193,15 +193,15 @@
     },
     {
       "id": "ETH1_REF_Clock_Source",
-      "value": "ETH1_RMII_REF_inputid",
+      "value": "ETH1_CLK_Div_inputid",
       "isLocked": false,
-      "outFrequency": 50000000
+      "outFrequency": 144000000
     },
     {
       "id": "ETH1_REF_Input_Clock",
-      "value": 50000000,
+      "value": 144000000,
       "isLocked": false,
-      "outFrequency": 50000000
+      "outFrequency": 144000000
     },
     {
       "id": "ETH1_PTP_Clock_Source",
@@ -599,7 +599,7 @@
     },
     "HAL_CORTEX_PROJECT_USE_HAL": {
       "name": "HAL_CORTEX_PROJECT_USE_HAL",
-      "value": 12,
+      "value": 11,
       "originator": "sw-config-semaphore"
     },
     "HAL_ICACHE_CORE_ENABLED": {
@@ -639,7 +639,7 @@
     },
     "HAL_GPIO_PROJECT_USE_HAL": {
       "name": "HAL_GPIO_PROJECT_USE_HAL",
-      "value": 36,
+      "value": 32,
       "originator": "sw-config-semaphore"
     },
     "HAL_UART_PROJECT_USE_HAL": {
@@ -669,11 +669,6 @@
     },
     "HAL_EXTI_PROJECT_USE_HAL": {
       "name": "HAL_EXTI_PROJECT_USE_HAL",
-      "value": 1,
-      "originator": "sw-config-semaphore"
-    },
-    "HAL_EXTI_SYSTEM_GPIO_STANDARD_EXTI": {
-      "name": "HAL_EXTI_SYSTEM_GPIO_STANDARD_EXTI",
       "value": 4,
       "originator": "sw-config-semaphore"
     },
@@ -684,6 +679,11 @@
     },
     "HAL_HCD_PROJECT_USE_HAL": {
       "name": "HAL_HCD_PROJECT_USE_HAL",
+      "value": 1,
+      "originator": "sw-config-semaphore"
+    },
+    "HAL_SPI_PROJECT_USE_HAL": {
+      "name": "HAL_SPI_PROJECT_USE_HAL",
       "value": 1,
       "originator": "sw-config-semaphore"
     }
@@ -988,6 +988,27 @@
           "priority": 0,
           "subpriority": 0,
           "used": true
+        },
+        {
+          "id": 54,
+          "name": "I2C1_EV",
+          "priority": 5,
+          "subpriority": 0,
+          "used": true
+        },
+        {
+          "id": 55,
+          "name": "I2C1_ERR",
+          "priority": 5,
+          "subpriority": 0,
+          "used": true
+        },
+        {
+          "id": 59,
+          "name": "SPI2",
+          "priority": 5,
+          "subpriority": 0,
+          "used": true
         }
       ],
       "needs": [
@@ -1040,6 +1061,21 @@
           "needId": "0ff13bad-b51e-4f2d-b49c-f9116d22010b",
           "destination": "EXTI1",
           "owner": "EXTI1"
+        },
+        {
+          "needId": "c165579e-3ec0-48fb-b755-cc18b8c25f10",
+          "destination": "I2C1_EV",
+          "owner": "I2C1"
+        },
+        {
+          "needId": "50deb7af-7ed4-48de-8130-d02a4c722c50",
+          "destination": "I2C1_ERR",
+          "owner": "I2C1"
+        },
+        {
+          "needId": "422906cf-10d7-4af6-bfc7-f61f64c208ab",
+          "destination": "SPI2",
+          "owner": "SPI2"
         }
       ]
     }
@@ -1143,6 +1179,36 @@
       "selector": "*",
       "id": "0ff13bad-b51e-4f2d-b49c-f9116d22010b",
       "owner": "EXTI1",
+      "propertyPath": ""
+    },
+    {
+      "needType": "need.interrupt.lines",
+      "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:I2C@2.1.0#HAL CORE GPIO DMA Init and I2C",
+      "componentInstanceId": "d107bf3b-0d81-455e-941b-7322649b8e40",
+      "selector": "EV",
+      "id": "c165579e-3ec0-48fb-b755-cc18b8c25f10",
+      "owner": "I2C1",
+      "propertyPath": ""
+    },
+    {
+      "needType": "need.interrupt.lines",
+      "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:I2C@2.1.0#HAL CORE GPIO DMA Init and I2C",
+      "componentInstanceId": "d107bf3b-0d81-455e-941b-7322649b8e40",
+      "selector": "ERR",
+      "id": "50deb7af-7ed4-48de-8130-d02a4c722c50",
+      "owner": "I2C1",
+      "propertyPath": ""
+    },
+    {
+      "needType": "need.interrupt.lines",
+      "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+      "componentInstanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+      "selector": "*",
+      "id": "422906cf-10d7-4af6-bfc7-f61f64c208ab",
+      "owner": "SPI2",
       "propertyPath": ""
     }
   ],
@@ -1444,12 +1510,27 @@
   "pinout-configuration": {
     "userConfigurations": [
       {
+        "pin": {
+          "name": "PA0",
+          "position": "34",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 0,
+          "port": "A"
+        },
         "signal": {
           "instance": "GPIOA",
           "name": "GPIO",
           "type": "user_gpio"
         },
-        "pinned": true,
+        "pinned": true
+      },
+      {
         "pin": {
           "name": "PA10",
           "position": "102",
@@ -1460,16 +1541,15 @@
           "ioStructure": "FT",
           "index": 10,
           "port": "A"
-        }
+        },
+        "signal": {
+          "instance": "GPIOA",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
       },
       {
-        "signal": {
-          "instance": "DEBUG",
-          "name": "DEBUG_SWDIO",
-          "type": "alternate",
-          "alternateFunctionId": "AF0"
-        },
-        "pinned": true,
         "pin": {
           "name": "PA13(JTMS/SWDIO)",
           "position": "105",
@@ -1480,16 +1560,16 @@
           "ioStructure": "FT",
           "index": 13,
           "port": "A"
-        }
-      },
-      {
+        },
         "signal": {
           "instance": "DEBUG",
-          "name": "DEBUG_SWCLK",
+          "name": "DEBUG_SWDIO",
           "type": "alternate",
           "alternateFunctionId": "AF0"
         },
-        "pinned": true,
+        "pinned": true
+      },
+      {
         "pin": {
           "name": "PA14(JTCK/SWCLK)",
           "position": "109",
@@ -1500,15 +1580,16 @@
           "ioStructure": "FT",
           "index": 14,
           "port": "A"
-        }
+        },
+        "signal": {
+          "instance": "DEBUG",
+          "name": "DEBUG_SWCLK",
+          "type": "alternate",
+          "alternateFunctionId": "AF0"
+        },
+        "pinned": true
       },
       {
-        "signal": {
-          "instance": "GPIOA",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
         "pin": {
           "name": "PA4",
           "position": "40",
@@ -1521,15 +1602,15 @@
           "ioStructure": "TT",
           "index": 4,
           "port": "A"
-        }
-      },
-      {
+        },
         "signal": {
           "instance": "GPIOA",
           "name": "GPIO",
           "type": "user_gpio"
         },
-        "pinned": true,
+        "pinned": true
+      },
+      {
         "pin": {
           "name": "PA5",
           "position": "41",
@@ -1542,15 +1623,15 @@
           "ioStructure": "FT",
           "index": 5,
           "port": "A"
-        }
-      },
-      {
+        },
         "signal": {
-          "instance": "GPIOB",
+          "instance": "GPIOA",
           "name": "GPIO",
           "type": "user_gpio"
         },
-        "pinned": true,
+        "pinned": true
+      },
+      {
         "pin": {
           "name": "PB0",
           "position": "46",
@@ -1563,386 +1644,13 @@
           "ioStructure": "FT",
           "index": 0,
           "port": "B"
-        }
-      },
-      {
+        },
         "signal": {
           "instance": "GPIOB",
           "name": "GPIO",
           "type": "user_gpio"
         },
-        "pinned": true,
-        "pin": {
-          "name": "PB5",
-          "position": "135",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 5,
-          "port": "B"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOB",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PB8",
-          "position": "139",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 8,
-          "port": "B"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOB",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PB9",
-          "position": "140",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 9,
-          "port": "B"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOC",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PC10",
-          "position": "111",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 10,
-          "port": "C"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOC",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PC11",
-          "position": "112",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 11,
-          "port": "C"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOC",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PC13",
-          "position": "7",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 13,
-          "port": "C"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOC",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PC7",
-          "position": "97",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 7,
-          "port": "C"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOC",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PC8",
-          "position": "98",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 8,
-          "port": "C"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOC",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PC9",
-          "position": "99",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 9,
-          "port": "C"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOD",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PD0",
-          "position": "114",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 0,
-          "port": "D"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOD",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PD5",
-          "position": "119",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 5,
-          "port": "D"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOD",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PD6",
-          "position": "122",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 6,
-          "port": "D"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOF",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PF14",
-          "position": "54",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 14,
-          "port": "F"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOF",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PF15",
-          "position": "55",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 15,
-          "port": "F"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOG",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PG1",
-          "position": "57",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 1,
-          "port": "G"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOG",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PG14",
-          "position": "129",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 14,
-          "port": "G"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOG",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PG2",
-          "position": "87",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 2,
-          "port": "G"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOH",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PH4",
-          "position": "30",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "a"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 4,
-          "port": "H"
-        }
-      },
-      {
-        "signal": {
-          "instance": "GPIOH",
-          "name": "GPIO",
-          "type": "user_gpio"
-        },
-        "pinned": true,
-        "pin": {
-          "name": "PH5",
-          "position": "33",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "a"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 5,
-          "port": "H"
-        }
+        "pinned": true
       },
       {
         "pin": {
@@ -1985,15 +1693,391 @@
           "type": "user_gpio"
         },
         "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PB5",
+          "position": "135",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 5,
+          "port": "B"
+        },
+        "signal": {
+          "instance": "GPIOB",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PB8",
+          "position": "139",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 8,
+          "port": "B"
+        },
+        "signal": {
+          "instance": "GPIOB",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PB9",
+          "position": "140",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 9,
+          "port": "B"
+        },
+        "signal": {
+          "instance": "GPIOB",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PC10",
+          "position": "111",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 10,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "GPIOC",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PC11",
+          "position": "112",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 11,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "GPIOC",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PC13",
+          "position": "7",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 13,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "GPIOC",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PC7",
+          "position": "97",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 7,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "GPIOC",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PC8",
+          "position": "98",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 8,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "GPIOC",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PC9",
+          "position": "99",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 9,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "GPIOC",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PD0",
+          "position": "114",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 0,
+          "port": "D"
+        },
+        "signal": {
+          "instance": "GPIOD",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PD5",
+          "position": "119",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 5,
+          "port": "D"
+        },
+        "signal": {
+          "instance": "GPIOD",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PD6",
+          "position": "122",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 6,
+          "port": "D"
+        },
+        "signal": {
+          "instance": "GPIOD",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PF14",
+          "position": "54",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 14,
+          "port": "F"
+        },
+        "signal": {
+          "instance": "GPIOF",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PF15",
+          "position": "55",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 15,
+          "port": "F"
+        },
+        "signal": {
+          "instance": "GPIOF",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PG1",
+          "position": "57",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 1,
+          "port": "G"
+        },
+        "signal": {
+          "instance": "GPIOG",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PG14",
+          "position": "129",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 14,
+          "port": "G"
+        },
+        "signal": {
+          "instance": "GPIOG",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PG2",
+          "position": "87",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 2,
+          "port": "G"
+        },
+        "signal": {
+          "instance": "GPIOG",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PH4",
+          "position": "30",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 4,
+          "port": "H"
+        },
+        "signal": {
+          "instance": "GPIOH",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
+      },
+      {
+        "pin": {
+          "name": "PH5",
+          "position": "33",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 5,
+          "port": "H"
+        },
+        "signal": {
+          "instance": "GPIOH",
+          "name": "GPIO",
+          "type": "user_gpio"
+        },
+        "pinned": true
       }
     ],
     "needConfigurations": [
       {
-        "signal": {
-          "instance": "USB",
-          "name": "USB_DM",
-          "type": "additional"
-        },
+        "id": "a7564a70-4143-4362-9a29-142e2e826cd8",
+        "needId": "a7564a70-4143-4362-9a29-142e2e826cd8",
         "pin": {
           "name": "PA11",
           "position": "103",
@@ -2007,16 +2091,17 @@
           "index": 11,
           "port": "A"
         },
-        "needId": "a7564a70-4143-4362-9a29-142e2e826cd8",
-        "ownedByUser": false,
-        "pinned": false
-      },
-      {
         "signal": {
           "instance": "USB",
-          "name": "USB_DP",
+          "name": "USB_DM",
           "type": "additional"
         },
+        "pinned": false,
+        "ownedByUser": false
+      },
+      {
+        "id": "67997b16-9410-45a3-ac2a-7e43936f8640",
+        "needId": "67997b16-9410-45a3-ac2a-7e43936f8640",
         "pin": {
           "name": "PA12",
           "position": "104",
@@ -2030,17 +2115,17 @@
           "index": 12,
           "port": "A"
         },
-        "needId": "67997b16-9410-45a3-ac2a-7e43936f8640",
-        "ownedByUser": false,
-        "pinned": false
+        "signal": {
+          "instance": "USB",
+          "name": "USB_DP",
+          "type": "additional"
+        },
+        "pinned": false,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "TIM2",
-          "name": "TIM2_CH1",
-          "type": "alternate",
-          "alternateFunctionId": "AF1"
-        },
+        "id": "2532b4ef-1340-41a2-88e9-7ba550da5083",
+        "needId": "2532b4ef-1340-41a2-88e9-7ba550da5083",
         "pin": {
           "name": "PA15(JTDI)",
           "position": "110",
@@ -2052,17 +2137,18 @@
           "index": 15,
           "port": "A"
         },
-        "needId": "2532b4ef-1340-41a2-88e9-7ba550da5083",
-        "ownedByUser": false,
-        "pinned": false
+        "signal": {
+          "instance": "TIM2",
+          "name": "TIM2_CH1",
+          "type": "alternate",
+          "alternateFunctionId": "AF1"
+        },
+        "pinned": false,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "USART2",
-          "name": "USART2_TX",
-          "type": "alternate",
-          "alternateFunctionId": "AF7"
-        },
+        "id": "ee838fb2-26a3-4d45-a611-1a1e95727337",
+        "needId": "ee838fb2-26a3-4d45-a611-1a1e95727337",
         "pin": {
           "name": "PA2",
           "position": "36",
@@ -2076,17 +2162,18 @@
           "index": 2,
           "port": "A"
         },
-        "needId": "ee838fb2-26a3-4d45-a611-1a1e95727337",
-        "ownedByUser": true,
-        "pinned": true
-      },
-      {
         "signal": {
           "instance": "USART2",
-          "name": "USART2_RX",
+          "name": "USART2_TX",
           "type": "alternate",
           "alternateFunctionId": "AF7"
         },
+        "pinned": true,
+        "ownedByUser": true
+      },
+      {
+        "id": "fe2401c5-579e-44a1-ac28-3f103738972c",
+        "needId": "fe2401c5-579e-44a1-ac28-3f103738972c",
         "pin": {
           "name": "PA3",
           "position": "37",
@@ -2100,17 +2187,18 @@
           "index": 3,
           "port": "A"
         },
-        "needId": "fe2401c5-579e-44a1-ac28-3f103738972c",
-        "ownedByUser": true,
-        "pinned": true
+        "signal": {
+          "instance": "USART2",
+          "name": "USART2_RX",
+          "type": "alternate",
+          "alternateFunctionId": "AF7"
+        },
+        "pinned": true,
+        "ownedByUser": true
       },
       {
-        "signal": {
-          "instance": "TIM3",
-          "name": "TIM3_CH1",
-          "type": "alternate",
-          "alternateFunctionId": "AF2"
-        },
+        "id": "347b1aee-a3a1-4ee5-8f01-8f2902f48714",
+        "needId": "347b1aee-a3a1-4ee5-8f01-8f2902f48714",
         "pin": {
           "name": "PA6",
           "position": "42",
@@ -2124,17 +2212,18 @@
           "index": 6,
           "port": "A"
         },
-        "needId": "347b1aee-a3a1-4ee5-8f01-8f2902f48714",
-        "ownedByUser": false,
-        "pinned": false
-      },
-      {
         "signal": {
           "instance": "TIM3",
-          "name": "TIM3_CH2",
+          "name": "TIM3_CH1",
           "type": "alternate",
           "alternateFunctionId": "AF2"
         },
+        "pinned": false,
+        "ownedByUser": false
+      },
+      {
+        "id": "3bba1603-ff76-4813-98c6-7e58b36b1ba0",
+        "needId": "3bba1603-ff76-4813-98c6-7e58b36b1ba0",
         "pin": {
           "name": "PA7",
           "position": "43",
@@ -2148,17 +2237,18 @@
           "index": 7,
           "port": "A"
         },
-        "needId": "3bba1603-ff76-4813-98c6-7e58b36b1ba0",
-        "ownedByUser": false,
-        "pinned": false
+        "signal": {
+          "instance": "TIM3",
+          "name": "TIM3_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF2"
+        },
+        "pinned": false,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "TIM1",
-          "name": "TIM1_CH1",
-          "type": "alternate",
-          "alternateFunctionId": "AF1"
-        },
+        "id": "6e635106-f6ec-4b9b-b738-3572e9edd40b",
+        "needId": "6e635106-f6ec-4b9b-b738-3572e9edd40b",
         "pin": {
           "name": "PA8",
           "position": "100",
@@ -2172,17 +2262,43 @@
           "index": 8,
           "port": "A"
         },
-        "needId": "6e635106-f6ec-4b9b-b738-3572e9edd40b",
-        "ownedByUser": true,
-        "pinned": true
+        "signal": {
+          "instance": "TIM1",
+          "name": "TIM1_CH1",
+          "type": "alternate",
+          "alternateFunctionId": "AF1"
+        },
+        "pinned": true,
+        "ownedByUser": true
       },
       {
-        "signal": {
-          "instance": "USART3",
-          "name": "USART3_TX",
-          "type": "alternate",
-          "alternateFunctionId": "AF7"
+        "id": "b230ac06-763a-4b33-a742-60362b3fcfc2",
+        "needId": "b230ac06-763a-4b33-a742-60362b3fcfc2",
+        "pin": {
+          "name": "PA9",
+          "position": "101",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 9,
+          "port": "A"
         },
+        "signal": {
+          "instance": "SPI2",
+          "name": "SPI2_SCK",
+          "type": "alternate",
+          "alternateFunctionId": "AF5"
+        },
+        "pinned": false,
+        "ownedByUser": false
+      },
+      {
+        "id": "03cd7113-69e5-4ac9-9588-859e52483b1b",
+        "needId": "03cd7113-69e5-4ac9-9588-859e52483b1b",
         "pin": {
           "name": "PB10",
           "position": "69",
@@ -2196,17 +2312,18 @@
           "index": 10,
           "port": "B"
         },
-        "needId": "03cd7113-69e5-4ac9-9588-859e52483b1b",
-        "ownedByUser": true,
-        "pinned": true
+        "signal": {
+          "instance": "USART3",
+          "name": "USART3_TX",
+          "type": "alternate",
+          "alternateFunctionId": "AF7"
+        },
+        "pinned": true,
+        "ownedByUser": true
       },
       {
-        "signal": {
-          "instance": "TIM8",
-          "name": "TIM8_CH2",
-          "type": "alternate",
-          "alternateFunctionId": "AF2"
-        },
+        "id": "21fd9e19-02c0-48fd-b248-b92aab1762f5",
+        "needId": "21fd9e19-02c0-48fd-b248-b92aab1762f5",
         "pin": {
           "name": "PB13",
           "position": "74",
@@ -2218,17 +2335,18 @@
           "index": 13,
           "port": "B"
         },
-        "needId": "21fd9e19-02c0-48fd-b248-b92aab1762f5",
-        "ownedByUser": false,
-        "pinned": false
+        "signal": {
+          "instance": "TIM8",
+          "name": "TIM8_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF2"
+        },
+        "pinned": false,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "TIM2",
-          "name": "TIM2_CH2",
-          "type": "alternate",
-          "alternateFunctionId": "AF1"
-        },
+        "id": "2f8f5399-57df-45f5-92e8-d3e09678a302",
+        "needId": "2f8f5399-57df-45f5-92e8-d3e09678a302",
         "pin": {
           "name": "PB3(JTDO/TRACESWO)",
           "position": "133",
@@ -2242,17 +2360,18 @@
           "index": 3,
           "port": "B"
         },
-        "needId": "2f8f5399-57df-45f5-92e8-d3e09678a302",
-        "ownedByUser": false,
-        "pinned": true
+        "signal": {
+          "instance": "TIM2",
+          "name": "TIM2_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF1"
+        },
+        "pinned": true,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "USART3",
-          "name": "USART3_RX",
-          "type": "alternate",
-          "alternateFunctionId": "AF11"
-        },
+        "id": "a762122e-0114-47a4-86c4-6fce55962ed2",
+        "needId": "a762122e-0114-47a4-86c4-6fce55962ed2",
         "pin": {
           "name": "PB4(NJTRST)",
           "position": "134",
@@ -2266,17 +2385,18 @@
           "index": 4,
           "port": "B"
         },
-        "needId": "a762122e-0114-47a4-86c4-6fce55962ed2",
-        "ownedByUser": true,
-        "pinned": true
+        "signal": {
+          "instance": "USART3",
+          "name": "USART3_RX",
+          "type": "alternate",
+          "alternateFunctionId": "AF11"
+        },
+        "pinned": true,
+        "ownedByUser": true
       },
       {
-        "signal": {
-          "instance": "I2C1",
-          "name": "I2C1_SCL",
-          "type": "alternate",
-          "alternateFunctionId": "AF4"
-        },
+        "id": "a5bd8f35-eb06-449d-8b56-4d52e1c06fd2",
+        "needId": "a5bd8f35-eb06-449d-8b56-4d52e1c06fd2",
         "pin": {
           "name": "PB6",
           "position": "136",
@@ -2290,17 +2410,18 @@
           "index": 6,
           "port": "B"
         },
-        "needId": "a5bd8f35-eb06-449d-8b56-4d52e1c06fd2",
-        "ownedByUser": true,
-        "pinned": true
-      },
-      {
         "signal": {
           "instance": "I2C1",
-          "name": "I2C1_SDA",
+          "name": "I2C1_SCL",
           "type": "alternate",
           "alternateFunctionId": "AF4"
         },
+        "pinned": true,
+        "ownedByUser": true
+      },
+      {
+        "id": "b0d8cd5d-edf1-4c16-a31e-91945d7d6696",
+        "needId": "b0d8cd5d-edf1-4c16-a31e-91945d7d6696",
         "pin": {
           "name": "PB7",
           "position": "137",
@@ -2314,17 +2435,18 @@
           "index": 7,
           "port": "B"
         },
-        "needId": "b0d8cd5d-edf1-4c16-a31e-91945d7d6696",
-        "ownedByUser": true,
-        "pinned": true
-      },
-      {
         "signal": {
-          "instance": "TIM15",
-          "name": "TIM15_CH1",
+          "instance": "I2C1",
+          "name": "I2C1_SDA",
           "type": "alternate",
           "alternateFunctionId": "AF4"
         },
+        "pinned": true,
+        "ownedByUser": true
+      },
+      {
+        "id": "c65df660-38b7-45dc-b7e8-55b8991acd95",
+        "needId": "c65df660-38b7-45dc-b7e8-55b8991acd95",
         "pin": {
           "name": "PC12",
           "position": "113",
@@ -2336,17 +2458,18 @@
           "index": 12,
           "port": "C"
         },
-        "needId": "c65df660-38b7-45dc-b7e8-55b8991acd95",
-        "ownedByUser": false,
-        "pinned": false
+        "signal": {
+          "instance": "TIM15",
+          "name": "TIM15_CH1",
+          "type": "alternate",
+          "alternateFunctionId": "AF4"
+        },
+        "pinned": false,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "TIM8",
-          "name": "TIM8_CH1",
-          "type": "alternate",
-          "alternateFunctionId": "AF3"
-        },
+        "id": "b0dfe781-c953-4c40-bead-e9e5c7b2ce5f",
+        "needId": "b0dfe781-c953-4c40-bead-e9e5c7b2ce5f",
         "pin": {
           "name": "PC6",
           "position": "96",
@@ -2358,17 +2481,18 @@
           "index": 6,
           "port": "C"
         },
-        "needId": "b0dfe781-c953-4c40-bead-e9e5c7b2ce5f",
-        "ownedByUser": false,
-        "pinned": true
+        "signal": {
+          "instance": "TIM8",
+          "name": "TIM8_CH1",
+          "type": "alternate",
+          "alternateFunctionId": "AF3"
+        },
+        "pinned": true,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "LPTIM1",
-          "name": "LPTIM1_CH2",
-          "type": "alternate",
-          "alternateFunctionId": "AF4"
-        },
+        "id": "0488eed2-94e5-45c3-b5ad-d5773e0c153c",
+        "needId": "0488eed2-94e5-45c3-b5ad-d5773e0c153c",
         "pin": {
           "name": "PD10",
           "position": "79",
@@ -2380,17 +2504,18 @@
           "index": 10,
           "port": "D"
         },
-        "needId": "0488eed2-94e5-45c3-b5ad-d5773e0c153c",
-        "ownedByUser": false,
-        "pinned": false
+        "signal": {
+          "instance": "LPTIM1",
+          "name": "LPTIM1_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF4"
+        },
+        "pinned": false,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "TIM4",
-          "name": "TIM4_CH1",
-          "type": "alternate",
-          "alternateFunctionId": "AF2"
-        },
+        "id": "c071923a-5242-4f3e-a74d-9c8c8a8d9f09",
+        "needId": "c071923a-5242-4f3e-a74d-9c8c8a8d9f09",
         "pin": {
           "name": "PD12",
           "position": "81",
@@ -2404,17 +2529,18 @@
           "index": 12,
           "port": "D"
         },
-        "needId": "c071923a-5242-4f3e-a74d-9c8c8a8d9f09",
-        "ownedByUser": false,
-        "pinned": false
-      },
-      {
         "signal": {
           "instance": "TIM4",
-          "name": "TIM4_CH2",
+          "name": "TIM4_CH1",
           "type": "alternate",
           "alternateFunctionId": "AF2"
         },
+        "pinned": false,
+        "ownedByUser": false
+      },
+      {
+        "id": "68715225-5c83-442f-b8d6-675ddb4b4f0c",
+        "needId": "68715225-5c83-442f-b8d6-675ddb4b4f0c",
         "pin": {
           "name": "PD13",
           "position": "82",
@@ -2428,17 +2554,18 @@
           "index": 13,
           "port": "D"
         },
-        "needId": "68715225-5c83-442f-b8d6-675ddb4b4f0c",
-        "ownedByUser": false,
-        "pinned": false
+        "signal": {
+          "instance": "TIM4",
+          "name": "TIM4_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF2"
+        },
+        "pinned": false,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "LPTIM1",
-          "name": "LPTIM1_IN2",
-          "type": "alternate",
-          "alternateFunctionId": "AF1"
-        },
+        "id": "5a52b7c9-8763-4d9b-8890-506b010fc933",
+        "needId": "5a52b7c9-8763-4d9b-8890-506b010fc933",
         "pin": {
           "name": "PE1",
           "position": "142",
@@ -2450,167 +2577,18 @@
           "index": 1,
           "port": "E"
         },
-        "needId": "5a52b7c9-8763-4d9b-8890-506b010fc933",
-        "ownedByUser": false,
-        "pinned": true
-      },
-      {
-        "signal": {
-          "instance": "TIM15",
-          "name": "TIM15_CH2",
-          "type": "alternate",
-          "alternateFunctionId": "AF4"
-        },
-        "pin": {
-          "name": "PE6",
-          "position": "5",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 6,
-          "port": "E"
-        },
-        "needId": "2b4c2c60-fe3f-465b-a665-a3d288bf7c09",
-        "ownedByUser": false,
-        "pinned": false
-      },
-      {
         "signal": {
           "instance": "LPTIM1",
-          "name": "LPTIM1_IN1",
+          "name": "LPTIM1_IN2",
           "type": "alternate",
           "alternateFunctionId": "AF1"
         },
-        "pin": {
-          "name": "PG12",
-          "position": "127",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 12,
-          "port": "G"
-        },
-        "needId": "e38392a5-d579-4067-acc2-fe84c9477fb0",
-        "ownedByUser": false,
-        "pinned": true
+        "pinned": true,
+        "ownedByUser": false
       },
       {
-        "signal": {
-          "instance": "LPTIM1",
-          "name": "LPTIM1_CH1",
-          "type": "alternate",
-          "alternateFunctionId": "AF1"
-        },
-        "pin": {
-          "name": "PG13",
-          "position": "128",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 13,
-          "port": "G"
-        },
-        "needId": "f97ff007-f5b1-402e-b905-c42fcd21db6a",
-        "ownedByUser": false,
-        "pinned": true
-      },
-      {
-        "signal": {
-          "instance": "TIM5",
-          "name": "TIM5_CH1",
-          "type": "alternate",
-          "alternateFunctionId": "AF2"
-        },
-        "pin": {
-          "name": "PG4",
-          "position": "89",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 4,
-          "port": "G"
-        },
-        "needId": "eac1c8ea-752e-4983-b1e2-777b20d88f02",
-        "ownedByUser": false,
-        "pinned": false
-      },
-      {
-        "signal": {
-          "instance": "TIM5",
-          "name": "TIM5_CH2",
-          "type": "alternate",
-          "alternateFunctionId": "AF2"
-        },
-        "pin": {
-          "name": "PG5",
-          "position": "90",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 5,
-          "port": "G"
-        },
-        "needId": "a4dc9693-fb47-4b12-a19a-5688276f75bb",
-        "ownedByUser": false,
-        "pinned": true
-      },
-      {
-        "signal": {
-          "instance": "RCC",
-          "name": "RCC_OSC_IN",
-          "type": "additional"
-        },
-        "pin": {
-          "name": "PH0-OSC_IN(PH0)",
-          "position": "23",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 0,
-          "port": "H"
-        },
-        "needId": "5ddd72f2-3f40-46e9-a36e-09e10d998f63",
-        "ownedByUser": false,
-        "pinned": false
-      },
-      {
-        "signal": {
-          "instance": "RCC",
-          "name": "RCC_OSC_OUT",
-          "type": "additional"
-        },
-        "pin": {
-          "name": "PH1-OSC_OUT(PH1)",
-          "position": "24",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 1,
-          "port": "H"
-        },
-        "needId": "6b825f5e-3115-449b-9ba0-965fdd7af68b",
-        "ownedByUser": false,
-        "pinned": false
-      },
-      {
+        "id": "ceb5b64e-b4d2-41cb-9af9-54867ac24949",
+        "needId": "ceb5b64e-b4d2-41cb-9af9-54867ac24949",
         "pin": {
           "name": "PE11",
           "position": "64",
@@ -2630,7 +2608,219 @@
           "type": "alternate",
           "alternateFunctionId": "AF1"
         },
-        "needId": "ceb5b64e-b4d2-41cb-9af9-54867ac24949",
+        "pinned": true,
+        "ownedByUser": true
+      },
+      {
+        "id": "2b4c2c60-fe3f-465b-a665-a3d288bf7c09",
+        "needId": "2b4c2c60-fe3f-465b-a665-a3d288bf7c09",
+        "pin": {
+          "name": "PE6",
+          "position": "5",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 6,
+          "port": "E"
+        },
+        "signal": {
+          "instance": "TIM15",
+          "name": "TIM15_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF4"
+        },
+        "pinned": false,
+        "ownedByUser": false
+      },
+      {
+        "id": "e38392a5-d579-4067-acc2-fe84c9477fb0",
+        "needId": "e38392a5-d579-4067-acc2-fe84c9477fb0",
+        "pin": {
+          "name": "PG12",
+          "position": "127",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 12,
+          "port": "G"
+        },
+        "signal": {
+          "instance": "LPTIM1",
+          "name": "LPTIM1_IN1",
+          "type": "alternate",
+          "alternateFunctionId": "AF1"
+        },
+        "pinned": true,
+        "ownedByUser": false
+      },
+      {
+        "id": "f97ff007-f5b1-402e-b905-c42fcd21db6a",
+        "needId": "f97ff007-f5b1-402e-b905-c42fcd21db6a",
+        "pin": {
+          "name": "PG13",
+          "position": "128",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 13,
+          "port": "G"
+        },
+        "signal": {
+          "instance": "LPTIM1",
+          "name": "LPTIM1_CH1",
+          "type": "alternate",
+          "alternateFunctionId": "AF1"
+        },
+        "pinned": true,
+        "ownedByUser": false
+      },
+      {
+        "id": "eac1c8ea-752e-4983-b1e2-777b20d88f02",
+        "needId": "eac1c8ea-752e-4983-b1e2-777b20d88f02",
+        "pin": {
+          "name": "PG4",
+          "position": "89",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 4,
+          "port": "G"
+        },
+        "signal": {
+          "instance": "TIM5",
+          "name": "TIM5_CH1",
+          "type": "alternate",
+          "alternateFunctionId": "AF2"
+        },
+        "pinned": false,
+        "ownedByUser": false
+      },
+      {
+        "id": "a4dc9693-fb47-4b12-a19a-5688276f75bb",
+        "needId": "a4dc9693-fb47-4b12-a19a-5688276f75bb",
+        "pin": {
+          "name": "PG5",
+          "position": "90",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 5,
+          "port": "G"
+        },
+        "signal": {
+          "instance": "TIM5",
+          "name": "TIM5_CH2",
+          "type": "alternate",
+          "alternateFunctionId": "AF2"
+        },
+        "pinned": true,
+        "ownedByUser": false
+      },
+      {
+        "id": "5ddd72f2-3f40-46e9-a36e-09e10d998f63",
+        "needId": "5ddd72f2-3f40-46e9-a36e-09e10d998f63",
+        "pin": {
+          "name": "PH0-OSC_IN(PH0)",
+          "position": "23",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 0,
+          "port": "H"
+        },
+        "signal": {
+          "instance": "RCC",
+          "name": "RCC_OSC_IN",
+          "type": "additional"
+        },
+        "pinned": false,
+        "ownedByUser": false
+      },
+      {
+        "id": "6b825f5e-3115-449b-9ba0-965fdd7af68b",
+        "needId": "6b825f5e-3115-449b-9ba0-965fdd7af68b",
+        "pin": {
+          "name": "PH1-OSC_OUT(PH1)",
+          "position": "24",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 1,
+          "port": "H"
+        },
+        "signal": {
+          "instance": "RCC",
+          "name": "RCC_OSC_OUT",
+          "type": "additional"
+        },
+        "pinned": false,
+        "ownedByUser": false
+      },
+      {
+        "id": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
+        "pin": {
+          "name": "PC2",
+          "position": "28",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 2,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "SPI2",
+          "name": "SPI2_MISO",
+          "type": "alternate",
+          "alternateFunctionId": "AF5"
+        },
+        "needId": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
+        "pinned": true,
+        "ownedByUser": true
+      },
+      {
+        "id": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
+        "pin": {
+          "name": "PC3",
+          "position": "29",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 3,
+          "port": "C"
+        },
+        "signal": {
+          "instance": "SPI2",
+          "name": "SPI2_MOSI",
+          "type": "alternate",
+          "alternateFunctionId": "AF5"
+        },
+        "needId": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
         "pinned": true,
         "ownedByUser": true
       }
@@ -3125,18 +3315,6 @@
       ]
     },
     {
-      "position": "29",
-      "labels": [
-        "PC3"
-      ]
-    },
-    {
-      "position": "28",
-      "labels": [
-        "PC2"
-      ]
-    },
-    {
       "position": "27",
       "labels": [
         "PC1"
@@ -3170,12 +3348,6 @@
       "position": "48",
       "labels": [
         "PB2"
-      ]
-    },
-    {
-      "position": "101",
-      "labels": [
-        "PA9"
       ]
     },
     {
@@ -3514,16 +3686,38 @@
       ]
     },
     {
-      "position": "34",
-      "labels": [
-        "PA0"
-      ]
-    },
-    {
       "position": "73",
       "labels": [
         "PB12",
         "M1_nSLP"
+      ]
+    },
+    {
+      "position": "34",
+      "labels": [
+        "PA0",
+        "SPI_FLASH_CS"
+      ]
+    },
+    {
+      "position": "101",
+      "labels": [
+        "PA9",
+        "SPI_FLASH_SCK"
+      ]
+    },
+    {
+      "position": "28",
+      "labels": [
+        "PC2",
+        "SPI_FLASH_MISO"
+      ]
+    },
+    {
+      "position": "29",
+      "labels": [
+        "PC3",
+        "SPI_FLASH_MOSI"
       ]
     }
   ],
@@ -3540,6 +3734,19 @@
       "id": "default_gpio_group_id",
       "name": "gpio_default",
       "pins": [
+        {
+          "name": "PA0",
+          "position": "34",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 0,
+          "port": "A"
+        },
         {
           "name": "PA10",
           "position": "102",
@@ -3575,6 +3782,32 @@
           "ioType": "I/O",
           "ioStructure": "FT",
           "index": 0,
+          "port": "B"
+        },
+        {
+          "name": "PB1",
+          "position": "47",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "a"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 1,
+          "port": "B"
+        },
+        {
+          "name": "PB12",
+          "position": "73",
+          "type": "gpio",
+          "powerSource": "VDD",
+          "ioStructureOptions": [
+            "f"
+          ],
+          "ioType": "I/O",
+          "ioStructure": "FT",
+          "index": 12,
           "port": "B"
         },
         {
@@ -3759,32 +3992,6 @@
           "ioStructure": "FT",
           "index": 5,
           "port": "H"
-        },
-        {
-          "name": "PB1",
-          "position": "47",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "a"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 1,
-          "port": "B"
-        },
-        {
-          "name": "PB12",
-          "position": "73",
-          "type": "gpio",
-          "powerSource": "VDD",
-          "ioStructureOptions": [
-            "f"
-          ],
-          "ioType": "I/O",
-          "ioStructure": "FT",
-          "index": 12,
-          "port": "B"
         }
       ]
     }
@@ -4013,6 +4220,33 @@
       "softwareProjectId": "8788bd42-8f15-4186-8d87-14fe034f5d0d",
       "signal": "TIM1_CH2",
       "instanceName": "TIM1"
+    },
+    {
+      "id": "b230ac06-763a-4b33-a742-60362b3fcfc2",
+      "needId": "b230ac06-763a-4b33-a742-60362b3fcfc2",
+      "softwareProjectId": "8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "componentInstanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+      "signal": "SPI2_SCK",
+      "instanceName": "SPI2"
+    },
+    {
+      "id": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
+      "needId": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
+      "softwareProjectId": "8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "componentInstanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+      "signal": "SPI2_MISO",
+      "instanceName": "SPI2"
+    },
+    {
+      "id": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
+      "needId": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
+      "softwareProjectId": "8788bd42-8f15-4186-8d87-14fe034f5d0d",
+      "componentInstanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+      "signal": "SPI2_MOSI",
+      "instanceName": "SPI2"
     }
   ],
   "pinout-user-settings": {
@@ -4022,720 +4256,720 @@
   }
 }"""
 "File: NUCLEO-C5A3ZG_project/.settings/hw-composition.store.json" = """
-{\r
-  "name": "NUCLEO-C5A3ZG_project",\r
-  "boards": [\r
-    {\r
-      "type": "NORMAL",\r
-      "uid": "726e472c-3635-424e-a0f5-39b539869249",\r
-      "boardUID": "STMicroelectronics.nucleo-c5a3zg_hw-board.2.1.0$STMicroelectronics::NUCLEO-C5A3ZG@NUC5A3ZG$KR1",\r
-      "removedParts": []\r
-    }\r
-  ],\r
-  "version": 3,\r
-  "constraints": [\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "B1",\r
-        "pin": "1",\r
-        "name": "KSC721JLFS"\r
-      },\r
-      "device": {\r
-        "pin": "7"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "GPIO",\r
-          "direction": "output"\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "B1",\r
-        "pin": "2",\r
-        "name": "KSC721JLFS"\r
-      },\r
-      "device": {\r
-        "pin": "7"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "GPIO",\r
-          "direction": "output"\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "LD1",\r
-        "pin": "2",\r
-        "name": "19-217/G7C-AN1P2/6T"\r
-      },\r
-      "device": {\r
-        "pin": "41"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "GPIO",\r
-          "direction": "input"\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "LD2",\r
-        "pin": "2",\r
-        "name": "19-217/R6C-AL1M2VY/6T"\r
-      },\r
-      "device": {\r
-        "pin": "57"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "GPIO",\r
-          "direction": "input"\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "LD3",\r
-        "pin": "2",\r
-        "name": "19-217/BHC-ZL1M2RY/6T"\r
-      },\r
-      "device": {\r
-        "pin": "87"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "GPIO",\r
-          "direction": "input"\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U2",\r
-        "pin": "L2",\r
-        "name": "STLINK-V3EC"\r
-      },\r
-      "device": {\r
-        "pin": "105"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Debug TAP",\r
-          "busMode": "Serial Wire Debug Master with SWO",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "SWDIO",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "SWDIO",\r
-              "mode": "Serial Wire Debug Slave with SWO"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U2",\r
-        "pin": "M11",\r
-        "name": "STLINK-V3EC"\r
-      },\r
-      "device": {\r
-        "pin": "109"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Debug TAP",\r
-          "busMode": "Serial Wire Debug Master with SWO",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "SWCLK",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "SWCLK",\r
-              "mode": "Serial Wire Debug Slave with SWO"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U2",\r
-        "pin": "D12",\r
-        "name": "STLINK-V3EC"\r
-      },\r
-      "device": {\r
-        "pin": "133"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Debug TAP",\r
-          "busMode": "Serial Wire Debug Master with SWO",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "SWO",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "SWO",\r
-              "mode": "Serial Wire Debug Slave with SWO"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U2",\r
-        "pin": "C10",\r
-        "name": "STLINK-V3EC"\r
-      },\r
-      "device": {\r
-        "pin": "36"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Serial",\r
-          "busMode": "Asynchronous",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RX",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "TX",\r
-              "mode": "Asynchronous"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U2",\r
-        "pin": "A7",\r
-        "name": "STLINK-V3EC"\r
-      },\r
-      "device": {\r
-        "pin": "37"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Serial",\r
-          "busMode": "Asynchronous",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "TX",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "RX",\r
-              "mode": "Asynchronous"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "2",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "129"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "GPIO",\r
-          "direction": "output"\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "7",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "45"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RXD1",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "RXD1",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RXD1",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "RXD1",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "8",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "44"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RXD0",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "RXD0",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RXD0",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "RXD0",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "11",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "115"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "CRS_DV",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "CRS_DV",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "CRS_DV",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "CRS_DV",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "12",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "65"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "MDIO",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "MDIO",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "MDIO",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "MDIO",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "13",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "27"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "MDC",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "MDC",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "MDC",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "MDC",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "14",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "35"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "REF_CLK",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "REF_CLK",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "REF_CLK",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "REF_CLK",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "16",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "126"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "TX_EN",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "TX_EN",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "TX_EN",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "TX_EN",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "17",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "128"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "TXD0",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "TXD0",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "TXD0",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "TXD0",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "U17",\r
-        "pin": "18",\r
-        "name": "LAN8742A-CZ-TR"\r
-      },\r
-      "device": {\r
-        "pin": "127"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "TXD1",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "TXD1",\r
-              "mode": "RMII Master"\r
-            }\r
-          ]\r
-        },\r
-        {\r
-          "type": "BUS",\r
-          "busType": "Ethernet Media-independent interface",\r
-          "busMode": "RMII Slave w/ Receive Error",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "TXD1",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "TXD1",\r
-              "mode": "RMII Master w/ Receive Error"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "X2",\r
-        "pin": "1",\r
-        "name": "NX1610SE-32.768KHz-EXS00A-MU01499"\r
-      },\r
-      "device": {\r
-        "pin": "9"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "External Clock",\r
-          "busMode": "Resonator",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RES",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "OSC_IN",\r
-              "mode": "Resonator"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "X2",\r
-        "pin": "2",\r
-        "name": "NX1610SE-32.768KHz-EXS00A-MU01499"\r
-      },\r
-      "device": {\r
-        "pin": "8"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "External Clock",\r
-          "busMode": "Resonator",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RES",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "OSC_IN",\r
-              "mode": "Resonator"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "X3",\r
-        "pin": "1",\r
-        "name": "NX1612SA-48MHz-EXS00A-CS13835"\r
-      },\r
-      "device": {\r
-        "pin": "23"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "External Clock",\r
-          "busMode": "Resonator",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RES",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "OSC_IN",\r
-              "mode": "Resonator"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    },\r
-    {\r
-      "part": {\r
-        "enabled": true,\r
-        "reference": "X3",\r
-        "pin": "3",\r
-        "name": "NX1612SA-48MHz-EXS00A-CS13835"\r
-      },\r
-      "device": {\r
-        "pin": "24"\r
-      },\r
-      "signals": [\r
-        {\r
-          "type": "BUS",\r
-          "busType": "External Clock",\r
-          "busMode": "Resonator",\r
-          "busVersion": "1.0.0",\r
-          "signalType": "RES",\r
-          "compatibleConfigurations": [\r
-            {\r
-              "signalType": "OSC_IN",\r
-              "mode": "Resonator"\r
-            }\r
-          ]\r
-        }\r
-      ]\r
-    }\r
-  ]\r
+{\r\r
+  "name": "NUCLEO-C5A3ZG_project",\r\r
+  "boards": [\r\r
+    {\r\r
+      "type": "NORMAL",\r\r
+      "uid": "726e472c-3635-424e-a0f5-39b539869249",\r\r
+      "boardUID": "STMicroelectronics.nucleo-c5a3zg_hw-board.2.1.0$STMicroelectronics::NUCLEO-C5A3ZG@NUC5A3ZG$KR1",\r\r
+      "removedParts": []\r\r
+    }\r\r
+  ],\r\r
+  "version": 3,\r\r
+  "constraints": [\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "B1",\r\r
+        "pin": "1",\r\r
+        "name": "KSC721JLFS"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "7"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "GPIO",\r\r
+          "direction": "output"\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "B1",\r\r
+        "pin": "2",\r\r
+        "name": "KSC721JLFS"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "7"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "GPIO",\r\r
+          "direction": "output"\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "LD1",\r\r
+        "pin": "2",\r\r
+        "name": "19-217/G7C-AN1P2/6T"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "41"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "GPIO",\r\r
+          "direction": "input"\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "LD2",\r\r
+        "pin": "2",\r\r
+        "name": "19-217/R6C-AL1M2VY/6T"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "57"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "GPIO",\r\r
+          "direction": "input"\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "LD3",\r\r
+        "pin": "2",\r\r
+        "name": "19-217/BHC-ZL1M2RY/6T"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "87"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "GPIO",\r\r
+          "direction": "input"\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U2",\r\r
+        "pin": "L2",\r\r
+        "name": "STLINK-V3EC"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "105"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Debug TAP",\r\r
+          "busMode": "Serial Wire Debug Master with SWO",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "SWDIO",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "SWDIO",\r\r
+              "mode": "Serial Wire Debug Slave with SWO"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U2",\r\r
+        "pin": "M11",\r\r
+        "name": "STLINK-V3EC"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "109"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Debug TAP",\r\r
+          "busMode": "Serial Wire Debug Master with SWO",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "SWCLK",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "SWCLK",\r\r
+              "mode": "Serial Wire Debug Slave with SWO"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U2",\r\r
+        "pin": "D12",\r\r
+        "name": "STLINK-V3EC"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "133"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Debug TAP",\r\r
+          "busMode": "Serial Wire Debug Master with SWO",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "SWO",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "SWO",\r\r
+              "mode": "Serial Wire Debug Slave with SWO"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U2",\r\r
+        "pin": "C10",\r\r
+        "name": "STLINK-V3EC"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "36"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Serial",\r\r
+          "busMode": "Asynchronous",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RX",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "TX",\r\r
+              "mode": "Asynchronous"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U2",\r\r
+        "pin": "A7",\r\r
+        "name": "STLINK-V3EC"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "37"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Serial",\r\r
+          "busMode": "Asynchronous",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "TX",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "RX",\r\r
+              "mode": "Asynchronous"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "2",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "129"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "GPIO",\r\r
+          "direction": "output"\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "7",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "45"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RXD1",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "RXD1",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RXD1",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "RXD1",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "8",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "44"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RXD0",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "RXD0",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RXD0",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "RXD0",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "11",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "115"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "CRS_DV",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "CRS_DV",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "CRS_DV",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "CRS_DV",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "12",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "65"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "MDIO",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "MDIO",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "MDIO",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "MDIO",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "13",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "27"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "MDC",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "MDC",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "MDC",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "MDC",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "14",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "35"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "REF_CLK",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "REF_CLK",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "REF_CLK",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "REF_CLK",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "16",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "126"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "TX_EN",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "TX_EN",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "TX_EN",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "TX_EN",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "17",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "128"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "TXD0",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "TXD0",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "TXD0",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "TXD0",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "U17",\r\r
+        "pin": "18",\r\r
+        "name": "LAN8742A-CZ-TR"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "127"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "TXD1",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "TXD1",\r\r
+              "mode": "RMII Master"\r\r
+            }\r\r
+          ]\r\r
+        },\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "Ethernet Media-independent interface",\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "TXD1",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "TXD1",\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "X2",\r\r
+        "pin": "1",\r\r
+        "name": "NX1610SE-32.768KHz-EXS00A-MU01499"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "9"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "External Clock",\r\r
+          "busMode": "Resonator",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RES",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "OSC_IN",\r\r
+              "mode": "Resonator"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "X2",\r\r
+        "pin": "2",\r\r
+        "name": "NX1610SE-32.768KHz-EXS00A-MU01499"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "8"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "External Clock",\r\r
+          "busMode": "Resonator",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RES",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "OSC_IN",\r\r
+              "mode": "Resonator"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "X3",\r\r
+        "pin": "1",\r\r
+        "name": "NX1612SA-48MHz-EXS00A-CS13835"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "23"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "External Clock",\r\r
+          "busMode": "Resonator",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RES",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "OSC_IN",\r\r
+              "mode": "Resonator"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    },\r\r
+    {\r\r
+      "part": {\r\r
+        "enabled": true,\r\r
+        "reference": "X3",\r\r
+        "pin": "3",\r\r
+        "name": "NX1612SA-48MHz-EXS00A-CS13835"\r\r
+      },\r\r
+      "device": {\r\r
+        "pin": "24"\r\r
+      },\r\r
+      "signals": [\r\r
+        {\r\r
+          "type": "BUS",\r\r
+          "busType": "External Clock",\r\r
+          "busMode": "Resonator",\r\r
+          "busVersion": "1.0.0",\r\r
+          "signalType": "RES",\r\r
+          "compatibleConfigurations": [\r\r
+            {\r\r
+              "signalType": "OSC_IN",\r\r
+              "mode": "Resonator"\r\r
+            }\r\r
+          ]\r\r
+        }\r\r
+      ]\r\r
+    }\r\r
+  ]\r\r
 }"""
 "File: NUCLEO-C5A3ZG_project/NUCLEO-C5A3ZG_project.hw" = '""'
 "File: NUCLEO-C5A3ZG_project/project.cube" = """
-{\r
-  "traits": [\r
-    {\r
-      "id": "0cdf4295-0499-42be-8e69-4eef951f8b4c",\r
-      "name": "hardware",\r
-      "files": [\r
-        "NUCLEO-C5A3ZG_project.hw"\r
-      ]\r
-    }\r
-  ],\r
-  "children": []\r
+{\r\r
+  "traits": [\r\r
+    {\r\r
+      "id": "0cdf4295-0499-42be-8e69-4eef951f8b4c",\r\r
+      "name": "hardware",\r\r
+      "files": [\r\r
+        "NUCLEO-C5A3ZG_project.hw"\r\r
+      ]\r\r
+    }\r\r
+  ],\r\r
+  "children": []\r\r
 }"""
 "File: project.cube" = """
 {
@@ -4863,6 +5097,11 @@
     "USB_DRD_FS.HOST": {
       "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:HCD",
       "driverConfigurationId": "533a0976-0a17-4310-a54d-fe1d26d85b24"
+    },
+    "SPI2": {
+      "driverConfigurationId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:SPI",
+      "mode": "SPI"
     }
   }
 }"""
@@ -5318,6 +5557,30 @@
         "id": "680a8d1d-1398-41c2-9d3f-215620b122bc",
         "componentDescriptionId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32 HAL DRIVERS CORE:USB DRD@2.1.0#HAL CORE",
         "label": "STM32 HAL DRIVERS CORE:USB DRD",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//MultiInstanceSWComponent",
+        "id": "7fef1d94-cb23-45be-97f4-8899a18386e3",
+        "componentDescriptionId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+        "label": "STM32CubeMX2 Config:SPI",
+        "expanded": true,
+        "userAdded": true
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "03114c01-2c04-4f4a-8171-fd744891489a",
+        "componentDescriptionId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32 HAL:SPI@2.0.1#HAL SPI",
+        "label": "STM32 HAL:SPI",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "29b408ce-225b-47be-980a-ae02898a3247",
+        "componentDescriptionId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32 LL:SPI@2.0.0#LL",
+        "label": "STM32 LL:SPI",
         "expanded": true,
         "userAdded": false
       }
@@ -6796,6 +7059,17 @@
                   "mode": "",
                   "name": "mx_usb_drd_fs_host_init",
                   "peripheral": "HCD"
+                },
+                {
+                  "_foreignKey": "SPI2",
+                  "_rank": 16,
+                  "callable": true,
+                  "generated": true,
+                  "hw_instance": "SPI2",
+                  "layer": "HAL",
+                  "mode": "",
+                  "name": "mx_spi2_init",
+                  "peripheral": "SPI"
                 }
               ],
               "code_generation": {
@@ -9532,8 +9806,36 @@
                   "enable_dma_rx": false
                 },
                 "nvic": {
-                  "enable_event_interruption": false,
-                  "enable_error_interruption": false
+                  "enable_event_interruption": true,
+                  "enable_error_interruption": true,
+                  "event_irq_handler_generation": true,
+                  "nvic_config_event": {
+                    "needs": [
+                      {
+                        "needType": "need.interrupt.lines",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:I2C@2.1.0#HAL CORE GPIO DMA Init and I2C",
+                        "componentInstanceId": "d107bf3b-0d81-455e-941b-7322649b8e40",
+                        "selector": "EV",
+                        "id": "c165579e-3ec0-48fb-b755-cc18b8c25f10",
+                        "owner": "I2C1"
+                      }
+                    ]
+                  },
+                  "error_irq_handler_generation": true,
+                  "nvic_config_error": {
+                    "needs": [
+                      {
+                        "needType": "need.interrupt.lines",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:I2C@2.1.0#HAL CORE GPIO DMA Init and I2C",
+                        "componentInstanceId": "d107bf3b-0d81-455e-941b-7322649b8e40",
+                        "selector": "ERR",
+                        "id": "50deb7af-7ed4-48de-8130-d02a4c722c50",
+                        "owner": "I2C1"
+                      }
+                    ]
+                  }
                 }
               }
             }
@@ -9554,6 +9856,21 @@
                 "init_type": "called"
               },
               "pins": [
+                {
+                  "_foreignKey": "PA0",
+                  "basic": {
+                    "mode": "OUTPUT",
+                    "pull": "NO",
+                    "enable_exti": false,
+                    "output_active_state": "RESET",
+                    "output_init_state": "SET",
+                    "output_type": "PUSHPULL",
+                    "speed": "LOW"
+                  },
+                  "label_name": [
+                    "SPI_FLASH_CS"
+                  ]
+                },
                 {
                   "_foreignKey": "PA4",
                   "basic": {
@@ -10174,6 +10491,146 @@
           }
         }
       ],
+      "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI": [
+        {
+          "index": 24,
+          "instanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+          "entity": "peripheral.spi",
+          "settings": {
+            "parameters": {
+              "info": {
+                "labels": [
+                  "SPI_FLASH_BUS"
+                ],
+                "layer": "HAL",
+                "init_type": "called"
+              },
+              "basic": {
+                "mode": "MASTER",
+                "direction": "FULL_DUPLEX",
+                "data_size": {
+                  "data_width": 8,
+                  "extend_data_width": false
+                },
+                "timing": {
+                  "clock_polarity": "LOW",
+                  "clock_phase": 1,
+                  "baud_rate": "562.5 KBits/s",
+                  "baud_rate_prescaler": 256,
+                  "clock_source": "APB1_Peripheral_Clock",
+                  "clock_source_frequency": "144 MHz"
+                },
+                "first_bit": "MSB_FIRST",
+                "nss_pin_management": "INTERNAL"
+              },
+              "additional": {
+                "enable_ti_mode": "DisableTI",
+                "set_fifo_threshold": "1",
+                "spi_io_configuration": {
+                  "enable_mosi_miso_swap": false,
+                  "lock_io_config": false,
+                  "enable_master_keep_io_state": false
+                },
+                "enable_crc": false,
+                "enable_delay_read_data_sampling": false,
+                "enable_master_receiver_auto_susp": false,
+                "ready_pin_configuration": {
+                  "enable_ready_pin": false
+                },
+                "set_midi_idleness_delay": "0"
+              },
+              "system": {
+                "gpio": {
+                  "gpio_sck": {
+                    "needs": [
+                      {
+                        "needType": "need.pinout.signals",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+                        "componentInstanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+                        "selector": "SCK",
+                        "id": "b230ac06-763a-4b33-a742-60362b3fcfc2",
+                        "owner": "SPI2",
+                        "constraints": {
+                          "mode": {
+                            "const": "ALTERNATE"
+                          },
+                          "speed": {
+                            "default": "HIGH"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "gpio_miso": {
+                    "needs": [
+                      {
+                        "needType": "need.pinout.signals",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+                        "componentInstanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+                        "selector": "MISO",
+                        "id": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
+                        "owner": "SPI2",
+                        "constraints": {
+                          "mode": {
+                            "const": "ALTERNATE"
+                          },
+                          "speed": {
+                            "default": "HIGH"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "gpio_mosi": {
+                    "needs": [
+                      {
+                        "needType": "need.pinout.signals",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+                        "componentInstanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+                        "selector": "MOSI",
+                        "id": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
+                        "owner": "SPI2",
+                        "constraints": {
+                          "mode": {
+                            "const": "ALTERNATE"
+                          },
+                          "speed": {
+                            "default": "HIGH"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "dma": {
+                  "enable_dma_tx": false,
+                  "enable_dma_rx": false
+                },
+                "nvic": {
+                  "enable_interrupt": true,
+                  "irq_handler_generation": true,
+                  "nvic_config": {
+                    "needs": [
+                      {
+                        "needType": "need.interrupt.lines",
+                        "projectUri": "cube:b48f7f9b-b105-44e5-a7bf-c68c6e4e5bbb/8788bd42-8f15-4186-8d87-14fe034f5d0d",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0#HAL CORE GPIO DMA Init and SPI",
+                        "componentInstanceId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+                        "selector": "*",
+                        "id": "422906cf-10d7-4af6-bfc7-f61f64c208ab",
+                        "owner": "SPI2"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
       "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32 LL:GPIO@2.1.0#LL": [
         {
           "index": 0,
@@ -10622,6 +11079,57 @@
           "settings": {
             "label_name": []
           }
+        },
+        {
+          "index": 32,
+          "needId": "b230ac06-763a-4b33-a742-60362b3fcfc2",
+          "rootId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+          "needType": "need.pinout.signals",
+          "parentId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+          "settings": {
+            "label_name": [],
+            "basic": {
+              "mode": "ALTERNATE",
+              "pull": "NO",
+              "enable_exti": false,
+              "output_type": "PUSHPULL",
+              "speed": "HIGH"
+            }
+          }
+        },
+        {
+          "index": 33,
+          "needId": "f5d4bd33-30cd-4e38-8dd4-69bf5cff140e",
+          "rootId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+          "needType": "need.pinout.signals",
+          "parentId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+          "settings": {
+            "label_name": [],
+            "basic": {
+              "mode": "ALTERNATE",
+              "pull": "NO",
+              "enable_exti": false,
+              "output_type": "PUSHPULL",
+              "speed": "HIGH"
+            }
+          }
+        },
+        {
+          "index": 34,
+          "needId": "5453a6b5-a60d-4f74-ac67-994970bfa0ed",
+          "rootId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+          "needType": "need.pinout.signals",
+          "parentId": "5743e78e-655d-4227-b27b-067eb6a6a2be",
+          "settings": {
+            "label_name": [],
+            "basic": {
+              "mode": "ALTERNATE",
+              "pull": "NO",
+              "enable_exti": false,
+              "output_type": "PUSHPULL",
+              "speed": "HIGH"
+            }
+          }
         }
       ],
       "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32 LL:EXTI@2.1.0#LL": [
@@ -11034,6 +11542,7 @@ project:
     - component: STMicroelectronics::Device:STM32 HAL:PWR@2.0.1
     - component: STMicroelectronics::Device:STM32 HAL:Q@2.0.0
     - component: STMicroelectronics::Device:STM32 HAL:RCC@2.0.0
+    - component: STMicroelectronics::Device:STM32 HAL:SPI@2.0.1
     - component: STMicroelectronics::Device:STM32 HAL:TIM@2.0.1
     - component: STMicroelectronics::Device:STM32 HAL:TIM timebase template@2.0.0
     - component: STMicroelectronics::Device:STM32 HAL:timebases&TIM@2.0.0
@@ -11052,6 +11561,7 @@ project:
     - component: STMicroelectronics::Device:STM32 LL:PWR@2.0.0
     - component: STMicroelectronics::Device:STM32 LL:RCC@2.0.0
     - component: STMicroelectronics::Device:STM32 LL:SBS@2.0.0
+    - component: STMicroelectronics::Device:STM32 LL:SPI@2.0.0
     - component: STMicroelectronics::Device:STM32 LL:TIM@2.1.0
     - component: STMicroelectronics::Device:STM32 LL:USART@2.0.0
     - component: STMicroelectronics::Device:STM32 LL:UTILS@2.0.0
@@ -11065,6 +11575,7 @@ project:
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:ICACHE@2.1.0
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:LPTIM@2.1.0
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:RCC@2.1.0
+    - component: STMicroelectronics::Device:STM32CubeMX2 Config:SPI@2.1.0
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:System@2.1.0
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:UART@2.1.0
@@ -11128,4 +11639,4 @@ solution:
 ["Project Description"]
 workingAreaId = "3053a65e-024f-4707-a5b3-ea33ac9aaf01"
 version = "1"
-mx2Version = "1.0.1"
+mx2Version = "1.1.0"
