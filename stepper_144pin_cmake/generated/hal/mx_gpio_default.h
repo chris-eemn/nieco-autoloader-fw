@@ -33,6 +33,26 @@ extern "C" {
 /* Exported defines for gpio_default in HAL layer                             */
 /******************************************************************************/
 
+/* Primary aliases for GPIO PA0 pin */
+#define PA0_PORT                                        HAL_GPIOA
+#define PA0_PIN                                         HAL_GPIO_PIN_0
+#define PA0_INIT_STATE                                  HAL_GPIO_PIN_SET
+#define PA0_ACTIVE_STATE                                HAL_GPIO_PIN_RESET
+#define PA0_INACTIVE_STATE                              HAL_GPIO_PIN_SET
+
+/* Secondary aliases for GPIO PA0 pin */
+#define SPI_FLASH_CS_PORT                               HAL_GPIOA
+#define SPI_FLASH_CS_PIN                                HAL_GPIO_PIN_0
+#define SPI_FLASH_CS_INIT_STATE                         HAL_GPIO_PIN_SET
+#define SPI_FLASH_CS_ACTIVE_STATE                       HAL_GPIO_PIN_RESET
+#define SPI_FLASH_CS_INACTIVE_STATE                     HAL_GPIO_PIN_SET
+
+#define SPI_FLASH_CS_PORT                               HAL_GPIOA
+#define SPI_FLASH_CS_PIN                                HAL_GPIO_PIN_0
+#define SPI_FLASH_CS_INIT_STATE                         HAL_GPIO_PIN_SET
+#define SPI_FLASH_CS_ACTIVE_STATE                       HAL_GPIO_PIN_RESET
+#define SPI_FLASH_CS_INACTIVE_STATE                     HAL_GPIO_PIN_SET
+
 /* Primary aliases for GPIO PA4 pin */
 #define PA4_PORT                                        HAL_GPIOA
 #define PA4_PIN                                         HAL_GPIO_PIN_4

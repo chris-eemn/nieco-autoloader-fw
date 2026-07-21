@@ -107,6 +107,7 @@ system_status_t mx_rcc_peripherals_clock_config(void)
     USART2
     I2C1
     USART3
+    SPI2
   */
 
   /* Peripherals using PCLK3 (144 MHz):

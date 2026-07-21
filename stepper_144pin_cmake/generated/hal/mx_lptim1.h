@@ -45,8 +45,8 @@ extern "C" {
 #define PG13_PORT                             HAL_GPIOG
 #define PG13_PIN                              HAL_GPIO_PIN_13
 
-#define M8_ENCODER_TIMER_IRQN       EXTI5_IRQn
-#define M8_ENCODER_TIMER_IRQHANDLER EXTI5_IRQHandler
+#define M8_ENCODER_TIMER_IRQN       I2C1_ERR_IRQn
+#define M8_ENCODER_TIMER_IRQHANDLER I2C1_ERR_IRQHandler
 #define MYLPTIM_1_IRQN       M8_ENCODER_TIMER_IRQN
 #define MYLPTIM_1_IRQHANDLER M8_ENCODER_TIMER_IRQHANDLER
 /* Exported macros -----------------------------------------------------------*/

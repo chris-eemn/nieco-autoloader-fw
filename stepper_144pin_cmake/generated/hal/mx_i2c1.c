@@ -79,11 +79,25 @@ hal_i2c_handle_t *mx_i2c1_i2c_init(void)
     return NULL;
   }
 
+  /* Enable the Event interruption for I2C */
+  HAL_CORTEX_NVIC_SetPriority(I2C1_EV_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_EnableIRQ(I2C1_EV_IRQn);
+
+  /* Enable the Error interruption for I2C */
+  HAL_CORTEX_NVIC_SetPriority(I2C1_ERR_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_EnableIRQ(I2C1_ERR_IRQn);
+
   return &hI2C1;
 }
 
 void mx_i2c1_i2c_deinit(void)
 {
+  /* Disable the Event interruption for I2C */
+  HAL_CORTEX_NVIC_DisableIRQ(I2C1_EV_IRQn);
+
+  /* Disable the Error interruption for I2C */
+  HAL_CORTEX_NVIC_DisableIRQ(I2C1_ERR_IRQn);
+
   (void)HAL_I2C_DeInit(&hI2C1);
 
   HAL_RCC_I2C1_Reset();
@@ -97,4 +111,20 @@ void mx_i2c1_i2c_deinit(void)
 hal_i2c_handle_t *mx_i2c1_i2c_gethandle(void)
 {
   return &hI2C1;
+}
+
+/******************************************************************************/
+/*                            I2C1 event interrupt                            */
+/******************************************************************************/
+void I2C1_EV_IRQHandler(void)
+{
+  HAL_I2C_EV_IRQHandler(&hI2C1);
+}
+
+/******************************************************************************/
+/*                            I2C1 error interrupt                            */
+/******************************************************************************/
+void I2C1_ERR_IRQHandler(void)
+{
+  HAL_I2C_ERR_IRQHandler(&hI2C1);
 }

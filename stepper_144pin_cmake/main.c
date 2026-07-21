@@ -26,6 +26,7 @@
 #include "mx_i2c1.h"
 #include <stdio.h>
 #include "mb_regs.h"
+#include "w25q.h"
 
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
@@ -86,6 +87,11 @@ int main(void) {
     while (1);
   }
 
+
+  // must be called before any freertos API calls, including task creation or we run into an interrupt priority issue
+  // where the spi interrupt is never handled basically locking up this function
+  w25q_initialize();
+
 #if defined(USE_TRACE) && USE_TRACE != 0
   mx_basic_stdio_init();
 #endif
@@ -93,6 +99,7 @@ int main(void) {
   app_console_init();
   app_console_commands_register();
   mb_regs_init();
+
 
   BaseType_t task_ret = xTaskCreate(stepper_task,
                                     "StepperTask",
@@ -241,8 +248,6 @@ static void stepper_task(void *pv_parameters) {
     .home_max_steps       = 50000U,
   };
   
-  configASSERT(hi2c != NULL);
-
   stepper_ctrl_init();
 
   while (1) {

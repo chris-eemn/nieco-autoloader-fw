@@ -1,5 +1,5 @@
 # file-format: 1.0.0
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.30)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_C_COMPILER_FORCED TRUE)
@@ -22,10 +22,14 @@ add_subdirectory(modbus_app)
 # Stubs to be able to add compiler flag overrides, e.g. -Os
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   # Add additional source files here
+  driver_w25q/w25q.c
+  driver_w25q_port/spi_portable.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
   # Add additional include directories here
+  driver_w25q
+  driver_w25q_port
 )
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC
