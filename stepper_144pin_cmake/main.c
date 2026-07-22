@@ -26,6 +26,7 @@
 #include "mx_i2c1.h"
 #include <stdio.h>
 #include "mb_regs.h"
+#include "usart3_loader.h"
 #include "w25q.h"
 
 /* FreeRTOS includes */
@@ -98,7 +99,15 @@ int main(void) {
 
   app_console_init();
   app_console_commands_register();
+
+  /* USART3 serves one role per build (see usart3_loader.h / USART3_MODE): the modbus slave,
+   * or the binary image loader that stages an incoming firmware image into SPI flash for the
+   * bootloader to apply. Default build is the loader; modbus is opt-in. */
+#if (USART3_MODE == USART3_MODE_MODBUS)
   mb_regs_init();
+#else
+  usart3_loader_start();
+#endif
 
 
   BaseType_t task_ret = xTaskCreate(stepper_task,
@@ -248,6 +257,7 @@ static void stepper_task(void *pv_parameters) {
     .home_max_steps       = 50000U,
   };
   
+  app_console_print("[INFO] Stepper task started3333333.\r\n");
   stepper_ctrl_init();
 
   while (1) {
