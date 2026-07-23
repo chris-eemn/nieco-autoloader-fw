@@ -31,7 +31,37 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
   # Add additional include directories here
   driver_w25q
   driver_w25q_port
+  ${CMAKE_BINARY_DIR}/version
 )
+
+# --- Git version injection --------------------------------------------------
+# The boot banner prints the git tag + short commit hash (app_version_git.h). The header is
+# generated into the build tree (never checked in) by cmake/gen_version.cmake: once now so it
+# exists before the first compile, and again on every build via the target below so a new
+# commit/tag is picked up without reconfiguring. It lives in its own build-tree folder (not
+# "generated", which is reserved for STM32CubeMX output). The banner is printed from a task
+# (not main()) because app_console_print() only transmits once the FreeRTOS scheduler is running.
+find_package(Git QUIET)
+set(APP_VERSION_GIT_HEADER ${CMAKE_BINARY_DIR}/version/app_version_git.h)
+
+execute_process(COMMAND ${CMAKE_COMMAND}
+  -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+  -DSRC_DIR=${CMAKE_SOURCE_DIR}
+  -DOUT_FILE=${APP_VERSION_GIT_HEADER}
+  -P ${CMAKE_SOURCE_DIR}/cmake/gen_version.cmake
+)
+
+add_custom_target(app_version_git
+  BYPRODUCTS ${APP_VERSION_GIT_HEADER}
+  COMMAND ${CMAKE_COMMAND}
+    -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+    -DSRC_DIR=${CMAKE_SOURCE_DIR}
+    -DOUT_FILE=${APP_VERSION_GIT_HEADER}
+    -P ${CMAKE_SOURCE_DIR}/cmake/gen_version.cmake
+  COMMENT "Refreshing git version header (app_version_git.h)"
+  VERBATIM
+)
+add_dependencies(${CMAKE_PROJECT_NAME} app_version_git)
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC
   # Add additional defined symbols here
