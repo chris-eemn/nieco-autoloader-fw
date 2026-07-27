@@ -15,6 +15,7 @@
 #include "btl_flash_trigger.h"
 #include "spi_flash_io.h"
 #include "stm32_hal.h"
+#include "w25q_config.h"
 
 /*******************************************************************************
  * Module Macros
@@ -25,8 +26,9 @@
 
 /** First W25Q sector, reserved solely for this flag -- STAGED_HEADER_OFFSET (see
  * update_image.h) starts right after it, so streaming a new image (which only ever
- * erases/writes starting at STAGED_HEADER_OFFSET) never disturbs this flag. */
-#define BTL_FLASH_TRIGGER_FLAG_OFFSET (0x00000000u)
+ * erases/writes starting at STAGED_HEADER_OFFSET) never disturbs this flag. The region base
+ * itself is defined by the chip-wide address map in driver_w25q_port/w25q_config.h. */
+#define BTL_FLASH_TRIGGER_FLAG_OFFSET (W25Q_BTL_TRIGGER_BASE_ADDRESS)
 
 #define BTL_TRIGGER_WORD_PATTERN_0 0u
 #define BTL_TRIGGER_WORD_STAGED_OFFSET 1u

@@ -4,7 +4,12 @@
  * @brief Blocking wrapper over the non-blocking driver_w25q API. driver_w25q itself is
  *        interrupt-driven (spi_portable_* transfers complete via SPI2 IRQ callbacks and are
  *        polled through w25q_get_transfer_status()) -- this module hides that polling behind
- *        simple blocking calls for the USART3 image-loader's single-threaded control flow.
+ *        simple blocking calls.
+ *
+ *        Shared by every module that touches SPI flash: the USART3 image loader, the
+ *        bootloader commit trigger, and cal-data. All of them are single-threaded control
+ *        flows; this module adds no locking of its own, so callers must not drive it from
+ *        two tasks concurrently.
  * @version 0.1
  * @date 2026-07-22
  *

@@ -2,3 +2,5 @@ build
 mx.scratch
 !.settings
 *.*bckp
+.claude
+CLAUDE.md
