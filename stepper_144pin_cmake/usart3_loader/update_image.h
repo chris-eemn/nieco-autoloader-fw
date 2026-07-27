@@ -20,7 +20,7 @@
  * Includes
  *******************************************************************************/
 #include <stdint.h>
-#include "w25q.h"
+#include "w25q_config.h"
 
 /*******************************************************************************
  * Module Macros
@@ -29,11 +29,13 @@
  * bootloader's STAGED_HEADER_OFFSET -- the bootloader reads the staged image back from this
  * exact offset at apply time.
  *
- * Starts right after the first W25Q sector, which the bootloader reserves for its commit-
- * trigger flag -- keeping that flag's own sector erase from ever touching the staged image,
- * and leaving the rest of the chip past the staged image free for other application-related
- * flash usage. */
-#define STAGED_HEADER_OFFSET (W25Q_SECTOR_SIZE)
+ * The chip-wide address map (which region starts where, and why) lives in
+ * driver_w25q_port/w25q_config.h; this is just the loader's alias for the staged-image
+ * region's base address. */
+#define STAGED_HEADER_OFFSET (W25Q_STAGED_IMAGE_BASE_ADDRESS)
+
+/** Largest staged image the slot can hold, header included. */
+#define STAGED_IMAGE_MAX_SIZE (W25Q_STAGED_IMAGE_SIZE)
 
 /*******************************************************************************
  * Module Typedefs

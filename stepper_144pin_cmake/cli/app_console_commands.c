@@ -17,7 +17,7 @@
 
 #include "app_console.h"
 #include "app_console_commands.h"
-#include "cal_data_example.h"
+#include "cal_data_cli.h"
 #include "stepper_cli.h"
 #include <stdlib.h>
 #include <string.h>
@@ -48,11 +48,11 @@ static void cmd_dispatch(console_command_get_fn_t get_fn,
 
 static const console_command_t s_paramCmd = {
   .name    = "param",
-  .help    = "[set/get/list/reset] [param] [value]\t get/set/list/reset calibration parameters",
+  .help    = "[set/get/list/reset] [param] [value]\t get/set/list/reset cal-data parameters",
   .handler = cmd_param_handler,
-  .get_fn  = caldata_get_handler,
-  .set_fn  = caldata_set_handler,
-  .list_fn = caldata_list_handler,
+  .get_fn  = cal_data_cli_get_handler,
+  .set_fn  = cal_data_cli_set_handler,
+  .list_fn = cal_data_cli_list_handler,
 };
 
 static const console_command_t s_testCmd = {
@@ -90,15 +90,15 @@ static void cmd_param_handler(int32_t argc, char **argv) {
   if (argc == 1) {
     app_console_print(
         "Please specify task:\r\n"
-        "  set   <name|id> <value> : Update value\r\n"
+        "  set   <name|id> <value> : Update value, saved to flash immediately\r\n"
         "  get   <name|id>         : Print value\r\n"
         "  list                    : List all parameters\r\n"
-        "  reset                   : Reset all to defaults\r\n");
+        "  reset                   : Load defaults, saved to flash immediately\r\n");
     return;
   }
 
   if (strcmp(argv[1], "reset") == 0) {
-    caldata_reset_to_defaults();
+    cal_data_cli_reset_handler();
   }
   else {
     cmd_dispatch(s_paramCmd.get_fn, s_paramCmd.set_fn, s_paramCmd.list_fn, argc, argv);

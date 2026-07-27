@@ -13,6 +13,8 @@ add_executable(stepper_144pin)
 include(cmake/files.cmake)
 include(cmake/flags.cmake)
 include(cmake/components.cmake)
+add_subdirectory(common)
+add_subdirectory(cal-data)
 add_subdirectory(cli)
 add_subdirectory(stepper)
 set(TARGET_NAME ${CMAKE_PROJECT_NAME}) # modbus cmakelists uses TARGET_NAME, so we need to set it here
