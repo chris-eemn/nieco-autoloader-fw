@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include "mb_regs.h"
 #include "usart3_loader.h"
+#include "usb_loader.h"
 #include "w25q.h"
 #include "cal_data.h"
 
@@ -90,6 +91,12 @@ int main(void) {
     while (1);
   }
 
+  /* CubeMX has no NVIC-priority control for USB_DRD_FS -- mx_usb_drd_fs_host_init() (called from
+   * mx_system_init() above) hardcodes preemption priority 0, which is numerically above
+   * configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY (5). USBX's FreeRTOS port layer calls
+   * xSemaphoreGiveFromISR/portYIELD_FROM_ISR from this IRQ, which is undefined behavior at that
+   * priority. Override it here since the generated file gets clobbered on every regen. */
+  HAL_CORTEX_NVIC_SetPriority(USB_DRD_FS_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
 
   // must be called before any freertos API calls, including task creation or we run into an interrupt priority issue
   // where the spi interrupt is never handled basically locking up this function
@@ -111,6 +118,7 @@ int main(void) {
   usart3_loader_start();
 #endif
 
+  usb_loader_start();
 
   BaseType_t task_ret = xTaskCreate(stepper_task,
                                     "StepperTask",
