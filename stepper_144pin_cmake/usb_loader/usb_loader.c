@@ -28,11 +28,17 @@
 #include "mx_usbx_app.h"
 
 #include "app_console.h"
+#include "app_version_git.h"
+#include "usb_update_file.h"
 
 /*******************************************************************************
  * Module Macros
  *******************************************************************************/
-#define USB_LOADER_TASK_STACK_SIZE 512U
+/* Raised from 512 words when the update-file search was added: fx_file_open()/fx_file_read()
+ * add call depth on top of the directory walk. The large buffers involved (the 256-byte entry
+ * name and the FX_FILE control block) are module statics in usb_update_file.c rather than stack
+ * locals, but the FileX call chain itself is deeper than the entry-find calls alone. */
+#define USB_LOADER_TASK_STACK_SIZE 1024U
 #define USB_LOADER_TASK_PRIORITY (tskIDLE_PRIORITY + 2U)
 
 /*******************************************************************************
@@ -58,6 +64,8 @@ static FX_MEDIA* s_media = UX_NULL;
  *******************************************************************************/
 static UINT usb_loader_host_event_callback(ULONG event, UX_HOST_CLASS* current_class, VOID* current_instance);
 static VOID usb_loader_host_error_callback(UINT system_level, UINT system_context, UINT error_code);
+static void usb_loader_list_root_directory(void);
+static void usb_loader_report_update_file(void);
 static void usb_loader_task(void* pv_parameters);
 
 /*******************************************************************************
@@ -171,11 +179,14 @@ static VOID usb_loader_host_error_callback(UINT system_level, UINT system_contex
 }
 
 /**
- * @brief Waits for a USB drive to be mounted, then prints its root directory contents.
+ * @brief Prints every entry in the mounted drive's root directory.
+ * @note Bring-up diagnostic from the first phase of this feature, kept because it is the quickest
+ *       way to see whether an update file a technician expected to be on the drive is actually
+ *       there (and under what name). Runs its own directory walk, which must finish before
+ *       usb_loader_report_update_file() starts its own -- FileX keeps the walk's position in the
+ *       FX_MEDIA, so the two cannot be interleaved.
  */
-static void usb_loader_task(void* pv_parameters) {
-  (void)pv_parameters;
-
+static void usb_loader_list_root_directory(void) {
   CHAR name[FX_MAX_LONG_NAME_LEN];
   UINT attributes;
   ULONG size;
@@ -186,36 +197,94 @@ static void usb_loader_task(void* pv_parameters) {
   UINT minute;
   UINT second;
   UINT status;
-  ULONG entry_count;
+  ULONG entry_count = 0U;
+
+  app_console_print("[USB] Drive inserted -- root directory:\r\n");
+
+  status = fx_directory_first_full_entry_find(s_media, name, &attributes, &size, &year, &month, &day, &hour, &minute, &second);
+  while (status == FX_SUCCESS) {
+    app_console_print("  %s (%lu bytes)\r\n", name, size);
+    entry_count++;
+    status = fx_directory_next_full_entry_find(s_media, name, &attributes, &size, &year, &month, &day, &hour, &minute, &second);
+  }
+
+  /* FX_NO_MORE_ENTRIES is the normal end of the walk; anything else means the walk aborted. */
+  if (status != FX_NO_MORE_ENTRIES) {
+    app_console_print("[USB] Directory read stopped early: fx status=0x%X (after %lu entries).\r\n", (unsigned int)status,
+                      (unsigned long)entry_count);
+  }
+  else if (entry_count == 0U) {
+    app_console_print("  (empty)\r\n");
+  }
+  else {
+    app_console_print("[USB] %lu entries listed.\r\n", (unsigned long)entry_count);
+  }
+}
+
+/**
+ * @brief Finds the drive's firmware-update file, compares its version against the running
+ *        application's, and reports whether an update is called for.
+ * @note Reports only -- nothing is written to SPI flash and no reset is triggered. Acting on the
+ *       decision is the next phase of this feature.
+ */
+static void usb_loader_report_update_file(void) {
+  usb_update_file_t update_file;
+  usb_update_file_status_enum status;
+  uint8_t running_major = 0U;
+  uint8_t running_minor = 0U;
+  uint8_t running_build = 0U;
+  bool running_valid = false;
+
+  status = usb_update_file_find(s_media, &update_file);
+
+  if (status != USB_UPDATE_FILE_OK) {
+    app_console_print("[USB] No update to apply: %s.\r\n", usb_update_file_status_string(status));
+
+    if (status == USB_UPDATE_FILE_NONE_FOUND) {
+      app_console_print("[USB] Expected v<major>_<minor>_<build>%s\r\n", USB_UPDATE_FILE_NAME_SUFFIX);
+    }
+  }
+  else {
+    usb_update_file_running_version_get(&running_major, &running_minor, &running_build, &running_valid);
+
+    app_console_print("[USB] Update file: %s\r\n", update_file.name);
+    app_console_print("[USB]   v%u.%u.%u, %lu byte payload, crc 0x%04X\r\n", (unsigned int)update_file.header.version_major,
+                      (unsigned int)update_file.header.version_minor, (unsigned int)update_file.header.version_build,
+                      (unsigned long)update_file.header.binary_size, (unsigned int)update_file.header.crc16_ccit_checksum);
+
+    if (running_valid == true) {
+      app_console_print("[USB]   running v%u.%u.%u (%s)\r\n", (unsigned int)running_major, (unsigned int)running_minor,
+                        (unsigned int)running_build, APP_VERSION_GIT_DESCRIBE);
+    }
+    else {
+      app_console_print("[USB]   running version unknown (%s -- no vX.Y.Z tag)\r\n", APP_VERSION_GIT_DESCRIBE);
+    }
+
+    if (usb_update_file_version_differs(&update_file) == true) {
+      app_console_print("[USB] Versions differ -- update needed (staging not implemented yet).\r\n");
+    }
+    else {
+      app_console_print("[USB] Versions match -- no update needed.\r\n");
+    }
+  }
+}
+
+/**
+ * @brief Waits for a USB drive to be mounted, then lists its root directory and reports whether
+ *        it carries a firmware update.
+ */
+static void usb_loader_task(void* pv_parameters) {
+  (void)pv_parameters;
 
   for (;;) {
     (void)xSemaphoreTake(s_usb_insert_sem, portMAX_DELAY);
 
     if (s_media == UX_NULL) {
-      app_console_print("[USB] Insertion signalled but no media captured -- cannot list files.\r\n");
-      continue;
-    }
-
-    app_console_print("[USB] Drive inserted -- root directory:\r\n");
-
-    entry_count = 0U;
-    status = fx_directory_first_full_entry_find(s_media, name, &attributes, &size, &year, &month, &day, &hour, &minute, &second);
-    while (status == FX_SUCCESS) {
-      app_console_print("  %s (%lu bytes)\r\n", name, size);
-      entry_count++;
-      status = fx_directory_next_full_entry_find(s_media, name, &attributes, &size, &year, &month, &day, &hour, &minute, &second);
-    }
-
-    /* FX_NO_MORE_ENTRIES is the normal end of the walk; anything else means the walk aborted. */
-    if (status != FX_NO_MORE_ENTRIES) {
-      app_console_print("[USB] Directory read stopped early: fx status=0x%X (after %lu entries).\r\n", (unsigned int)status,
-                        (unsigned long)entry_count);
-    }
-    else if (entry_count == 0U) {
-      app_console_print("  (empty)\r\n");
+      app_console_print("[USB] Insertion signalled but no media captured -- cannot read the drive.\r\n");
     }
     else {
-      app_console_print("[USB] %lu entries listed.\r\n", (unsigned long)entry_count);
+      usb_loader_list_root_directory();
+      usb_loader_report_update_file();
     }
   }
 }

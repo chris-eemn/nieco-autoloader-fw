@@ -2,8 +2,10 @@
  * @file usb_loader.h
  * @author Chris Owens (cowens@eemn.io)
  * @brief Owns the USB host role for the application: detects a USB mass-storage thumb drive,
- *        mounts its FAT filesystem via FileX, and (for now) prints the files found at its root.
- *        A later phase extends this to stage a firmware image from the drive into SPI flash.
+ *        mounts its FAT filesystem via FileX, lists the files found at its root, and reports
+ *        whether the drive carries a firmware update whose version differs from the running
+ *        application's (see usb_update_file.h). Reports only -- a later phase extends this to
+ *        stage the image into SPI flash and trigger the bootloader.
  *
  *        Deliberately does not use the CubeMX2-generated USBX/FileX applicative stubs
  *        (generated/middleware/mx_usbx_host.c, mx_usbx_host_msc.c) -- those are under the
