@@ -1,0 +1,5 @@
+# The Dockerfile in this directory COPYs nothing -- it only downloads pinned toolchain tarballs --
+# so the build context can be empty. Without this, `docker build .` uploads the entire repository
+# (both build trees, .git, the CubeMX .ioc2) to the daemon on every image build for no reason.
+# The Dockerfile itself is always sent regardless of this file.
+*
