@@ -6,8 +6,7 @@
  *
  *        The file on the drive is already header+payload in exactly the on-flash layout the
  *        bootloader expects (see usb_update_file.h), so it is copied byte-for-byte to
- *        STAGED_HEADER_OFFSET with no repackaging -- the same blob the USART3 loader stages,
- *        arriving over a different transport.
+ *        STAGED_HEADER_OFFSET with no repackaging.
  *
  *        This module stops once the staged copy is verified. Arming the bootloader trigger and
  *        resetting is the caller's decision, made with btl_flash_trigger_arm_and_reset().

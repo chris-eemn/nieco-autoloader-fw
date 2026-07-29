@@ -25,7 +25,7 @@
 #define BTL_TRIGGER_PATTERN 0xB007CAFEu
 
 /** First W25Q sector, reserved solely for this flag -- STAGED_HEADER_OFFSET (see
- * update_image.h) starts right after it, so streaming a new image (which only ever
+ * update_image.h) starts right after it, so staging a new image (which only ever
  * erases/writes starting at STAGED_HEADER_OFFSET) never disturbs this flag. The region base
  * itself is defined by the chip-wide address map in driver_w25q_port/w25q_config.h. */
 #define BTL_FLASH_TRIGGER_FLAG_OFFSET (W25Q_BTL_TRIGGER_BASE_ADDRESS)

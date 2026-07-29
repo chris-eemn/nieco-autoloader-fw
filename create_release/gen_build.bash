@@ -1,7 +1,7 @@
 # Runs INSIDE the build container, with the git superproject bind-mounted at /project as the
 # working directory. Builds the bootloader and the application from scratch, combines them into a
 # single flashable Intel HEX, and separately packages the application as an update file carrying
-# the 16-byte ede_update_file_header_t the USB/USART3 loaders expect.
+# the 16-byte ede_update_file_header_t the USB loader expects.
 #
 # Both artifacts are named from the version the firmware actually reports: the numeric fields are
 # read back out of the generated version header rather than re-derived here, so a filename cannot

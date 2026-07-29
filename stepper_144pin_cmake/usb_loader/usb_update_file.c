@@ -412,7 +412,7 @@ static usb_update_file_status_enum read_and_validate_header(FX_MEDIA *media, con
       UINT fx_status;
 
       /* Read straight into the struct: it is 16 bytes with no padding on this ABI, and the host
-       * tooling writes the fields little-endian, matching the MCU. usart3_stream.c reads the
+       * tooling writes the fields little-endian, matching the MCU. usb_update_stage.c reads the
        * staged copy out of SPI flash the same way. */
       fx_status = fx_file_read(&s_open_file, &header, (ULONG)sizeof(header), &bytes_read);
 

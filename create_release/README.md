@@ -14,7 +14,7 @@ Both land in `../release/`, named from the git tag the build was made at:
 | File | What it is | Used for |
 |---|---|---|
 | `v<major>_<minor>_<build>_stepper_144pin.hex` | Bootloader at `0x08000000` + application at `0x08020000` | Programming a board over ST-LINK / STM32CubeProgrammer |
-| `v<major>_<minor>_<build>_stepper_144pin.bin` | 16-byte `ede_update_file_header_t` + application | Field update over USB thumb drive or USART3 |
+| `v<major>_<minor>_<build>_stepper_144pin.bin` | 16-byte `ede_update_file_header_t` + application | Field update over USB thumb drive |
 
 For example, a build at tag `v2.4.5` produces `v2_4_5_stepper_144pin.hex` and
 `v2_4_5_stepper_144pin.bin`.
@@ -96,8 +96,8 @@ thumb drive and insert the drive after the board has booted; the firmware scans 
 highest version it finds, validates the header, and reports whether an update is needed. Keep the
 generated filename exactly as it is — the firmware matches on the `v<major>_<minor>_<build>` prefix
 and the `_stepper_144pin.bin` suffix, and cross-checks the version in the name against the version in
-the header. The same file can be streamed over USART3 with
-`stepper_144pin_cmake/tools/uart_sender.py`.
+the header. The USB thumb drive is the only field-update path — the firmware no longer accepts an
+image over USART3.
 
 Note the HEX deliberately does **not** contain the update header. The bootloader expects a bare
 vector table at the application base, so `combine_hex.py` strips the header if one is present.

@@ -4,9 +4,9 @@
  * @brief Locates and validates a firmware-update file on a mounted FileX volume, and compares
  *        its version against the running application's.
  *
- *        The update file is named v<major>_<minor>_<build>_stepper_144pin.bin and holds the same
- *        header+payload blob the USART3 loader streams: a 16-byte ede_update_file_header_t
- *        (usart3_loader/update_image.h) followed immediately by the raw application binary. That
+ *        The update file is named v<major>_<minor>_<build>_stepper_144pin.bin and holds the
+ *        header+payload blob the bootloader expects: a 16-byte ede_update_file_header_t
+ *        (usb_loader/update_image.h) followed immediately by the raw application binary. That
  *        means a validated file can later be copied byte-for-byte into the SPI-flash staging
  *        slot at STAGED_HEADER_OFFSET with no repackaging.
  *
@@ -91,7 +91,7 @@ typedef enum {
  *       following the header, and that the header's version agrees with the filename's. The
  *       payload CRC is deliberately not checked here -- that requires reading the whole payload
  *       and is done against the staged copy in SPI flash instead (see
- *       usart3_stream_validate_staged_crc()).
+ *       usb_update_stage_copy_and_verify()).
  * @param media mounted FileX media to scan; must not be NULL
  * @param out_file destination for the chosen file's details; must not be NULL. Only written when
  *        the return value is USB_UPDATE_FILE_OK.

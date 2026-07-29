@@ -5,5 +5,4 @@
 # python3 without pip. If a tool here ever needs a third-party package, add it below and add a
 # `pip install -r create_release/requirements.txt` step to the Dockerfile.
 #
-# Note this is NOT the same as stepper_144pin_cmake/tools/requirements.txt, which pulls in pyserial
-# for the USART3 streaming tools. Nothing in the release path talks to a serial port.
+# Nothing in the release path talks to a serial port.

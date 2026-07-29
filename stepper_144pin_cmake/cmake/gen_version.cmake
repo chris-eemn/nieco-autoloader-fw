@@ -46,7 +46,7 @@ endif()
 # Numeric major/minor/build, pulled out of the same describe string so a version comparison
 # never needs to parse text at runtime. The USB firmware-update loader compares these against
 # the `version_major`/`version_minor`/`version_build` fields of an update file's
-# ede_update_file_header_t (usart3_loader/update_image.h), where each is a uint8_t -- hence the
+# ede_update_file_header_t (usb_loader/update_image.h), where each is a uint8_t -- hence the
 # 0..255 range check below.
 #
 # Only the tag part is numeric: the `-<n>-g<hash>`/`-dirty` suffixes git describe appends to an

@@ -34,8 +34,8 @@
  * task that drains the queue runs at priority 1, below the USB loader task's 2, and the copy loop
  * below never blocks -- so without an explicit yield the queue fills and progress lines are
  * dropped. Printing every USB_UPDATE_STAGE_PROGRESS_STEP_PCT percent and then delaying long
- * enough for the TX task to drain keeps the output intact. Unlike the USART3 loader, nothing is
- * streaming in during the delay: the file is sitting on the drive. */
+ * enough for the TX task to drain keeps the output intact. Nothing is arriving over a live link
+ * during the delay -- the file is sitting on the drive -- so the delay costs nothing but time. */
 #define USB_UPDATE_STAGE_PROGRESS_STEP_PCT 10U
 #define USB_UPDATE_STAGE_PROGRESS_FLUSH_MS 6U
 

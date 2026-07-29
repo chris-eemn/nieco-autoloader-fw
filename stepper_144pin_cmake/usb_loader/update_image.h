@@ -2,8 +2,8 @@
  * @file update_image.h
  * @author Chris Owens (cowens@eemn.io)
  * @brief Staged-update file format and SPI-flash staging location, shared with the bootloader.
- *        The application uses this only to stage an incoming image into SPI flash over USART3;
- *        the bootloader is what later copies the staged image into internal application flash,
+ *        The application uses this only to stage an incoming image into SPI flash from a USB
+ *        thumb drive; the bootloader later copies the staged image into internal app flash,
  *        so the internal-flash geometry constants that live in the bootloader's copy of this
  *        header are intentionally omitted here.
  * @version 0.1

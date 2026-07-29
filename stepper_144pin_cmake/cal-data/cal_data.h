@@ -18,7 +18,7 @@
  *          cal_data_save();
  *
  * @note Not thread safe. All cal_data_* calls must come from a single task, or be serialised
- *       by the caller -- they share the SPI flash with the USART3 image loader.
+ *       by the caller -- they share the SPI flash with the USB firmware-update loader.
  *
  * @version 0.1
  * @date 2026-07-27
