@@ -1,0 +1,8 @@
+# Python requirements for the release tooling in this folder (combine_hex.py, packer.py,
+# crc16_ccitt.py).
+#
+# There are none: all three use only the standard library, which is why the build image installs
+# python3 without pip. If a tool here ever needs a third-party package, add it below and add a
+# `pip install -r create_release/requirements.txt` step to the Dockerfile.
+#
+# Nothing in the release path talks to a serial port.

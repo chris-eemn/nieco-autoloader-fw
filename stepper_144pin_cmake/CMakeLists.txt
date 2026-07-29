@@ -20,7 +20,7 @@ add_subdirectory(stepper)
 set(TARGET_NAME ${CMAKE_PROJECT_NAME}) # modbus cmakelists uses TARGET_NAME, so we need to set it here
 add_subdirectory(modbus/modbus_slave)
 add_subdirectory(modbus_app)
-add_subdirectory(usart3_loader)
+add_subdirectory(usb_loader)
 
 # Stubs to be able to add compiler flag overrides, e.g. -Os
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE

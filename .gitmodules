@@ -4,3 +4,6 @@
 [submodule "stepper_144pin_cmake/driver_w25q"]
 	path = stepper_144pin_cmake/driver_w25q
 	url = git@github.com:Embedded-Design-Solutions/driver_w25q.git
+[submodule "stepper_144pin_cmake/stm32c5-bootloader"]
+	path = stepper_144pin_cmake/stm32c5-bootloader
+	url = git@github.com:Embedded-Design-Solutions/stm32c5-bootloader.git

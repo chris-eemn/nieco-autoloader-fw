@@ -599,7 +599,7 @@
     },
     "HAL_CORTEX_PROJECT_USE_HAL": {
       "name": "HAL_CORTEX_PROJECT_USE_HAL",
-      "value": 11,
+      "value": 15,
       "originator": "sw-config-semaphore"
     },
     "HAL_ICACHE_CORE_ENABLED": {
@@ -686,6 +686,26 @@
       "name": "HAL_SPI_PROJECT_USE_HAL",
       "value": 1,
       "originator": "sw-config-semaphore"
+    },
+    "host_core": {
+      "name": "host_core",
+      "value": true,
+      "originator": "01951c77-597a-43bd-9dd7-e25b54b52a46"
+    },
+    "MSC_Host_Class": {
+      "name": "MSC_Host_Class",
+      "value": true,
+      "originator": "01951c77-597a-43bd-9dd7-e25b54b52a46"
+    },
+    "host_controllers_enable": {
+      "name": "host_controllers_enable",
+      "value": true,
+      "originator": "01951c77-597a-43bd-9dd7-e25b54b52a46"
+    },
+    "HAL_EXTI_SYSTEM_GPIO_STANDARD_EXTI": {
+      "name": "HAL_EXTI_SYSTEM_GPIO_STANDARD_EXTI",
+      "value": 4,
+      "originator": "sw-config-semaphore"
     }
   }
 }"""
@@ -710,6 +730,10 @@
       {
         "packName": "STMicroelectronics.esd_hw-part.2.2.0",
         "folder": "misc/STMicroelectronics.esd_hw-part.2.2.0"
+      },
+      {
+        "packName": "STMicroelectronics.filex.2.1.0",
+        "folder": "middleware/filex"
       },
       {
         "packName": "STMicroelectronics.freertos.2.1.0",
@@ -746,6 +770,10 @@
       {
         "packName": "STMicroelectronics.syscalls.2.0.0",
         "folder": "utilities/syscalls"
+      },
+      {
+        "packName": "STMicroelectronics.usbx.2.1.0",
+        "folder": "middleware/usbx"
       }
     ]
   },
@@ -4256,720 +4284,720 @@
   }
 }"""
 "File: NUCLEO-C5A3ZG_project/.settings/hw-composition.store.json" = """
-{\r\r
-  "name": "NUCLEO-C5A3ZG_project",\r\r
-  "boards": [\r\r
-    {\r\r
-      "type": "NORMAL",\r\r
-      "uid": "726e472c-3635-424e-a0f5-39b539869249",\r\r
-      "boardUID": "STMicroelectronics.nucleo-c5a3zg_hw-board.2.1.0$STMicroelectronics::NUCLEO-C5A3ZG@NUC5A3ZG$KR1",\r\r
-      "removedParts": []\r\r
-    }\r\r
-  ],\r\r
-  "version": 3,\r\r
-  "constraints": [\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "B1",\r\r
-        "pin": "1",\r\r
-        "name": "KSC721JLFS"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "7"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "GPIO",\r\r
-          "direction": "output"\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "B1",\r\r
-        "pin": "2",\r\r
-        "name": "KSC721JLFS"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "7"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "GPIO",\r\r
-          "direction": "output"\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "LD1",\r\r
-        "pin": "2",\r\r
-        "name": "19-217/G7C-AN1P2/6T"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "41"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "GPIO",\r\r
-          "direction": "input"\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "LD2",\r\r
-        "pin": "2",\r\r
-        "name": "19-217/R6C-AL1M2VY/6T"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "57"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "GPIO",\r\r
-          "direction": "input"\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "LD3",\r\r
-        "pin": "2",\r\r
-        "name": "19-217/BHC-ZL1M2RY/6T"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "87"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "GPIO",\r\r
-          "direction": "input"\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U2",\r\r
-        "pin": "L2",\r\r
-        "name": "STLINK-V3EC"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "105"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Debug TAP",\r\r
-          "busMode": "Serial Wire Debug Master with SWO",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "SWDIO",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "SWDIO",\r\r
-              "mode": "Serial Wire Debug Slave with SWO"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U2",\r\r
-        "pin": "M11",\r\r
-        "name": "STLINK-V3EC"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "109"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Debug TAP",\r\r
-          "busMode": "Serial Wire Debug Master with SWO",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "SWCLK",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "SWCLK",\r\r
-              "mode": "Serial Wire Debug Slave with SWO"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U2",\r\r
-        "pin": "D12",\r\r
-        "name": "STLINK-V3EC"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "133"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Debug TAP",\r\r
-          "busMode": "Serial Wire Debug Master with SWO",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "SWO",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "SWO",\r\r
-              "mode": "Serial Wire Debug Slave with SWO"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U2",\r\r
-        "pin": "C10",\r\r
-        "name": "STLINK-V3EC"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "36"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Serial",\r\r
-          "busMode": "Asynchronous",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RX",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "TX",\r\r
-              "mode": "Asynchronous"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U2",\r\r
-        "pin": "A7",\r\r
-        "name": "STLINK-V3EC"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "37"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Serial",\r\r
-          "busMode": "Asynchronous",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "TX",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "RX",\r\r
-              "mode": "Asynchronous"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "2",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "129"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "GPIO",\r\r
-          "direction": "output"\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "7",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "45"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RXD1",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "RXD1",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RXD1",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "RXD1",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "8",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "44"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RXD0",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "RXD0",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RXD0",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "RXD0",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "11",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "115"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "CRS_DV",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "CRS_DV",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "CRS_DV",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "CRS_DV",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "12",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "65"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "MDIO",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "MDIO",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "MDIO",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "MDIO",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "13",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "27"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "MDC",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "MDC",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "MDC",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "MDC",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "14",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "35"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "REF_CLK",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "REF_CLK",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "REF_CLK",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "REF_CLK",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "16",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "126"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "TX_EN",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "TX_EN",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "TX_EN",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "TX_EN",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "17",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "128"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "TXD0",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "TXD0",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "TXD0",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "TXD0",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "U17",\r\r
-        "pin": "18",\r\r
-        "name": "LAN8742A-CZ-TR"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "127"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "TXD1",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "TXD1",\r\r
-              "mode": "RMII Master"\r\r
-            }\r\r
-          ]\r\r
-        },\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "Ethernet Media-independent interface",\r\r
-          "busMode": "RMII Slave w/ Receive Error",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "TXD1",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "TXD1",\r\r
-              "mode": "RMII Master w/ Receive Error"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "X2",\r\r
-        "pin": "1",\r\r
-        "name": "NX1610SE-32.768KHz-EXS00A-MU01499"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "9"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "External Clock",\r\r
-          "busMode": "Resonator",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RES",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "OSC_IN",\r\r
-              "mode": "Resonator"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "X2",\r\r
-        "pin": "2",\r\r
-        "name": "NX1610SE-32.768KHz-EXS00A-MU01499"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "8"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "External Clock",\r\r
-          "busMode": "Resonator",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RES",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "OSC_IN",\r\r
-              "mode": "Resonator"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "X3",\r\r
-        "pin": "1",\r\r
-        "name": "NX1612SA-48MHz-EXS00A-CS13835"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "23"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "External Clock",\r\r
-          "busMode": "Resonator",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RES",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "OSC_IN",\r\r
-              "mode": "Resonator"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    },\r\r
-    {\r\r
-      "part": {\r\r
-        "enabled": true,\r\r
-        "reference": "X3",\r\r
-        "pin": "3",\r\r
-        "name": "NX1612SA-48MHz-EXS00A-CS13835"\r\r
-      },\r\r
-      "device": {\r\r
-        "pin": "24"\r\r
-      },\r\r
-      "signals": [\r\r
-        {\r\r
-          "type": "BUS",\r\r
-          "busType": "External Clock",\r\r
-          "busMode": "Resonator",\r\r
-          "busVersion": "1.0.0",\r\r
-          "signalType": "RES",\r\r
-          "compatibleConfigurations": [\r\r
-            {\r\r
-              "signalType": "OSC_IN",\r\r
-              "mode": "Resonator"\r\r
-            }\r\r
-          ]\r\r
-        }\r\r
-      ]\r\r
-    }\r\r
-  ]\r\r
+{\r\r\r
+  "name": "NUCLEO-C5A3ZG_project",\r\r\r
+  "boards": [\r\r\r
+    {\r\r\r
+      "type": "NORMAL",\r\r\r
+      "uid": "726e472c-3635-424e-a0f5-39b539869249",\r\r\r
+      "boardUID": "STMicroelectronics.nucleo-c5a3zg_hw-board.2.1.0$STMicroelectronics::NUCLEO-C5A3ZG@NUC5A3ZG$KR1",\r\r\r
+      "removedParts": []\r\r\r
+    }\r\r\r
+  ],\r\r\r
+  "version": 3,\r\r\r
+  "constraints": [\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "B1",\r\r\r
+        "pin": "1",\r\r\r
+        "name": "KSC721JLFS"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "7"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "GPIO",\r\r\r
+          "direction": "output"\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "B1",\r\r\r
+        "pin": "2",\r\r\r
+        "name": "KSC721JLFS"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "7"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "GPIO",\r\r\r
+          "direction": "output"\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "LD1",\r\r\r
+        "pin": "2",\r\r\r
+        "name": "19-217/G7C-AN1P2/6T"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "41"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "GPIO",\r\r\r
+          "direction": "input"\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "LD2",\r\r\r
+        "pin": "2",\r\r\r
+        "name": "19-217/R6C-AL1M2VY/6T"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "57"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "GPIO",\r\r\r
+          "direction": "input"\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "LD3",\r\r\r
+        "pin": "2",\r\r\r
+        "name": "19-217/BHC-ZL1M2RY/6T"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "87"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "GPIO",\r\r\r
+          "direction": "input"\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U2",\r\r\r
+        "pin": "L2",\r\r\r
+        "name": "STLINK-V3EC"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "105"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Debug TAP",\r\r\r
+          "busMode": "Serial Wire Debug Master with SWO",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "SWDIO",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "SWDIO",\r\r\r
+              "mode": "Serial Wire Debug Slave with SWO"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U2",\r\r\r
+        "pin": "M11",\r\r\r
+        "name": "STLINK-V3EC"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "109"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Debug TAP",\r\r\r
+          "busMode": "Serial Wire Debug Master with SWO",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "SWCLK",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "SWCLK",\r\r\r
+              "mode": "Serial Wire Debug Slave with SWO"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U2",\r\r\r
+        "pin": "D12",\r\r\r
+        "name": "STLINK-V3EC"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "133"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Debug TAP",\r\r\r
+          "busMode": "Serial Wire Debug Master with SWO",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "SWO",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "SWO",\r\r\r
+              "mode": "Serial Wire Debug Slave with SWO"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U2",\r\r\r
+        "pin": "C10",\r\r\r
+        "name": "STLINK-V3EC"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "36"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Serial",\r\r\r
+          "busMode": "Asynchronous",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RX",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "TX",\r\r\r
+              "mode": "Asynchronous"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U2",\r\r\r
+        "pin": "A7",\r\r\r
+        "name": "STLINK-V3EC"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "37"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Serial",\r\r\r
+          "busMode": "Asynchronous",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "TX",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "RX",\r\r\r
+              "mode": "Asynchronous"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "2",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "129"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "GPIO",\r\r\r
+          "direction": "output"\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "7",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "45"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RXD1",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "RXD1",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RXD1",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "RXD1",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "8",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "44"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RXD0",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "RXD0",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RXD0",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "RXD0",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "11",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "115"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "CRS_DV",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "CRS_DV",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "CRS_DV",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "CRS_DV",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "12",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "65"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "MDIO",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "MDIO",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "MDIO",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "MDIO",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "13",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "27"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "MDC",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "MDC",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "MDC",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "MDC",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "14",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "35"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "REF_CLK",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "REF_CLK",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "REF_CLK",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "REF_CLK",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "16",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "126"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "TX_EN",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "TX_EN",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "TX_EN",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "TX_EN",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "17",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "128"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "TXD0",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "TXD0",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "TXD0",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "TXD0",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "U17",\r\r\r
+        "pin": "18",\r\r\r
+        "name": "LAN8742A-CZ-TR"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "127"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "TXD1",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "TXD1",\r\r\r
+              "mode": "RMII Master"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        },\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "Ethernet Media-independent interface",\r\r\r
+          "busMode": "RMII Slave w/ Receive Error",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "TXD1",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "TXD1",\r\r\r
+              "mode": "RMII Master w/ Receive Error"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "X2",\r\r\r
+        "pin": "1",\r\r\r
+        "name": "NX1610SE-32.768KHz-EXS00A-MU01499"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "9"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "External Clock",\r\r\r
+          "busMode": "Resonator",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RES",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "OSC_IN",\r\r\r
+              "mode": "Resonator"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "X2",\r\r\r
+        "pin": "2",\r\r\r
+        "name": "NX1610SE-32.768KHz-EXS00A-MU01499"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "8"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "External Clock",\r\r\r
+          "busMode": "Resonator",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RES",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "OSC_IN",\r\r\r
+              "mode": "Resonator"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "X3",\r\r\r
+        "pin": "1",\r\r\r
+        "name": "NX1612SA-48MHz-EXS00A-CS13835"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "23"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "External Clock",\r\r\r
+          "busMode": "Resonator",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RES",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "OSC_IN",\r\r\r
+              "mode": "Resonator"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    },\r\r\r
+    {\r\r\r
+      "part": {\r\r\r
+        "enabled": true,\r\r\r
+        "reference": "X3",\r\r\r
+        "pin": "3",\r\r\r
+        "name": "NX1612SA-48MHz-EXS00A-CS13835"\r\r\r
+      },\r\r\r
+      "device": {\r\r\r
+        "pin": "24"\r\r\r
+      },\r\r\r
+      "signals": [\r\r\r
+        {\r\r\r
+          "type": "BUS",\r\r\r
+          "busType": "External Clock",\r\r\r
+          "busMode": "Resonator",\r\r\r
+          "busVersion": "1.0.0",\r\r\r
+          "signalType": "RES",\r\r\r
+          "compatibleConfigurations": [\r\r\r
+            {\r\r\r
+              "signalType": "OSC_IN",\r\r\r
+              "mode": "Resonator"\r\r\r
+            }\r\r\r
+          ]\r\r\r
+        }\r\r\r
+      ]\r\r\r
+    }\r\r\r
+  ]\r\r\r
 }"""
 "File: NUCLEO-C5A3ZG_project/NUCLEO-C5A3ZG_project.hw" = '""'
 "File: NUCLEO-C5A3ZG_project/project.cube" = """
-{\r\r
-  "traits": [\r\r
-    {\r\r
-      "id": "0cdf4295-0499-42be-8e69-4eef951f8b4c",\r\r
-      "name": "hardware",\r\r
-      "files": [\r\r
-        "NUCLEO-C5A3ZG_project.hw"\r\r
-      ]\r\r
-    }\r\r
-  ],\r\r
-  "children": []\r\r
+{\r\r\r
+  "traits": [\r\r\r
+    {\r\r\r
+      "id": "0cdf4295-0499-42be-8e69-4eef951f8b4c",\r\r\r
+      "name": "hardware",\r\r\r
+      "files": [\r\r\r
+        "NUCLEO-C5A3ZG_project.hw"\r\r\r
+      ]\r\r\r
+    }\r\r\r
+  ],\r\r\r
+  "children": []\r\r\r
 }"""
 "File: project.cube" = """
 {
@@ -5581,6 +5609,78 @@
         "id": "29b408ce-225b-47be-980a-ae02898a3247",
         "componentDescriptionId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32 LL:SPI@2.0.0#LL",
         "label": "STM32 LL:SPI",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SingleInstanceSWComponent",
+        "id": "66b1a349-6402-47ef-b510-40c8b33616c9",
+        "componentDescriptionId": "STMicroelectronics.usbx.2.1.0$STMicroelectronics::USB:STM32CubeMX2 Config:USBX@2.1.0#usbx core condition",
+        "label": "STM32CubeMX2 Config:USBX",
+        "expanded": true,
+        "userAdded": true
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "65abdcae-5d24-4378-ac26-1f2e7550738d",
+        "componentDescriptionId": "STMicroelectronics.usbx.2.1.0$STMicroelectronics::USB:USBX Core:Common@6.5.0",
+        "label": "USBX Core:Common",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SingleInstanceSWComponent",
+        "id": "ac87b970-b6f0-4967-9e98-f772c6f3c9f0",
+        "componentDescriptionId": "STMicroelectronics.filex.2.1.0$STMicroelectronics::File System:STM32CubeMX2 Config:FileX@2.1.0#FX Core Condition",
+        "label": "STM32CubeMX2 Config:FileX",
+        "expanded": true,
+        "userAdded": true
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "103ac95c-3e62-4f85-9421-2a4a889980f6",
+        "componentDescriptionId": "STMicroelectronics.filex.2.1.0$STMicroelectronics::File System:FileX:Core@6.4.2",
+        "label": "FileX:Core",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "6b647c86-a2a5-44f9-a181-434f7c3aca69",
+        "componentDescriptionId": "STMicroelectronics.usbx.2.1.0$STMicroelectronics::USB:STM32CubeMX2 Codegen:Host_Core@2.1.0#Use Host Core",
+        "label": "STM32CubeMX2 Codegen:Host_Core",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "3be717fa-89ca-4690-81c7-036858ff968f",
+        "componentDescriptionId": "STMicroelectronics.usbx.2.1.0$STMicroelectronics::USB:STM32CubeMX2 Codegen:MSC_Host_Class@2.1.0#Use MSC Host Class",
+        "label": "STM32CubeMX2 Codegen:MSC_Host_Class",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "56b762c6-b2f8-4259-a10a-232710c0cf48",
+        "componentDescriptionId": "STMicroelectronics.usbx.2.1.0$STMicroelectronics::USB:USBX Controllers Driver:Host@6.5.0#Use Host Controllers",
+        "label": "USBX Controllers Driver:Host",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "c355f6ed-93a7-43cb-9d0d-bf6a5dc0e1b0",
+        "componentDescriptionId": "STMicroelectronics.usbx.2.1.0$STMicroelectronics::USB:USBX Core:Host@6.5.0#Use Host Core",
+        "label": "USBX Core:Host",
+        "expanded": true,
+        "userAdded": false
+      },
+      {
+        "$type": "http://st.com/schema/sw-composer#//SWComponent",
+        "id": "a2249efc-f68f-4ebf-a325-31570ee2a67d",
+        "componentDescriptionId": "STMicroelectronics.usbx.2.1.0$STMicroelectronics::USB:USBX Host Class:MSC@6.5.0#Use MSC Host Class",
+        "label": "USBX Host Class:MSC",
         "expanded": true,
         "userAdded": false
       }
@@ -6362,7 +6462,7 @@
               },
               "hcd_feature": {
                 "use_register_callback": false,
-                "user_data": false,
+                "user_data": true,
                 "get_last_errors": false,
                 "use_hal_hcd_usb_double_buffer": false,
                 "use_hal_hcd_usb_ep_type_isoc": false,
@@ -9672,7 +9772,7 @@
                       "xTaskGetHandle": true,
                       "xQueueGetMutexHolder": true,
                       "xSemaphoreGetMutexHolder": true,
-                      "xEventGroupSetBitFromISR": false,
+                      "xEventGroupSetBitFromISR": true,
                       "xTimerPendFunctionCall": true
                     }
                   },
@@ -10631,6 +10731,210 @@
           }
         }
       ],
+      "STMicroelectronics.usbx.2.1.0$STMicroelectronics::USB:STM32CubeMX2 Config:USBX@2.1.0#usbx core condition": [
+        {
+          "index": 25,
+          "instanceId": "01951c77-597a-43bd-9dd7-e25b54b52a46",
+          "entity": "unknown",
+          "settings": {
+            "parameters": {
+              "info": {
+                "usbx_version": "6.5.0"
+              },
+              "profile": {
+                "profile_type": "Default"
+              },
+              "core": {
+                "basic": {
+                  "usb_core_system": {
+                    "ux_standalone": "FreeRTOS",
+                    "ux_thread_priority_enum": 5,
+                    "ux_thread_priority_class": 5,
+                    "ux_thread_stack_size": 2048,
+                    "more": {
+                      "ux_enable_error_checking": false,
+                      "ux_enable_param_checking": true,
+                      "ux_no_time_slice": 0,
+                      "ux_name_referenced_by_pointer": false,
+                      "ux_enforce_safe_alignment": false,
+                      "ux_align_min": 8,
+                      "ux_debug_log_size": 16384,
+                      "ux_periodic_rate": 100,
+                      "ux_control_transfer_timeout": 10000,
+                      "ux_non_control_transfer_timeout": 50000
+                    }
+                  },
+                  "device_class": {
+                    "hid_class": false,
+                    "cdc_acm_class": false,
+                    "msc_class": false,
+                    "dfu_class": false,
+                    "audio_class": false,
+                    "video_class": false,
+                    "printer_class": false,
+                    "ccid_class": false,
+                    "pima_mtp_class": false
+                  },
+                  "host_class": {
+                    "hid_class": false,
+                    "cdc_acm_class": false,
+                    "msc_class": true,
+                    "hub_class": false,
+                    "printer_class": false,
+                    "pima_mtp_class": false,
+                    "audio_class": false,
+                    "video_class": false,
+                    "gser_class": false,
+                    "prolific_class": false,
+                    "swar_class": false,
+                    "host_core": {
+                      "ux_host_enum_thread_stack_size": 2048,
+                      "more": {
+                        "ux_host_hnp_polling_thread_stack": 2048,
+                        "ux_host_stack_configuration_instance_create_control": false,
+                        "ux_host_side_only": true,
+                        "ux_enable_assert": true,
+                        "ux_max_classes": 2,
+                        "ux_max_tt": 8,
+                        "ux_host_device_class_code_validation_enable": false,
+                        "ux_max_devices": 127
+                      }
+                    },
+                    "msc_core": {
+                      "ux_host_class_storage_memory_buffer_size": 8192,
+                      "ux_host_class_storage_thread_stack_size": 2048,
+                      "ux_host_class_storage_thread_priority_class": 5,
+                      "more": {
+                        "ux_max_host_lun": 1,
+                        "ux_host_class_storage_no_filex": false,
+                        "ux_host_class_storage_max_media": 2,
+                        "ux_host_class_storage_include_legacy_protocol_support": false,
+                        "ux_host_class_storage_max_transfer_size": 1024
+                      }
+                    }
+                  }
+                },
+                "applicative": {
+                  "usbx_system_stack_size": 24576,
+                  "usbx_device_generate_init_code": true,
+                  "usbx_device_application_thread_name": "app_ux_device_thread_entry",
+                  "usbx_device_application_thread_size": 1024,
+                  "usbx_device_application_thread_priority": 10,
+                  "usbx_host_generate_init_code": true,
+                  "usbx_host_application_thread_name": "app_ux_host_thread_entry",
+                  "usbx_host_application_thread_size": 1024,
+                  "usbx_host_application_thread_priority": 10
+                }
+              },
+              "interfaces": {
+                "logical_interface": {
+                  "device_controllers_enable": false,
+                  "device_controllers": {
+                    "ux_thread_priority_dcd": 20
+                  },
+                  "host_controllers_enable": true,
+                  "host_controllers": {
+                    "ux_host_hcd_thread_stack_size": 2048,
+                    "ux_thread_priority_hcd": 20,
+                    "more": {
+                      "ux_max_ed": 80,
+                      "ux_max_td": 128,
+                      "ux_max_iso_td": 1,
+                      "ux_max_hcd": 2
+                    }
+                  }
+                },
+                "resources_allocation": {
+                  "select_the_device_instance": {
+                    "bindingId": "720f01a6-0c61-488c-bc15-3654d6bfb11c",
+                    "bindingType": "bind.peripheral.config"
+                  },
+                  "host_instance": [
+                    {
+                      "select_the_host_instance": {
+                        "bindingId": "82baae7d-8473-42e8-bdbd-bd3e76e85d4c",
+                        "bindingType": "bind.peripheral.config",
+                        "selection": "USB_DRD_FS.HOST"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      "STMicroelectronics.filex.2.1.0$STMicroelectronics::File System:STM32CubeMX2 Config:FileX@2.1.0#FX Core Condition": [
+        {
+          "index": 26,
+          "instanceId": "c98c1cb1-f56e-4d95-be85-b876bd1f0bac",
+          "entity": "unknown",
+          "settings": {
+            "parameters": {
+              "info": {
+                "version": "6.4.2"
+              },
+              "profile": {
+                "profile_type": "Default"
+              },
+              "core": {
+                "basic": {
+                  "filex_core": {
+                    "fx_standalone": "FreeRTOS",
+                    "fx_disable_error_checking": false,
+                    "fx_fat_map_size": 128,
+                    "fx_max_fat_cache": 16,
+                    "fx_max_long_name_len": 256,
+                    "fx_max_sector_cache": 256,
+                    "fx_update_rate_in_seconds": 10,
+                    "fx_update_rate_in_ticks": 10000,
+                    "fx_disable_cache": false,
+                    "fx_no_local_path": false,
+                    "fx_single_thread": false,
+                    "more": {
+                      "fx_disable_direct_data_read_cache_fill": false,
+                      "fx_dont_update_open_files": false,
+                      "fx_driver_use_64bit_lba": false,
+                      "fx_max_last_name_len": 256,
+                      "fx_rename_path_inherit": false,
+                      "fx_single_open_legacy": false,
+                      "fx_disable_file_close": false,
+                      "fx_disable_fast_open": false,
+                      "fx_disable_force_memory_operation": false,
+                      "fx_disable_build_options": false,
+                      "fx_disable_one_line_function": false,
+                      "fx_disable_fat_entry_refresh": false,
+                      "fx_disable_consecutive_detect": false,
+                      "fx_media_statistics_disable": false,
+                      "fx_media_disable_search_cache": false,
+                      "fx_no_timer": false
+                    }
+                  },
+                  "fault_tolerance": {
+                    "fx_enable_fault_tolerant": false,
+                    "fx_fault_tolerant": false,
+                    "fx_fault_tolerant_data": false
+                  }
+                },
+                "applicative": {
+                  "filex_generate_init_code": false,
+                  "filex_app_task_entry": "fx_task_entry",
+                  "filex_app_task_name": "fx_main_task",
+                  "filex_application_task_priority": 10,
+                  "filex_application_task_stack_size": 1024
+                }
+              },
+              "interfaces": [
+                {
+                  "logical_config": {
+                    "interface_type": ""
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
       "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32 LL:GPIO@2.1.0#LL": [
         {
           "index": 0,
@@ -11579,9 +11883,18 @@ project:
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:System@2.1.0
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0
     - component: STMicroelectronics::Device:STM32CubeMX2 Config:UART@2.1.0
+    - component: STMicroelectronics::File System:FileX:Core@6.4.2
+    - component: STMicroelectronics::File System:STM32CubeMX2 Config:FileX@2.1.0
     - component: STMicroelectronics::RTOS:FreeRTOS:Core@11.2.0
     - component: STMicroelectronics::RTOS:FreeRTOS:MemMang&Heap_4@11.2.0
     - component: STMicroelectronics::RTOS:STM32CubeMX2 Config:FreeRTOS@2.1.0
+    - component: STMicroelectronics::USB:STM32CubeMX2 Codegen:Host_Core@2.1.0
+    - component: STMicroelectronics::USB:STM32CubeMX2 Codegen:MSC_Host_Class@2.1.0
+    - component: STMicroelectronics::USB:STM32CubeMX2 Config:USBX@2.1.0
+    - component: STMicroelectronics::USB:USBX Controllers Driver:Host@6.5.0
+    - component: STMicroelectronics::USB:USBX Core:Common@6.5.0
+    - component: STMicroelectronics::USB:USBX Core:Host@6.5.0
+    - component: STMicroelectronics::USB:USBX Host Class:MSC@6.5.0
     - component: STMicroelectronics::Utility:STM32CubeMX2 Config:syscalls@1.0.0
     - component: STMicroelectronics::Utility:syscalls&Standalone syscalls@1.0.0
     - component: STMicroelectronics::Utility:sysmem&Standalone sysmem@1.0.0
@@ -11605,6 +11918,10 @@ solution:
         path: $ProjectDir()$/generated/middleware
       - generator: syscalls_mx2codegen
         path: $ProjectDir()$/generated/utilities
+      - generator: filex_mx2codegen
+        path: $ProjectDir()$/generated/middleware
+      - generator: usbx_mx2codegen
+        path: $ProjectDir()$/generated/middleware
   build-types:
     - type: debug_GCC
       compiler: GCC
@@ -11625,6 +11942,7 @@ solution:
     - pack: STMicroelectronics::CMSIS@6.3.0
     - pack: STMicroelectronics::crystal_hw-part@2.2.0
     - pack: STMicroelectronics::esd_hw-part@2.2.0
+    - pack: STMicroelectronics::filex@2.1.0
     - pack: STMicroelectronics::freertos@2.1.0
     - pack: STMicroelectronics::lan8742a_hw-part@2.1.0
     - pack: STMicroelectronics::led_hw-part@2.5.0
@@ -11634,6 +11952,7 @@ solution:
     - pack: STMicroelectronics::stm32c5xx_hal_drivers@2.1.0
     - pack: STMicroelectronics::stm32cubemx2_templates_no_os_stm32c5@2.1.0
     - pack: STMicroelectronics::syscalls@2.0.0
+    - pack: STMicroelectronics::usbx@2.1.0
 """
 
 ["Project Description"]

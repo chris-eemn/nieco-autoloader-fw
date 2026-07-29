@@ -48,7 +48,7 @@
  */
 
 /** Bootloader commit-trigger flag. One sector, reserved solely for the flag -- see
- * usart3_loader/btl_flash_trigger.c. */
+ * usb_loader/btl_flash_trigger.c. */
 #define W25Q_BTL_TRIGGER_BASE_ADDRESS (0x00000000UL)
 #define W25Q_BTL_TRIGGER_SIZE (W25Q_SECTOR_SIZE)
 
@@ -57,7 +57,7 @@
 #define W25Q_CAL_DATA_SIZE (W25Q_FLASH_SIZE - W25Q_CAL_DATA_BASE_ADDRESS)
 
 /** Staged firmware image slot. Fills everything between the trigger flag and cal-data -- see
- * usart3_loader/update_image.h for the on-flash file format written here. */
+ * usb_loader/update_image.h for the on-flash file format written here. */
 #define W25Q_STAGED_IMAGE_BASE_ADDRESS (W25Q_BTL_TRIGGER_BASE_ADDRESS + W25Q_BTL_TRIGGER_SIZE)
 #define W25Q_STAGED_IMAGE_SIZE (W25Q_CAL_DATA_BASE_ADDRESS - W25Q_STAGED_IMAGE_BASE_ADDRESS)
 

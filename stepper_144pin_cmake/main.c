@@ -27,7 +27,7 @@
 #include "mx_i2c1.h"
 #include <stdio.h>
 #include "mb_regs.h"
-#include "usart3_loader.h"
+#include "usb_loader.h"
 #include "w25q.h"
 #include "cal_data.h"
 
@@ -90,6 +90,12 @@ int main(void) {
     while (1);
   }
 
+  /* CubeMX has no NVIC-priority control for USB_DRD_FS -- mx_usb_drd_fs_host_init() (called from
+   * mx_system_init() above) hardcodes preemption priority 0, which is numerically above
+   * configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY (5). USBX's FreeRTOS port layer calls
+   * xSemaphoreGiveFromISR/portYIELD_FROM_ISR from this IRQ, which is undefined behavior at that
+   * priority. Override it here since the generated file gets clobbered on every regen. */
+  HAL_CORTEX_NVIC_SetPriority(USB_DRD_FS_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
 
   // must be called before any freertos API calls, including task creation or we run into an interrupt priority issue
   // where the spi interrupt is never handled basically locking up this function
@@ -102,15 +108,13 @@ int main(void) {
   app_console_init();
   app_console_commands_register();
 
-  /* USART3 serves one role per build (see usart3_loader.h / USART3_MODE): the modbus slave,
-   * or the binary image loader that stages an incoming firmware image into SPI flash for the
-   * bootloader to apply. Default build is the loader; modbus is opt-in. */
-#if (USART3_MODE == USART3_MODE_MODBUS)
+  /* USART3 is the modbus slave port. It previously doubled as a binary image loader that
+   * staged an incoming firmware image into SPI flash (selected by a compile-time
+   * USART3_MODE); that loader is gone -- firmware updates now arrive on a USB thumb drive
+   * via usb_loader_start() below. */
   mb_regs_init();
-#else
-  usart3_loader_start();
-#endif
 
+  usb_loader_start();
 
   BaseType_t task_ret = xTaskCreate(stepper_task,
                                     "StepperTask",

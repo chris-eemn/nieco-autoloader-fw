@@ -43,6 +43,38 @@ if(commit_result EQUAL 0 AND NOT commit_out STREQUAL "")
   set(git_commit "${commit_out}")
 endif()
 
+# Numeric major/minor/build, pulled out of the same describe string so a version comparison
+# never needs to parse text at runtime. The USB firmware-update loader compares these against
+# the `version_major`/`version_minor`/`version_build` fields of an update file's
+# ede_update_file_header_t (usb_loader/update_image.h), where each is a uint8_t -- hence the
+# 0..255 range check below.
+#
+# Only the tag part is numeric: the `-<n>-g<hash>`/`-dirty` suffixes git describe appends to an
+# untagged or dirty build are deliberately discarded, so a development build made 10 commits
+# past v0.0.1 compares equal to a v0_0_1 update file. APP_VERSION_GIT_DESCRIBE remains the
+# string that identifies the exact build.
+#
+# APP_VERSION_NUMERIC_VALID is 0 when no vX.Y.Z tag is reachable (git missing, shallow clone, or
+# a repo that has never been tagged) -- the loader then reports the running version as unknown
+# rather than silently comparing against 0.0.0.
+set(app_version_major 0)
+set(app_version_minor 0)
+set(app_version_build 0)
+set(app_version_numeric_valid 0)
+
+if(git_describe MATCHES "^v?([0-9]+)\\.([0-9]+)\\.([0-9]+)")
+  if(CMAKE_MATCH_1 LESS_EQUAL 255 AND CMAKE_MATCH_2 LESS_EQUAL 255 AND CMAKE_MATCH_3 LESS_EQUAL 255)
+    set(app_version_major ${CMAKE_MATCH_1})
+    set(app_version_minor ${CMAKE_MATCH_2})
+    set(app_version_build ${CMAKE_MATCH_3})
+    set(app_version_numeric_valid 1)
+  else()
+    message(WARNING "git tag '${git_describe}' has a version field above 255; it does not fit the "
+                    "update-file header's uint8_t version fields, so the running version is "
+                    "reported as unknown to the USB update loader.")
+  endif()
+endif()
+
 set(new_content
 "/* Auto-generated at build time by cmake/gen_version.cmake -- do not edit, not checked in. */
 #ifndef APP_VERSION_GIT_H_
@@ -50,6 +82,13 @@ set(new_content
 
 #define APP_VERSION_GIT_DESCRIBE \"${git_describe}\"
 #define APP_VERSION_GIT_COMMIT   \"${git_commit}\"
+
+/* Numeric form of the vX.Y.Z tag in APP_VERSION_GIT_DESCRIBE, for comparison against an update
+ * file's header. All three are 0 and APP_VERSION_NUMERIC_VALID is 0 when no such tag exists. */
+#define APP_VERSION_MAJOR ${app_version_major}
+#define APP_VERSION_MINOR ${app_version_minor}
+#define APP_VERSION_BUILD ${app_version_build}
+#define APP_VERSION_NUMERIC_VALID ${app_version_numeric_valid}
 
 #endif /* APP_VERSION_GIT_H_ */
 ")

@@ -6,7 +6,7 @@
  *        polled through w25q_get_transfer_status()) -- this module hides that polling behind
  *        simple blocking calls.
  *
- *        Shared by every module that touches SPI flash: the USART3 image loader, the
+ *        Shared by every module that touches SPI flash: the USB firmware-update loader, the
  *        bootloader commit trigger, and cal-data. All of them are single-threaded control
  *        flows; this module adds no locking of its own, so callers must not drive it from
  *        two tasks concurrently.

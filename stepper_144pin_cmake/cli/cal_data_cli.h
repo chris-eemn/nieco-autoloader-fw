@@ -60,7 +60,7 @@
  *
  *         - the console RX task, on every "param set" and "param reset"
  *         - the stepper task, via cal_data_init() at boot and cal_data_position_* later
- *         - the USART3 loader task, while staging a firmware image
+ *         - the USB loader task, while staging a firmware image
  *
  *       Note that persisting inline on every set widens this window rather than narrowing it:
  *       the console task now touches flash on every parameter change, not only when an operator
