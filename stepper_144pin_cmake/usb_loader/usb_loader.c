@@ -29,7 +29,10 @@
 
 #include "app_console.h"
 #include "app_version_git.h"
+#include "btl_flash_trigger.h"
+#include "update_image.h"
 #include "usb_update_file.h"
+#include "usb_update_stage.h"
 
 /*******************************************************************************
  * Module Macros
@@ -40,6 +43,10 @@
  * locals, but the FileX call chain itself is deeper than the entry-find calls alone. */
 #define USB_LOADER_TASK_STACK_SIZE 1024U
 #define USB_LOADER_TASK_PRIORITY (tskIDLE_PRIORITY + 2U)
+
+/* Delay after the final "committing" line so the console TX task -- which runs below this task
+ * and only gets the CPU when this one yields -- can transmit it before the software reset. */
+#define USB_LOADER_COMMIT_FLUSH_MS 20U
 
 /*******************************************************************************
  * Module Typedefs
@@ -65,7 +72,8 @@ static FX_MEDIA* s_media = UX_NULL;
 static UINT usb_loader_host_event_callback(ULONG event, UX_HOST_CLASS* current_class, VOID* current_instance);
 static VOID usb_loader_host_error_callback(UINT system_level, UINT system_context, UINT error_code);
 static void usb_loader_list_root_directory(void);
-static void usb_loader_report_update_file(void);
+static void usb_loader_stage_and_commit(const usb_update_file_t* update_file);
+static void usb_loader_handle_update_file(void);
 static void usb_loader_task(void* pv_parameters);
 
 /*******************************************************************************
@@ -222,12 +230,45 @@ static void usb_loader_list_root_directory(void) {
 }
 
 /**
- * @brief Finds the drive's firmware-update file, compares its version against the running
- *        application's, and reports whether an update is called for.
- * @note Reports only -- nothing is written to SPI flash and no reset is triggered. Acting on the
- *       decision is the next phase of this feature.
+ * @brief Stages a verified update file into SPI flash and, on success, arms the bootloader
+ *        commit trigger and resets into the bootloader.
+ * @note Does not return when the update is applied -- the reset happens instead. Every failure
+ *       path returns after reporting, leaving the application running: the trigger is only ever
+ *       armed after the staged copy's CRC has been confirmed, so a failure part-way through
+ *       leaves a corrupt staging slot that the bootloader is never told to apply.
+ * @param update_file file returned by usb_update_file_find(); must not be NULL
  */
-static void usb_loader_report_update_file(void) {
+static void usb_loader_stage_and_commit(const usb_update_file_t* update_file) {
+  usb_update_stage_status_enum stage_status;
+
+  if (update_file != NULL) {
+    stage_status = usb_update_stage_copy_and_verify(s_media, update_file);
+
+    if (stage_status != USB_UPDATE_STAGE_OK) {
+      app_console_print("[USB] Update NOT applied: %s.\r\n", usb_update_stage_status_string(stage_status));
+    }
+    else {
+      app_console_print("[USB] Committing v%u.%u.%u and resetting into the bootloader...\r\n",
+                        (unsigned int)update_file->header.version_major, (unsigned int)update_file->header.version_minor,
+                        (unsigned int)update_file->header.version_build);
+
+      /* Let the console TX task drain the line above before the reset takes the CPU away --
+       * app_console_print() only queues, and that task runs below this one. */
+      vTaskDelay(pdMS_TO_TICKS(USB_LOADER_COMMIT_FLUSH_MS));
+
+      /* Arms the trigger flag in SPI flash and resets -- does not return on success. */
+      if (btl_flash_trigger_arm_and_reset(STAGED_HEADER_OFFSET) == false) {
+        app_console_print("[USB] Commit failed (could not arm the trigger); staying in the application.\r\n");
+      }
+    }
+  }
+}
+
+/**
+ * @brief Finds the drive's firmware-update file, compares its version against the running
+ *        application's, and applies it if they differ.
+ */
+static void usb_loader_handle_update_file(void) {
   usb_update_file_t update_file;
   usb_update_file_status_enum status;
   uint8_t running_major = 0U;
@@ -261,7 +302,8 @@ static void usb_loader_report_update_file(void) {
     }
 
     if (usb_update_file_version_differs(&update_file) == true) {
-      app_console_print("[USB] Versions differ -- update needed (staging not implemented yet).\r\n");
+      app_console_print("[USB] Versions differ -- applying update.\r\n");
+      usb_loader_stage_and_commit(&update_file);
     }
     else {
       app_console_print("[USB] Versions match -- no update needed.\r\n");
@@ -270,8 +312,11 @@ static void usb_loader_report_update_file(void) {
 }
 
 /**
- * @brief Waits for a USB drive to be mounted, then lists its root directory and reports whether
- *        it carries a firmware update.
+ * @brief Waits for a USB drive to be mounted, then lists its root directory and applies any
+ *        firmware update it carries.
+ * @note When an update is applied the board resets into the bootloader rather than coming back
+ *       round this loop. Everything else -- no update file, a rejected file, matching versions,
+ *       a failed staging attempt -- returns here to wait for the next insertion.
  */
 static void usb_loader_task(void* pv_parameters) {
   (void)pv_parameters;
@@ -284,7 +329,7 @@ static void usb_loader_task(void* pv_parameters) {
     }
     else {
       usb_loader_list_root_directory();
-      usb_loader_report_update_file();
+      usb_loader_handle_update_file();
     }
   }
 }
