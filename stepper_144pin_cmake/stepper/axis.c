@@ -77,17 +77,19 @@ static uint32_t     s_supervisor_period_ms = 0U;
  * Function Prototypes
  *******************************************************************************/
 
-static void axis_fault_isr_cb(stepper_t *motor);
-static void handle_homing_tick(axis_t *axis, int32_t delta);
-static void handle_stall_tick(axis_t *axis, int32_t delta);
-static void supervisor_tick(axis_t *axis);
-static void axis_supervisor_task(void *pv);
+static void axis_fault_isr_cb(stepper_t* motor);
+static void start_homing_backoff(axis_t* axis);
+static uint8_t handle_sync_event(axis_t* axis);
+static void handle_homing_tick(axis_t* axis, int32_t delta);
+static void handle_stall_tick(axis_t* axis, int32_t delta);
+static void supervisor_tick(axis_t* axis);
+static void axis_supervisor_task(void* pv);
 
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
 
-axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti, const axis_config_t *config) {
+axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti, const axis_config_t* config) {
   if ((motor == NULL) || (encoder == NULL) || (hexti == NULL) || (config == NULL)) {
     return NULL;
   }
@@ -97,10 +99,10 @@ axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti
     return NULL;
   }
 
-  axis_t *axis = &s_axes[s_axis_count];
+  axis_t* axis = &s_axes[s_axis_count];
   s_axis_count++;
 
-  axis->motor   = motor;
+  axis->motor = motor;
   axis->encoder = encoder;
 
   /* Apply defaults for zero-valued config fields. */
@@ -114,15 +116,25 @@ axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti
   if (axis->config.stall_window_ms == 0U) {
     axis->config.stall_window_ms = AXIS_DEFAULT_WINDOW_MS;
   }
+  if (axis->config.encoder_counts_numerator == 0U) {
+    axis->config.encoder_counts_numerator = AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR;
+  }
+  if (axis->config.encoder_counts_denominator == 0U) {
+    axis->config.encoder_counts_denominator = AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR;
+  }
+  if (axis->config.max_sync_error_counts == 0U) {
+    axis->config.max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS;
+  }
 
   /* Establish the supervisor period from the first axis registered. */
   if (s_supervisor_handle == NULL) {
     s_supervisor_period_ms = axis->config.supervisor_period_ms;
   }
   else if (axis->config.supervisor_period_ms != s_supervisor_period_ms) {
-    app_console_print("[AXIS] WARNING: axis %u requested supervisor period %lums but %lums is "
-                      "already running (request ignored — one shared period for all axes).\r\n",
-                      (unsigned)s_axis_count, axis->config.supervisor_period_ms, s_supervisor_period_ms);
+    app_console_print(
+        "[AXIS] WARNING: axis %u requested supervisor period %lums but %lums is "
+        "already running (request ignored — one shared period for all axes).\r\n",
+        (unsigned)s_axis_count, axis->config.supervisor_period_ms, s_supervisor_period_ms);
   }
 
   uint32_t period = (s_supervisor_period_ms > 0U) ? s_supervisor_period_ms : 1U;
@@ -139,13 +151,24 @@ axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti
     axis->stall_samples = 1U;
   }
 
-  axis->status               = AXIS_STATUS_NOT_HOMED;
-  axis->fault_from_isr       = 0U;
-  axis->fault_reset_pending  = 0U;
-  axis->homing_substate      = HOMING_IDLE;
+  axis->status = AXIS_STATUS_NOT_HOMED;
+  axis->fault_from_isr = 0U;
+  axis->fault_reset_pending = 0U;
+  axis->homing_substate = HOMING_IDLE;
   axis->enc_stationary_count = 0U;
-  axis->stall_count          = 0U;
-  axis->last_enc_count       = encoder_get_count(encoder);
+  axis->stall_count = 0U;
+  axis->last_enc_count = encoder_get_count(encoder);
+
+  stepper_sync_config_t sync_config = {
+      .encoder_counts_numerator = axis->config.encoder_counts_numerator,
+      .encoder_counts_denominator = axis->config.encoder_counts_denominator,
+      .max_error_counts = axis->config.max_sync_error_counts,
+  };
+
+  if (stepper_sync_configure(motor, encoder, &sync_config) != STEPPER_OK) {
+    s_axis_count--;
+    return NULL;
+  }
 
   /* Wire the stepper fault callback so that DRV8424 faults surface here.
    * EXTI registration is mandatory (hexti is a required, non-NULL parameter)
@@ -156,8 +179,7 @@ axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti
 
   /* Create the shared supervisor task on the first axis_init() call. */
   if (s_supervisor_handle == NULL) {
-    BaseType_t ret = xTaskCreate(axis_supervisor_task, "AxisSupv", AXIS_SUPERVISOR_STACK_SIZE, NULL, AXIS_SUPERVISOR_PRIORITY,
-                                 &s_supervisor_handle);
+    BaseType_t ret = xTaskCreate(axis_supervisor_task, "AxisSupv", AXIS_SUPERVISOR_STACK_SIZE, NULL, AXIS_SUPERVISOR_PRIORITY, &s_supervisor_handle);
     configASSERT(ret == pdPASS);
   }
 
@@ -264,6 +286,7 @@ void axis_clear_fault(axis_t *axis) {
   axis->homing_substate      = HOMING_IDLE;
   axis->fault_from_isr       = 0U;
   axis->status               = AXIS_STATUS_NOT_HOMED;
+  (void)stepper_sync_take_event(axis->motor, NULL);
 }
 
 void axis_fault_reset(axis_t *axis) {
@@ -299,7 +322,7 @@ void axis_stop(axis_t *axis) {
  * Called from ISR context. Sets a volatile flag rather than modifying axis
  * state directly so that all axis-state writes happen in the supervisor task.
  */
-static void axis_fault_isr_cb(stepper_t *motor) {
+static void axis_fault_isr_cb(stepper_t* motor) {
   for (uint8_t i = 0U; i < s_axis_count; i++) {
     if (s_axes[i].motor == motor) {
       s_axes[i].fault_from_isr = 1U;
@@ -309,12 +332,74 @@ static void axis_fault_isr_cb(stepper_t *motor) {
 }
 
 /**
+ * @brief Start the configured backoff move after homing seek finds the endstop.
+ * @param axis Axis currently in HOMING_SEEK.
+ */
+static void start_homing_backoff(axis_t* axis) {
+  uint8_t backoff_dir = (axis->config.home_direction == STEPPER_DIR_CW) ? STEPPER_DIR_CCW : STEPPER_DIR_CW;
+  stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.backoff_steps, axis->config.home_rpm, backoff_dir);
+
+  if (ret == STEPPER_OK) {
+    axis->homing_substate = HOMING_BACKOFF;
+    axis->enc_stationary_count = 0U;
+    axis->stall_count = 0U;
+    app_console_print("[AXIS] Starting homing back-off (%lu usteps).\r\n", axis->config.backoff_steps);
+  }
+  else {
+    app_console_print("[AXIS] Back-off start failed: %d\r\n", (int)ret);
+    axis->status = AXIS_STATUS_FAULT;
+    axis->homing_substate = HOMING_IDLE;
+  }
+}
+
+/**
+ * @brief Consume and interpret one following-error event raised by the step ISR.
+ * @param axis Axis whose motor generated the event.
+ * @return 1 when a lag event changed axis state and completed this supervisor tick; otherwise 0.
+ */
+static uint8_t handle_sync_event(axis_t* axis) {
+  uint32_t deviation_counts = 0U;
+  stepper_sync_event_enum event = stepper_sync_take_event(axis->motor, &deviation_counts);
+  uint8_t event_handled = 0U;
+
+  if (event == STEPPER_SYNC_EVENT_LEAD) {
+    app_console_print("[AXIS] Warning: encoder is ahead by %lu counts; motion continuing.\r\n", deviation_counts);
+  }
+  else if (event == STEPPER_SYNC_EVENT_LAG) {
+    event_handled = 1U;
+
+    if ((axis->status == AXIS_STATUS_HOMING) && (axis->homing_substate == HOMING_SEEK)) {
+      app_console_print("[AXIS] Endstop found: encoder lagged by %lu counts.\r\n", deviation_counts);
+      start_homing_backoff(axis);
+    }
+    else if ((axis->status == AXIS_STATUS_HOMING) && (axis->homing_substate == HOMING_BACKOFF)) {
+      axis->status = AXIS_STATUS_FAULT;
+      axis->homing_substate = HOMING_IDLE;
+      app_console_print("[AXIS] Homing back-off stalled: encoder lagged by %lu counts.\r\n", deviation_counts);
+    }
+    else if ((axis->status == AXIS_STATUS_OK) || (axis->status == AXIS_STATUS_NOT_HOMED)) {
+      axis->status = AXIS_STATUS_STALLED;
+      axis->stall_count = 0U;
+      app_console_print("[AXIS] Stall detected: encoder lagged by %lu counts. Motor stopped.\r\n", deviation_counts);
+    }
+    else {
+      /* The ISR has already stopped the motor; no state transition is needed. */
+    }
+  }
+  else {
+    /* No synchronization event is pending. */
+  }
+
+  return event_handled;
+}
+
+/**
  * @brief Handle one supervisor tick for an axis that is currently homing.
  *
  * @param axis   Axis instance in AXIS_STATUS_HOMING.
  * @param delta  Signed encoder delta since the previous supervisor tick.
  */
-static void handle_homing_tick(axis_t *axis, int32_t delta) {
+static void handle_homing_tick(axis_t* axis, int32_t delta) {
   switch (axis->homing_substate) {
     case HOMING_SEEK: {
       if (delta == 0) {
@@ -328,28 +413,14 @@ static void handle_homing_tick(axis_t *axis, int32_t delta) {
         /* Endstop detected — stop seek and start back-off. */
         stepper_stop(axis->motor);
 
-        uint8_t backoff_dir = (axis->config.home_direction == STEPPER_DIR_CW) ? STEPPER_DIR_CCW : STEPPER_DIR_CW;
-
-        stepper_status_enum ret =
-            stepper_move_start(axis->motor, axis->config.backoff_steps, axis->config.home_rpm, backoff_dir);
-
-        if (ret == STEPPER_OK) {
-          axis->homing_substate      = HOMING_BACKOFF;
-          axis->enc_stationary_count = 0U;
-          axis->stall_count          = 0U;
-          app_console_print("[AXIS] Endstop found. Starting back-off (%lu usteps).\r\n", axis->config.backoff_steps);
-        }
-        else {
-          app_console_print("[AXIS] Back-off start failed: %d\r\n", (int)ret);
-          axis->status          = AXIS_STATUS_FAULT;
-          axis->homing_substate = HOMING_IDLE;
-        }
+        app_console_print("[AXIS] Endstop found: encoder stationary.\r\n");
+        start_homing_backoff(axis);
       }
       else if (stepper_is_busy(axis->motor) == 0U) {
         /* Motor finished its max-steps move without detecting a stationary encoder
          * — homing timeout (mechanical failure or encoder disconnected). */
         app_console_print("[AXIS] Homing timeout — endstop not reached.\r\n");
-        axis->status          = AXIS_STATUS_FAULT;
+        axis->status = AXIS_STATUS_FAULT;
         axis->homing_substate = HOMING_IDLE;
       }
       break;
@@ -450,16 +521,20 @@ static void supervisor_tick(axis_t *axis) {
 
   /* Fault from ISR takes priority over all other state. */
   if (axis->fault_from_isr != 0U) {
-    axis->fault_from_isr  = 0U;
-    axis->status          = AXIS_STATUS_FAULT;
+    axis->fault_from_isr = 0U;
+    axis->status = AXIS_STATUS_FAULT;
     axis->homing_substate = HOMING_IDLE;
     app_console_print("[AXIS] Stepper fault: axis halted.\r\n");
     return;
   }
 
+  if (handle_sync_event(axis) != 0U) {
+    return;
+  }
+
   /* Sample encoder and compute signed delta since last tick. */
-  int32_t curr_count   = encoder_get_count(axis->encoder);
-  int32_t delta        = curr_count - axis->last_enc_count;
+  int32_t curr_count = encoder_get_count(axis->encoder);
+  int32_t delta = curr_count - axis->last_enc_count;
   axis->last_enc_count = curr_count;
 
   switch (axis->status) {

@@ -89,7 +89,7 @@ encoder_t *encoder_init(hal_tim_handle_t *htim);
  * @return Opaque encoder handle on success.
  *         NULL if hlptim is NULL or the encoder pool is exhausted.
  */
-encoder_t *encoder_init_lptim(hal_lptim_handle_t *hlptim);
+encoder_t* encoder_init_lptim(hal_lptim_handle_t* hlptim);
 
 /**
  * @brief  Read the current accumulated encoder count since the last zero.
@@ -101,7 +101,22 @@ encoder_t *encoder_init_lptim(hal_lptim_handle_t *hlptim);
  * @param  enc  Handle returned by encoder_init(). Must not be NULL.
  * @return Accumulated signed count from the last encoder_zero(), or 0 if NULL.
  */
-int32_t encoder_get_count(encoder_t *enc);
+int32_t encoder_get_count(encoder_t* enc);
+
+/**
+ * @brief Read the encoder hardware counter without changing accumulated position state.
+ *
+ *        This function is safe to call from the
+ * step-timer ISR. It exists so
+ *        per-step following-error monitoring can maintain its own wrap-safe
+ *        sample history without racing
+ * encoder_get_count().
+ *
+ * @param enc Handle returned by encoder_init() or encoder_init_lptim(). Must not be NULL.
+ * @return Current raw 16-bit
+ * hardware counter value, or 0 if enc is NULL.
+ */
+uint32_t encoder_get_raw(const encoder_t* enc);
 
 /**
  * @brief  Read the signed delta since the last call to encoder_get_delta().
@@ -112,7 +127,7 @@ int32_t encoder_get_count(encoder_t *enc);
  * @param  enc  Handle returned by encoder_init(). Must not be NULL.
  * @return Signed delta count, or 0 if NULL.
  */
-int32_t encoder_get_delta(encoder_t *enc);
+int32_t encoder_get_delta(encoder_t* enc);
 
 /**
  * @brief  Zero the encoder position reference.

@@ -94,46 +94,55 @@ encoder_t *encoder_init_lptim(hal_lptim_handle_t *hlptim) {
     return NULL;
   }
 
-  encoder_t *enc = &s_encoders[s_encoder_count];
+  encoder_t* enc = &s_encoders[s_encoder_count];
   s_encoder_count++;
 
-  enc->src          = ENCODER_SRC_LPTIM;
+  enc->src = ENCODER_SRC_LPTIM;
   enc->handle.hlptim = hlptim;
-  enc->accumulated  = 0;
-  enc->last_raw     = HAL_LPTIM_GetCounter(hlptim);
-  enc->prev_count   = 0;
-  enc->index_cb     = NULL;
+  enc->accumulated = 0;
+  enc->last_raw = HAL_LPTIM_GetCounter(hlptim);
+  enc->prev_count = 0;
+  enc->index_cb = NULL;
 
   app_console_print("[ENCODER] Instance %u init OK (LPTIM). raw=%lu\r\n", (unsigned)(s_encoder_count - 1U), enc->last_raw);
 
   return enc;
 }
 
-int32_t encoder_get_count(encoder_t *enc) {
+int32_t encoder_get_count(encoder_t* enc) {
   if (enc == NULL) {
     return 0;
   }
 
-  uint32_t raw = (enc->src == ENCODER_SRC_LPTIM) ? HAL_LPTIM_GetCounter(enc->handle.hlptim)
-                                                  : HAL_TIM_GetCounter(enc->handle.htim);
+  uint32_t raw = encoder_get_raw(enc);
   /* Cast through uint16_t so the subtraction wraps correctly for a 16-bit
    * free-running counter. The int16_t cast yields the signed displacement. */
-   // this trick only works if the timer ARR/period is 0xffff
+  // this trick only works if the timer ARR/period is 0xffff
   int16_t delta = (int16_t)((uint16_t)raw - (uint16_t)enc->last_raw);
 
-  enc->last_raw     = raw;
+  enc->last_raw = raw;
   enc->accumulated += (int32_t)delta;
 
   return enc->accumulated;
 }
 
-int32_t encoder_get_delta(encoder_t *enc) {
+uint32_t encoder_get_raw(const encoder_t* enc) {
+  uint32_t raw = 0U;
+
+  if (enc != NULL) {
+    raw = (enc->src == ENCODER_SRC_LPTIM) ? HAL_LPTIM_GetCounter(enc->handle.hlptim) : HAL_TIM_GetCounter(enc->handle.htim);
+  }
+
+  return raw;
+}
+
+int32_t encoder_get_delta(encoder_t* enc) {
   if (enc == NULL) {
     return 0;
   }
 
-  int32_t current    = encoder_get_count(enc);
-  int32_t delta      = current - enc->prev_count;
+  int32_t current = encoder_get_count(enc);
+  int32_t delta = current - enc->prev_count;
   enc->prev_count    = current;
 
   return delta;

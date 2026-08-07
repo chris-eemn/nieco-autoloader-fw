@@ -68,6 +68,12 @@
 /** Default stationary/stall window in ms, applied when the config field is 0. */
 #define AXIS_DEFAULT_WINDOW_MS 150U
 
+/** Bench encoder produces 2.5 counts per microstep at the current 8-microstep setting. */
+#define AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR 5U
+#define AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR 2U
+
+#define AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS 10U
+
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -90,9 +96,9 @@ typedef enum {
                               *!< known absolute position/encoder reference. */
   AXIS_STATUS_HOMING,        /*!< Homing move in progress                      */
   AXIS_STATUS_OK,            /*!< Normal operating state                        */
-  AXIS_STATUS_STALLED=66,       /*!< Encoder did not move while motor was running  */
-  AXIS_STATUS_FAULT=99,         /*!< Stepper fault or homing timeout               */
-  AXIS_STATUS_INVALID=255,      /*!< Returned by axis_get_status() if axis is NULL */
+  AXIS_STATUS_STALLED = 66,  /*!< Encoder did not move while motor was running  */
+  AXIS_STATUS_FAULT = 99,    /*!< Stepper fault or homing timeout               */
+  AXIS_STATUS_INVALID = 255, /*!< Returned by axis_get_status() if axis is NULL */
 } axis_status_enum;
 
 /**
@@ -111,6 +117,13 @@ typedef struct {
   /** How long the encoder must read zero-delta while the motor is commanded running
    *  before declaring a stall. Default: AXIS_DEFAULT_WINDOW_MS. */
   uint32_t stall_window_ms;
+
+  /** Integer encoder-counts-per-microstep ratio used by the step ISR. Default: 5/2. */
+  uint32_t encoder_counts_numerator;
+  uint32_t encoder_counts_denominator;
+
+  /** Encoder following-error threshold. Lag stops immediately; lead only reports. */
+  uint32_t max_sync_error_counts;
 
   /** Back-off distance in microsteps after endstop is detected (no default — must be set). */
   uint32_t backoff_steps;
