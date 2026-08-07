@@ -40,8 +40,8 @@ static uint8_t s_axis_count = 0U;
 /* Indexed by axis_event_enum. Both the pointers and the strings are const so
  * the whole table stays in flash. Keep in step with axis_event_enum. */
 static const char* const s_event_names[] = {
-    [AXIS_EVENT_MOVE_DONE] = "MOVE_DONE",   [AXIS_EVENT_MOVE_STOPPED] = "MOVE_STOPPED", [AXIS_EVENT_MOVE_FAILED] = "MOVE_FAILED",
-    [AXIS_EVENT_HOME_DONE] = "HOME_DONE",   [AXIS_EVENT_HOME_ABORTED] = "HOME_ABORTED", [AXIS_EVENT_HOME_FAILED] = "HOME_FAILED",
+    [AXIS_EVENT_MOVE_DONE] = "MOVE_DONE", [AXIS_EVENT_MOVE_STOPPED] = "MOVE_STOPPED", [AXIS_EVENT_MOVE_FAILED] = "MOVE_FAILED",
+    [AXIS_EVENT_HOME_DONE] = "HOME_DONE", [AXIS_EVENT_HOME_ABORTED] = "HOME_ABORTED", [AXIS_EVENT_HOME_FAILED] = "HOME_FAILED",
 };
 
 /* Supervisor task: created once by the first axis_init(), shared by all axes.
@@ -295,7 +295,8 @@ stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
   axis->homing_substate = HOMING_SEEK;
   axis->status = AXIS_STATUS_HOMING;
 
-  app_console_print("[AXIS] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", direction, axis->config.home_rpm, axis->config.home_max_steps);
+  app_console_print("[AXIS %d] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", axis->num, direction, axis->config.home_rpm,
+                    axis->config.home_max_steps);
 
   return STEPPER_OK;
 }
@@ -424,10 +425,10 @@ static void start_homing_backoff(axis_t* axis) {
 
   if (ret == STEPPER_OK) {
     axis->homing_substate = HOMING_BACKOFF;
-    app_console_print("[AXIS] Starting homing back-off (%lu usteps).\r\n", axis->config.backoff_steps);
+    app_console_print("[AXIS %d] Starting homing back-off (%lu usteps).\r\n", axis->num, axis->config.backoff_steps);
   }
   else {
-    app_console_print("[AXIS] Back-off start failed: %d\r\n", (int)ret);
+    app_console_print("[AXIS %d] Back-off start failed: %d\r\n", axis->num, (int)ret);
     axis->status = AXIS_STATUS_FAULT;
     axis->homing_substate = HOMING_IDLE;
     axis_emit(axis, AXIS_EVENT_HOME_FAILED);
@@ -441,7 +442,7 @@ static void start_homing_backoff(axis_t* axis) {
 static void start_homing_settle(axis_t* axis) {
   axis->settle_end_time_ms = xTaskGetTickCount() + pdMS_TO_TICKS(axis->config.settle_delay_ms);
   axis->homing_substate = HOMING_SETTLE;
-  app_console_print("[AXIS] Settling after endstop hit for %lu ms.\r\n", axis->config.settle_delay_ms);
+  app_console_print("[AXIS %d] Settling after endstop hit for %lu ms.\r\n", axis->num, axis->config.settle_delay_ms);
 }
 
 /**
@@ -455,24 +456,24 @@ static uint8_t handle_sync_event(axis_t* axis) {
   uint8_t event_handled = 0U;
 
   if (event == STEPPER_SYNC_EVENT_LEAD) {
-    app_console_print("[AXIS] Warning: encoder is ahead by %lu counts; motion continuing.\r\n", deviation_counts);
+    app_console_print("[AXIS %d] Warning: encoder is ahead by %lu counts; motion continuing.\r\n", axis->num, deviation_counts);
   }
   else if (event == STEPPER_SYNC_EVENT_LAG) {
     event_handled = 1U;
 
     if ((axis->status == AXIS_STATUS_HOMING) && (axis->homing_substate == HOMING_SEEK)) {
-      app_console_print("[AXIS] Endstop found: encoder lagged by %lu counts.\r\n", deviation_counts);
+      app_console_print("[AXIS %d] Endstop found: encoder lagged by %lu counts.\r\n", axis->num, deviation_counts);
       start_homing_settle(axis);
     }
     else if ((axis->status == AXIS_STATUS_HOMING) && (axis->homing_substate == HOMING_BACKOFF)) {
       axis->status = AXIS_STATUS_FAULT;
       axis->homing_substate = HOMING_IDLE;
-      app_console_print("[AXIS] Homing back-off stalled: encoder lagged by %lu counts.\r\n", deviation_counts);
+      app_console_print("[AXIS %d] Homing back-off stalled: encoder lagged by %lu counts.\r\n", axis->num, deviation_counts);
       axis_emit(axis, AXIS_EVENT_HOME_FAILED);
     }
     else if ((axis->status == AXIS_STATUS_OK) || (axis->status == AXIS_STATUS_NOT_HOMED)) {
       axis->status = AXIS_STATUS_STALLED;
-      app_console_print("[AXIS] Stall detected: encoder lagged by %lu counts. Motor stopped.\r\n", deviation_counts);
+      app_console_print("[AXIS %d] Stall detected: encoder lagged by %lu counts. Motor stopped.\r\n", axis->num, deviation_counts);
       axis_emit_failure(axis);
     }
     else {
@@ -496,7 +497,7 @@ static void handle_homing_tick(axis_t* axis) {
     case HOMING_SEEK: {
       if (stepper_is_busy(axis->motor) == 0U) {
         /* The seek used all home_max_steps without an ISR following-error event. */
-        app_console_print("[AXIS] Homing timeout — endstop not reached.\r\n");
+        app_console_print("[AXIS %d] Homing timeout — endstop not reached.\r\n", axis->num);
         axis->status = AXIS_STATUS_FAULT;
         axis->homing_substate = HOMING_IDLE;
         axis_emit(axis, AXIS_EVENT_HOME_FAILED);
@@ -522,7 +523,7 @@ static void handle_homing_tick(axis_t* axis) {
         encoder_zero(axis->encoder);
         axis->homing_substate = HOMING_IDLE;
         axis->status = AXIS_STATUS_OK;
-        app_console_print("[AXIS] Homing complete. Encoder zeroed.\r\n");
+        app_console_print("[AXIS %d] Homing complete. Encoder zeroed.\r\n", axis->num);
         axis_emit(axis, AXIS_EVENT_HOME_DONE);
       }
       break;
@@ -553,7 +554,7 @@ static void supervisor_tick(axis_t* axis) {
     stepper_clear_fault(axis->motor);
     axis_clear_fault(axis);
     axis->fault_reset_pending = 0U;
-    app_console_print("[AXIS] Fault reset complete. Re-home before moving.\r\n");
+    app_console_print("[AXIS %d] Fault reset complete. Re-home before moving.\r\n", axis->num);
     return;
   }
 
@@ -564,7 +565,7 @@ static void supervisor_tick(axis_t* axis) {
     axis->fault_from_isr = 0U;
     axis->status = AXIS_STATUS_FAULT;
     axis->homing_substate = HOMING_IDLE;
-    app_console_print("[AXIS] Stepper fault: axis halted.\r\n");
+    app_console_print("[AXIS %d] Stepper fault: axis halted.\r\n", axis->num);
     axis_emit_failure(axis);
     return;
   }
