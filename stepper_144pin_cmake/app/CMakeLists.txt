@@ -1,5 +1,6 @@
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   app_bringup_task.c
+  app_event_simulator.c
   app_task.c
   app_sm_port.c
   dispense_sm.c
