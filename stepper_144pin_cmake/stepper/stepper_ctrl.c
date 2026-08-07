@@ -91,6 +91,10 @@ void stepper_ctrl_request_stop(void) {
   s_running        = 0U;
   s_stop_requested = 1U;
 
+  if (s_cmd_q != NULL) {
+    (void)xQueueReset(s_cmd_q);
+  }
+
   for (uint8_t i = 0U; i < STEPPER_CTRL_MAX_MOTORS; i++) {
     if (s_axes[i] != NULL) {
       axis_stop(s_axes[i]);

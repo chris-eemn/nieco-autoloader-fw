@@ -210,6 +210,14 @@ stepper_status_enum axis_move(axis_t *axis, uint32_t steps, uint32_t rpm, uint8_
   return STEPPER_OK;
 }
 
+uint8_t axis_is_busy(const axis_t *axis) {
+  if (axis == NULL) {
+    return 0U;
+  }
+
+  return stepper_is_busy(axis->motor);
+}
+
 stepper_status_enum axis_home(axis_t *axis) {
   if (axis == NULL) {
     return STEPPER_INVALID;

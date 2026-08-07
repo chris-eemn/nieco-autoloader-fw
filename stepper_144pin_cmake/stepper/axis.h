@@ -195,6 +195,13 @@ int32_t axis_get_encoder_count(const axis_t *axis);
 stepper_status_enum axis_move(axis_t *axis, uint32_t steps, uint32_t rpm, uint8_t direction);
 
 /**
+ * @brief Report whether the axis motor is currently executing a move.
+ * @param axis Handle returned by axis_init(). Must not be NULL.
+ * @return 1 when a move is active, or 0 when idle or axis is NULL.
+ */
+uint8_t axis_is_busy(const axis_t *axis);
+
+/**
  * @brief  Start a non-blocking homing sequence.
  *         Drives in config.home_direction until the encoder is stationary for
  *         config.stationary_window_ms, then backs off by config.backoff_steps,

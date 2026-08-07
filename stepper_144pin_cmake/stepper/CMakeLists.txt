@@ -4,6 +4,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/pca9538a.c
   ${CMAKE_CURRENT_LIST_DIR}/encoder.c
   ${CMAKE_CURRENT_LIST_DIR}/axis.c
+  ${CMAKE_CURRENT_LIST_DIR}/stepper_system.c
+  ${CMAKE_CURRENT_LIST_DIR}/stepper_auto_task.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
