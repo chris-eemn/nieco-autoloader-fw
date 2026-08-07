@@ -41,7 +41,7 @@
 
 void startup_sm_start(app_sm_t* sm) {
   if (sm != NULL) {
-    sm->startup = STARTUP_WAIT_DOOR;
+    sm->startup.state = STARTUP_WAIT_DOOR;
   }
 }
 
@@ -50,13 +50,13 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     return;
   }
 
-  switch (sm->startup) {
+  switch (sm->startup.state) {
     case STARTUP_WAIT_DOOR:
       if (event->id == APP_EV_DOOR_CLOSED) {
         app_console_print("[Startup SM] Door closed\r\n");
-        sm->startup = STARTUP_LOCK_DOOR;
+        sm->startup.state = STARTUP_LOCK_DOOR;
         app_sm_port_lock_door();
-        app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK);
+        app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK, 1000);
       }
       break;
 
@@ -64,48 +64,78 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       if (event->id == APP_EV_LOCK_CONFIRMED) {
         app_console_print("[Startup SM] Door locked\r\n");
         app_sm_port_cancel_timeout();
-        sm->startup = STARTUP_HOME_PUSHERS;
-        app_sm_port_home_pushers();
-        app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION);
+        sm->startup.state = STARTUP_HOME_PUSHERS;
+        for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+          app_sm_port_home_pusher(i);
+          app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
+        }
       }
       else if (event->id == APP_EV_TIMEOUT) {
-        sm->startup = STARTUP_FAILED;
+        sm->startup.state = STARTUP_FAILED;
       }
       break;
 
     case STARTUP_HOME_PUSHERS:
       if (event->id == APP_EV_MOTION_DONE) {
-        app_console_print("[Startup SM] Pushers homed\r\n");
-        app_sm_port_cancel_timeout();
-        sm->startup = STARTUP_HOME_LIFTS;
-        app_sm_port_home_lifts();
-        app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION);
+        sm->cartridge[event->axis_num - 1U].pusher_homed = true;
+
+        bool all_pushers_homed = true;
+        for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+          if (sm->cartridge[i].pusher_homed == false) {
+            all_pushers_homed = false;
+            break;
+          }
+        }
+
+        if (all_pushers_homed) {
+          app_console_print("[Startup SM] Pushers homed\r\n");
+          sm->startup.state = STARTUP_HOME_LIFTS_DOWN;
+          app_sm_port_cancel_timeout();
+          for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+            app_sm_port_home_lift(i);
+            app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
+          }
+        }
       }
       else if (event->id == APP_EV_TIMEOUT) {
         app_console_print("[Startup SM] Pushers home timeout\r\n");
-        sm->startup = STARTUP_FAILED;
+        sm->startup.state = STARTUP_FAILED;
       }
       break;
 
-    case STARTUP_HOME_LIFTS:
+    case STARTUP_HOME_LIFTS_DOWN:
       if (event->id == APP_EV_MOTION_DONE) {
+        app_console_print("[Startup SM] Lifts homed down\r\n");
         app_sm_port_cancel_timeout();
-        sm->startup = STARTUP_COUNT_CARTRIDGES;
+        sm->startup.state = STARTUP_COUNT_CARTRIDGES;
         app_sm_port_count_cartridges();
-        app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION);
+        app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
       }
       else if (event->id == APP_EV_TIMEOUT) {
-        sm->startup = STARTUP_FAILED;
+        sm->startup.state = STARTUP_FAILED;
+      }
+      break;
+
+    case STARTUP_HOME_LIFTS_UP:
+      if (event->id == APP_EV_MOTION_DONE) {
+        app_console_print("[Startup SM] Lifts homed up\r\n");
+        app_sm_port_cancel_timeout();
+        sm->startup.state = STARTUP_COUNT_CARTRIDGES;
+        app_sm_port_count_cartridges();
+        app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
+      }
+      else if (event->id == APP_EV_TIMEOUT) {
+        sm->startup.state = STARTUP_FAILED;
       }
       break;
 
     case STARTUP_COUNT_CARTRIDGES:
       if (event->id == APP_EV_COUNT_DONE) {
         app_sm_port_cancel_timeout();
-        sm->startup = STARTUP_COMPLETE;
+        sm->startup.state = STARTUP_COMPLETE;
       }
       else if (event->id == APP_EV_TIMEOUT) {
-        sm->startup = STARTUP_FAILED;
+        sm->startup.state = STARTUP_FAILED;
       }
       break;
 

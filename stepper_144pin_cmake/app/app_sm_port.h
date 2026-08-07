@@ -31,10 +31,14 @@ typedef enum {
   APP_SM_TIMEOUT_NONE = 0,
   APP_SM_TIMEOUT_LOCK,
   APP_SM_TIMEOUT_UNLOCK,
+  APP_SM_TIMEOUT_STARTUP_PUSHER_HOME,
+  APP_SM_TIMEOUT_STARTUP_LIFTER_HOME,
   APP_SM_TIMEOUT_MOTION,
   APP_SM_TIMEOUT_DOOR,
 } app_sm_timeout_id_enum;
 
+typedef enum { PUSHER = 0U, LIFTER = 1U } actuator_type_t;
+typedef enum { CARTRIDGE_1 = 0U, CARTRIDGE_2 = 1U, CARTRIDGE_3 = 2U, CARTRIDGE_4 = 3U } cartridge_id_t;
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
@@ -49,11 +53,17 @@ void app_sm_port_lock_door(void);
 /** @brief Command the door to unlock. */
 void app_sm_port_unlock_door(void);
 
-/** @brief Command all pusher axes to home. */
-void app_sm_port_home_pushers(void);
+/**
+ * @brief Command one pusher axis to home.
+ * @param slot Zero-based cartridge slot.
+ */
+void app_sm_port_home_pusher(cartridge_id_t slot);
 
-/** @brief Command all lift axes to home. */
-void app_sm_port_home_lifts(void);
+/**
+ * @brief Command one lift axis to home.
+ * @param slot Zero-based cartridge slot.
+ */
+void app_sm_port_home_lift(cartridge_id_t slot);
 
 /** @brief Begin cartridge stack measurement. */
 void app_sm_port_count_cartridges(void);
@@ -96,9 +106,10 @@ void app_sm_port_save_state(void);
 
 /**
  * @brief Arm the timeout associated with the current sequence step.
- * @param timeout Timeout category whose configured duration should be used.
+ * @param timeout Timeout category to track for this step.
+ * @param delay_ms Timeout delay in milliseconds.
  */
-void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout);
+void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms);
 
 /** @brief Cancel the currently armed sequence timeout. */
 void app_sm_port_cancel_timeout(void);

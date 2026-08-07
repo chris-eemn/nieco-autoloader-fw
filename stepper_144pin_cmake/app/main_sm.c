@@ -47,6 +47,9 @@ void app_sm_init(app_sm_t* sm) {
     (void)memset(sm, 0, sizeof(*sm));
     sm->state = APP_INIT;
     sm->active_slot = APP_NO_SLOT;
+    for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+      sm->cartridge[slot].num = slot + 1;
+    }
     app_sm_port_publish_state(sm);
   }
 }
@@ -76,10 +79,10 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case APP_STARTUP:
       startup_sm_dispatch(sm, event);
-      if (sm->startup == STARTUP_COMPLETE) {
+      if (sm->startup.state == STARTUP_COMPLETE) {
         app_sm_enter_state(sm, APP_READY);
       }
-      else if (sm->startup == STARTUP_FAILED) {
+      else if (sm->startup.state == STARTUP_FAILED) {
         app_sm_enter_sequence_fault(sm);
       }
       break;

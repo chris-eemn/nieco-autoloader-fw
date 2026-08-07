@@ -22,7 +22,7 @@
  * Module Macros
  *******************************************************************************/
 
-#define APP_SLOT_COUNT (4U)
+#define APP_SLOT_COUNT (1U)  // number of cartridges/slots available in the auto-loader.
 #define APP_NO_SLOT (0xFFU)
 #define APP_FAULT_CODE_INVALID_STATE (1U)
 #define APP_FAULT_CODE_SEQUENCE_ERROR (2U)
@@ -52,6 +52,7 @@ typedef struct {
   app_event_id_enum id;
   uint8_t slot;
   uint16_t value;
+  uint8_t axis_num;
 } app_event_t;
 
 typedef enum {
@@ -68,7 +69,8 @@ typedef enum {
   STARTUP_WAIT_DOOR = 0,
   STARTUP_LOCK_DOOR,
   STARTUP_HOME_PUSHERS,
-  STARTUP_HOME_LIFTS,
+  STARTUP_HOME_LIFTS_DOWN,
+  STARTUP_HOME_LIFTS_UP,
   STARTUP_COUNT_CARTRIDGES,
   STARTUP_COMPLETE,
   STARTUP_FAILED,
@@ -96,15 +98,23 @@ typedef enum {
 } reload_state_enum;
 
 typedef struct {
+  uint8_t num;
   uint8_t type;
   uint16_t remaining;
   uint16_t pending;
   bool faulted;
+  bool pusher_homed;
+  bool lifter_homed_down;
+  bool lifter_homed_up;
 } cartridge_t;
 
 typedef struct {
+  startup_state_enum state;
+} startup_sm_t;
+
+typedef struct {
   app_state_enum state;
-  startup_state_enum startup;
+  startup_sm_t startup;
   dispense_state_enum dispense;
   reload_state_enum reload;
   cartridge_t cartridge[APP_SLOT_COUNT];

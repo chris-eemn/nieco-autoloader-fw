@@ -134,11 +134,7 @@ static void app_task_run(void* parameters) {
 static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
   (void)ctx;
 
-  app_event_t app_event = {
-      .id = APP_EV_FAULT,
-      .slot = APP_NO_SLOT,
-      .value = 0U,
-  };
+  app_event_t app_event = {.id = APP_EV_FAULT, .slot = APP_NO_SLOT, .value = 0U, .axis_num = axis->num};
 
   app_console_print("[Axis Event] Axis %d event %s\r\n", axis->num, axis_event_name(event));
 
