@@ -149,6 +149,7 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
   }
   else if (event == AXIS_EVENT_HOME_FAILED) {
     // todo: temporary since we are faking homing
+    axis_clear_fault(axis);
     app_event.id = APP_EV_MOTION_DONE;
   }
   (void)app_task_post(&app_event);
