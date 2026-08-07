@@ -12,7 +12,9 @@
  * Includes
  *******************************************************************************/
 
+#include "axis.h"
 #include "app_sm_port.h"
+#include "stepper_ctrl.h"
 
 #include <stddef.h>
 
@@ -45,7 +47,7 @@ void app_sm_port_unlock_door(void) {
 }
 
 void app_sm_port_home_pushers(void) {
-  /* TODO: Command the fitted pusher axes and post APP_EV_MOTION_DONE on completion. */
+  axis_home(stepper_ctrl_get_axis(1));
 }
 
 void app_sm_port_home_lifts(void) {

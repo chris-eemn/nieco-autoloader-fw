@@ -12,7 +12,10 @@
  * Includes
  *******************************************************************************/
 
+#include "app_console.h"
 #include "app_task.h"
+#include "axis.h"
+#include "stepper_system.h"
 
 #include <stddef.h>
 
@@ -44,7 +47,7 @@ static app_sm_t s_app_sm;
  *******************************************************************************/
 
 static void app_task_run(void* parameters);
-
+static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -104,6 +107,9 @@ bool app_task_post_from_isr(const app_event_t* event) {
   return queued;
 }
 
+void app_task_register_axis_event_cb(void) {
+  stepper_system_register_axis_event_cb(on_axis_event, NULL);
+}
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
@@ -123,4 +129,30 @@ static void app_task_run(void* parameters) {
       app_sm_dispatch(&s_app_sm, &event);
     }
   }
+}
+
+static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
+  (void)ctx;
+
+  app_event_t app_event = {
+      .id = APP_EV_FAULT,
+      .slot = APP_NO_SLOT,
+      .value = 0U,
+  };
+
+  app_console_print("[Axis Event] Axis %d event %s\r\n", axis->num, axis_event_name(event));
+
+  if (event == AXIS_EVENT_MOVE_FAILED) {
+    app_event.id = APP_EV_FAULT; /* TODO: Replace with a more specific fault code. */
+  }
+  else if (event == AXIS_EVENT_HOME_DONE) {
+    app_event.id = APP_EV_MOTION_DONE;
+  }
+  else if (event == AXIS_EVENT_HOME_ABORTED) {
+    app_event.id = APP_EV_FAULT; /* TODO: Replace with a more specific fault code. */
+  }
+  else if (event == AXIS_EVENT_HOME_FAILED) {
+    app_event.id = APP_EV_FAULT; /* TODO: Replace with a more specific fault code. */
+  }
+  (void)app_task_post(&app_event);
 }

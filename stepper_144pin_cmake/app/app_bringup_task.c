@@ -16,6 +16,7 @@
 
 #include "FreeRTOS.h"
 #include "app_console.h"
+#include "app_event_simulator.h"
 #include "app_task.h"
 #include "app_version_git.h"
 #include "cal_data.h"
@@ -81,10 +82,16 @@ static void app_bringup_task_run(void* parameters) {
     app_console_print("[ERROR] Stepper auto-test task start failed.\r\n");
     initialized = false;
   }
-  else if (app_task_begin() == false) {
+
+  app_task_register_axis_event_cb();
+
+  if (app_task_begin() == false) {
     app_console_print("[ERROR] Control task start event was not queued.\r\n");
     initialized = false;
   }
+
+  app_simulate_event(2000U / portTICK_PERIOD_MS, APP_EV_DOOR_CLOSED);
+  app_simulate_event(2500U / portTICK_PERIOD_MS, APP_EV_LOCK_CONFIRMED);
 
   if (initialized != false) {
     vTaskDelete(NULL);

@@ -61,4 +61,12 @@ bool app_task_post(const app_event_t* event);
  */
 bool app_task_post_from_isr(const app_event_t* event);
 
+/**
+ * @brief Register the callback invoked when any axis reaches a terminal state.
+ *
+ *        Replaces any previous registration; only one callback per axis.
+ *        Safe to call while an operation is in progress — the new callback
+ *        receives that operation's completion event.
+ */
+void app_task_register_axis_event_cb(void);
 #endif /* APP_TASK_H_ */
