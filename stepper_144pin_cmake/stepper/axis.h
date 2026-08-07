@@ -158,7 +158,7 @@ typedef struct axis_s axis_t;
  * @return Opaque axis handle on success.
  *         NULL if any argument is NULL or the axis pool is exhausted.
  */
-axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti, const axis_config_t *config);
+axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti, const axis_config_t* config);
 
 /**
  * @brief  Return the current combined axis status.
@@ -166,7 +166,7 @@ axis_t *axis_init(stepper_t *motor, encoder_t *encoder, hal_exti_handle_t *hexti
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  * @return Current status, or AXIS_STATUS_FAULT if axis is NULL.
  */
-axis_status_enum axis_get_status(const axis_t *axis);
+axis_status_enum axis_get_status(const axis_t* axis);
 
 /**
  * @brief  Return the current encoder count for the axis.
@@ -174,7 +174,7 @@ axis_status_enum axis_get_status(const axis_t *axis);
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  * @return Signed encoder count, or 0 if axis is NULL.
  */
-int32_t axis_get_encoder_count(const axis_t *axis);
+int32_t axis_get_encoder_count(const axis_t* axis);
 
 /**
  * @brief  Start a non-blocking move on the axis.
@@ -193,14 +193,14 @@ int32_t axis_get_encoder_count(const axis_t *axis);
  *         STEPPER_FAULT   if a fault or stall is latched (clear it first),
  *         STEPPER_INVALID if axis is NULL.
  */
-stepper_status_enum axis_move(axis_t *axis, uint32_t steps, uint32_t rpm, uint8_t direction);
+stepper_status_enum axis_move(axis_t* axis, uint32_t steps, uint32_t rpm, uint8_t direction);
 
 /**
  * @brief Report whether the axis motor is currently executing a move.
  * @param axis Handle returned by axis_init(). Must not be NULL.
  * @return 1 when a move is active, or 0 when idle or axis is NULL.
  */
-uint8_t axis_is_busy(const axis_t *axis);
+uint8_t axis_is_busy(const axis_t* axis);
 
 /**
  * @brief  Start a non-blocking homing sequence.
@@ -217,7 +217,7 @@ uint8_t axis_is_busy(const axis_t *axis);
  *         STEPPER_FAULT   if a fault is latched (clear it first),
  *         STEPPER_INVALID if axis is NULL.
  */
-stepper_status_enum axis_home(axis_t *axis);
+stepper_status_enum axis_home(axis_t* axis);
 
 /**
  * @brief  Clear a latched AXIS_STATUS_STALLED or AXIS_STATUS_FAULT and return
@@ -227,7 +227,7 @@ stepper_status_enum axis_home(axis_t *axis);
  *
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  */
-void axis_clear_fault(axis_t *axis);
+void axis_clear_fault(axis_t* axis);
 
 /**
  * @brief  Request a full fault recovery sequence.
@@ -244,7 +244,7 @@ void axis_clear_fault(axis_t *axis);
  *
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  */
-void axis_fault_reset(axis_t *axis);
+void axis_fault_reset(axis_t* axis);
 
 /**
  * @brief  Immediately stop any in-progress move on the axis.
@@ -255,7 +255,7 @@ void axis_fault_reset(axis_t *axis);
  *
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  */
-void axis_stop(axis_t *axis);
+void axis_stop(axis_t* axis);
 
 /**
  * @brief  Update the axis configuration at runtime.
@@ -263,5 +263,5 @@ void axis_stop(axis_t *axis);
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  * @param  config  New configuration to apply. Must not be NULL.
  */
-void axis_update_config(axis_t *axis, const axis_config_t *config);
+void axis_update_config(axis_t* axis, const axis_config_t* config);
 #endif /* AXIS_H_ */

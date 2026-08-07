@@ -1,7 +1,7 @@
 /**
  * @file modbus_port.h
- * @author 
- * @brief 
+ * @author
+ * @brief
  * @date 2025-08-05
  *
  * @copyright Copyright (c) 2025 Embedded Design Solutions, LLC.  All Rights Reserved.
@@ -39,4 +39,3 @@
 modbus_slave_port_fns_t* get_ui_port_fns(void);
 
 #endif /* MODBUS_PORT_H_ */
-

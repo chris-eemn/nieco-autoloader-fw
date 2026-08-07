@@ -87,8 +87,7 @@ bool spi_portable_read(uint8_t* rx_data, uint32_t rx_len) {
 bool spi_portable_is_busy(void) {
   hal_spi_state_t state = HAL_SPI_GetState(spi_flash_bus_gethandle());
 
-  return ((state == HAL_SPI_STATE_TX_ACTIVE) || (state == HAL_SPI_STATE_RX_ACTIVE) ||
-          (state == HAL_SPI_STATE_TX_RX_ACTIVE));
+  return ((state == HAL_SPI_STATE_TX_ACTIVE) || (state == HAL_SPI_STATE_RX_ACTIVE) || (state == HAL_SPI_STATE_TX_RX_ACTIVE));
 }
 
 void spi_portable_callback_register(spi_portable_callback callBack, uintptr_t context) {

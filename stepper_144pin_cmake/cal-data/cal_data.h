@@ -55,17 +55,17 @@
  * never introduces padding.
  */
 typedef struct {
-  uint32_t pusher_rpm;           /**< Pusher motor speed, RPM. */
-  uint32_t lifter_rpm;           /**< Lifter motor speed, RPM. */
+  uint32_t pusher_rpm;            /**< Pusher motor speed, RPM. */
+  uint32_t lifter_rpm;            /**< Lifter motor speed, RPM. */
   uint32_t max_sync_error_counts; /**< Maximum encoder following error. Maps to
                                    *   axis_config_t.max_sync_error_counts. */
-  uint32_t home_rpm;             /**< Speed of the homing seek and back-off moves, RPM. */
-  uint32_t home_settle_delay_ms; /**< Time to wait after hitting the endstop before starting the back-off move. */
-  uint32_t home_backoff_steps;   /**< Back-off distance in microsteps after the endstop is hit. */
-  uint32_t home_max_steps;       /**< Homing seek limit in microsteps before a timeout fault. */
-  uint32_t supervisor_period_ms; /**< Axis supervisor tick period. */
-  uint32_t default_move_rpm;     /**< Speed used for a move when none is specified. */
-  uint32_t default_move_steps;   /**< Microsteps used for a move when none is specified. */
+  uint32_t home_rpm;              /**< Speed of the homing seek and back-off moves, RPM. */
+  uint32_t home_settle_delay_ms;  /**< Time to wait after hitting the endstop before starting the back-off move. */
+  uint32_t home_backoff_steps;    /**< Back-off distance in microsteps after the endstop is hit. */
+  uint32_t home_max_steps;        /**< Homing seek limit in microsteps before a timeout fault. */
+  uint32_t supervisor_period_ms;  /**< Axis supervisor tick period. */
+  uint32_t default_move_rpm;      /**< Speed used for a move when none is specified. */
+  uint32_t default_move_steps;    /**< Microsteps used for a move when none is specified. */
 } cal_data_params_t;
 
 /*******************************************************************************
@@ -92,7 +92,7 @@ bool cal_data_init(void);
  *       are not persisted until cal_data_save() is called
  * @return cal_data_params_t* pointer to the live parameter block
  */
-cal_data_params_t *cal_data_get(void);
+cal_data_params_t* cal_data_get(void);
 
 /**
  * @brief writes the RAM copy of the parameters to flash

@@ -29,16 +29,16 @@
  *******************************************************************************/
 
 /** Default speed used until overridden via CLI. */
-#define STEPPER_CTRL_DEFAULT_RPM   5U
+#define STEPPER_CTRL_DEFAULT_RPM 5U
 
 /** Default step count per leg (half revolution at 1/8 microstep = 800 usteps). */
 #define STEPPER_CTRL_DEFAULT_STEPS 800U
 
 /** Pass to stepper_ctrl_recv_cmd() to block indefinitely. */
-#define STEPPER_CTRL_WAIT_FOREVER  UINT32_MAX
+#define STEPPER_CTRL_WAIT_FOREVER UINT32_MAX
 
 /** Maximum number of independently addressable motors (1-based motor_num range). */
-#define STEPPER_CTRL_MAX_MOTORS    8U
+#define STEPPER_CTRL_MAX_MOTORS 8U
 
 /*******************************************************************************
  * Module Typedefs
@@ -67,7 +67,7 @@ void stepper_ctrl_init(void);
  *                  values are ignored.
  * @param axis      Handle returned by axis_init(). Must not be NULL.
  */
-void stepper_ctrl_set_axis(uint8_t motor_num, axis_t *axis);
+void stepper_ctrl_set_axis(uint8_t motor_num, axis_t* axis);
 
 /**
  * @brief Return the axis handle bound to a motor slot.
@@ -77,7 +77,7 @@ void stepper_ctrl_set_axis(uint8_t motor_num, axis_t *axis);
  *        without coupling to the stepper task's internal state.
  * @param motor_num 1-based motor number (1..STEPPER_CTRL_MAX_MOTORS).
  */
-axis_t *stepper_ctrl_get_axis(uint8_t motor_num);
+axis_t* stepper_ctrl_get_axis(uint8_t motor_num);
 
 /**
  * @brief Start a non-blocking homing operation on a registered motor axis.
@@ -128,7 +128,7 @@ void stepper_ctrl_send_cmd(stepper_cmd_enum cmd);
  * @param timeout_ms Milliseconds to wait.
  * @return 1 if a command was received, 0 on timeout or invalid argument.
  */
-uint8_t stepper_ctrl_recv_cmd(stepper_cmd_enum *cmd_out, uint32_t timeout_ms);
+uint8_t stepper_ctrl_recv_cmd(stepper_cmd_enum* cmd_out, uint32_t timeout_ms);
 
 /**
  * @brief Request an immediate stop. Safe to call from any task context.

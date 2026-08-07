@@ -43,12 +43,10 @@
  * W25Q_COMMAND_QUEUE_SIZE - 1 entries, so that -- not the array size -- is the real capacity. */
 #define CAL_DATA_POSITION_QUEUE_CAPACITY ((int32_t)W25Q_COMMAND_QUEUE_SIZE - 1)
 
-_Static_assert(CAL_DATA_POSITION_STORED_SIZE <= CAL_DATA_POSITION_PAGE_SIZE,
-               "both position copies no longer fit in one W25Q page program");
+_Static_assert(CAL_DATA_POSITION_STORED_SIZE <= CAL_DATA_POSITION_PAGE_SIZE, "both position copies no longer fit in one W25Q page program");
 _Static_assert(CAL_DATA_POSITION_STORED_SIZE <= CAL_DATA_POSITION_SECTION_SIZE,
                "both position copies no longer fit in the sector reserved per stepper pair");
-_Static_assert(CAL_DATA_POSITION_SECTOR_COUNT == 1U,
-               "a queued save issues exactly one W25Q_SECTOR_ERASE, so a section must be one sector");
+_Static_assert(CAL_DATA_POSITION_SECTOR_COUNT == 1U, "a queued save issues exactly one W25Q_SECTOR_ERASE, so a section must be one sector");
 _Static_assert(CAL_DATA_POSITION_QUEUE_CAPACITY >= CAL_DATA_POSITION_QUEUE_SLOTS_PER_SAVE,
                "the w25q command queue cannot hold a single save's erase and write");
 
@@ -102,12 +100,12 @@ static void refresh_save_state(void);
  * @param length number of bytes to inspect
  * @return bool true if all bytes are CAL_DATA_ERASED_BYTE
  */
-static bool buffer_is_erased(const uint8_t *data, size_t length);
+static bool buffer_is_erased(const uint8_t* data, size_t length);
 
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
-bool cal_data_position_save(uint8_t pair_index, const cal_data_position_t *position) {
+bool cal_data_position_save(uint8_t pair_index, const cal_data_position_t* position) {
   cal_data_position_t record;
   w25q_command_t erase_command;
   w25q_command_t write_command;
@@ -131,13 +129,13 @@ bool cal_data_position_save(uint8_t pair_index, const cal_data_position_t *posit
 
     erase_command.command = W25Q_SECTOR_ERASE;
     erase_command.address = section_address;
-    erase_command.length  = 0;
-    erase_command.buffer  = NULL;
+    erase_command.length = 0;
+    erase_command.buffer = NULL;
 
     write_command.command = W25Q_WRITE;
     write_command.address = section_address;
-    write_command.length  = (int)CAL_DATA_POSITION_STORED_SIZE;
-    write_command.buffer  = &position_stage[pair_index][0];
+    write_command.length = (int)CAL_DATA_POSITION_STORED_SIZE;
+    write_command.buffer = &position_stage[pair_index][0];
 
     /* Capacity was checked above, so the erase is only ever queued when the write can follow
      * it. The queue is FIFO and w25q_finish_command() chains the next command from the SPI
@@ -148,7 +146,7 @@ bool cal_data_position_save(uint8_t pair_index, const cal_data_position_t *posit
 
     if (queued == true) {
       save_in_flight[pair_index] = true;
-      save_errored[pair_index]   = false;
+      save_errored[pair_index] = false;
     }
   }
 
@@ -163,9 +161,11 @@ cal_data_save_status_enum cal_data_position_save_status(uint8_t pair_index) {
   if (pair_index < CAL_DATA_PAIR_COUNT) {
     if (save_errored[pair_index] == true) {
       status = CAL_DATA_SAVE_ERROR;
-    } else if (save_in_flight[pair_index] == true) {
+    }
+    else if (save_in_flight[pair_index] == true) {
       status = CAL_DATA_SAVE_PENDING;
-    } else {
+    }
+    else {
       status = CAL_DATA_SAVE_IDLE;
     }
   }
@@ -173,7 +173,7 @@ cal_data_save_status_enum cal_data_position_save_status(uint8_t pair_index) {
   return status;
 }
 
-bool cal_data_position_load(uint8_t pair_index, cal_data_position_t *position) {
+bool cal_data_position_load(uint8_t pair_index, cal_data_position_t* position) {
   uint8_t stored[CAL_DATA_POSITION_STORED_SIZE];
   uint32_t section_address;
   bool loaded = false;
@@ -188,8 +188,7 @@ bool cal_data_position_load(uint8_t pair_index, cal_data_position_t *position) {
     section_address = CAL_DATA_POSITION_PAIR_ADDRESS(pair_index);
 
     if (spi_flash_io_read(section_address, stored, (uint32_t)CAL_DATA_POSITION_STORED_SIZE) == true) {
-      bool copies_match = (memcmp(&stored[0], &stored[sizeof(cal_data_position_t)],
-                                  sizeof(cal_data_position_t)) == 0);
+      bool copies_match = (memcmp(&stored[0], &stored[sizeof(cal_data_position_t)], sizeof(cal_data_position_t)) == 0);
       bool section_blank = buffer_is_erased(&stored[0], sizeof(cal_data_position_t));
 
       loaded = (copies_match == true) && (section_blank == false);
@@ -209,18 +208,17 @@ bool cal_data_position_invalidate(uint8_t pair_index) {
 
   refresh_save_state();
 
-  if ((pair_index < CAL_DATA_PAIR_COUNT) && (save_in_flight[pair_index] == false) &&
-      (w25q_get_transfer_status() != W25Q_TRANSFER_STATUS_ERROR)) {
+  if ((pair_index < CAL_DATA_PAIR_COUNT) && (save_in_flight[pair_index] == false) && (w25q_get_transfer_status() != W25Q_TRANSFER_STATUS_ERROR)) {
     erase_command.command = W25Q_SECTOR_ERASE;
     erase_command.address = CAL_DATA_POSITION_PAIR_ADDRESS(pair_index);
-    erase_command.length  = 0;
-    erase_command.buffer  = NULL;
+    erase_command.length = 0;
+    erase_command.buffer = NULL;
 
     queued = w25q_queue_command(&erase_command);
 
     if (queued == true) {
       save_in_flight[pair_index] = true;
-      save_errored[pair_index]   = false;
+      save_errored[pair_index] = false;
     }
   }
 
@@ -254,19 +252,20 @@ static void refresh_save_state(void) {
     for (pair = 0U; pair < CAL_DATA_PAIR_COUNT; pair++) {
       if (save_in_flight[pair] == true) {
         save_in_flight[pair] = false;
-        save_errored[pair]   = driver_errored;
+        save_errored[pair] = driver_errored;
       }
     }
   }
 }
 
-static bool buffer_is_erased(const uint8_t *data, size_t length) {
+static bool buffer_is_erased(const uint8_t* data, size_t length) {
   bool all_erased = true;
   size_t index;
 
   if (data == NULL) {
     all_erased = false;
-  } else {
+  }
+  else {
     for (index = 0U; (index < length) && (all_erased == true); index++) {
       if (data[index] != (uint8_t)CAL_DATA_ERASED_BYTE) {
         all_erased = false;

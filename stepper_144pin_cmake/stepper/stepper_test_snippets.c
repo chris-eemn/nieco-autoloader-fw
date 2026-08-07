@@ -9,7 +9,7 @@
 #include "stepper.h"
 #include "mx_hal_def.h"
 
-void stepper_motor_task(void *argument) {
+void stepper_motor_task(void* argument) {
   (void)argument;
 
   /* One-time: start the shared step timer (100kHz ISR). */
@@ -17,14 +17,14 @@ void stepper_motor_task(void *argument) {
 
   /* Per-motor: supply GPIO pin assignments from the CubeMX aliases. */
   static const stepper_gpio_config_t k_m1_pins = {
-    .step   = { M1_STEP_PORT,   M1_STEP_PIN   },
-    .dir    = { M1_DIR_PORT,    M1_DIR_PIN    },
-    .en     = { M1_EN_PORT,     M1_EN_PIN     },
-    .nslp   = { M1_NSLP_PORT,  M1_NSLP_PIN   },
-    .nfault = { M1_NFAULT_PORT, M1_NFAULT_PIN },
+      .step = {M1_STEP_PORT, M1_STEP_PIN},
+      .dir = {M1_DIR_PORT, M1_DIR_PIN},
+      .en = {M1_EN_PORT, M1_EN_PIN},
+      .nslp = {M1_NSLP_PORT, M1_NSLP_PIN},
+      .nfault = {M1_NFAULT_PORT, M1_NFAULT_PIN},
   };
 
-  stepper_t *m1 = stepper_init(&k_m1_pins);
+  stepper_t* m1 = stepper_init(&k_m1_pins);
   configASSERT(m1 != NULL);
 
   /* Add a second motor by defining its pins and calling stepper_init() again:

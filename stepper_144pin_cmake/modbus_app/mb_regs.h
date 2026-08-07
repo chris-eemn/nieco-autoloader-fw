@@ -46,23 +46,23 @@ void mb_regs_deinit(void);
 
 /**
  * @brief get the ui slave modbus instance
- * @note 
+ * @note
  * @return pointer to ui modbus slave instance
  */
-modbus_slave_t *get_ui_slave(void);
+modbus_slave_t* get_ui_slave(void);
 
 /**
  * @brief get the ui slave modbus instance
- * @note 
+ * @note
  * @return pointer to ui modbus slave instance
  */
-modbus_slave_t *get_ui_slave(void);
+modbus_slave_t* get_ui_slave(void);
 
 /**
  * @brief gets the modbus register array
  * @note used by other modules that want to add a modbus register
  * @return pointer to modbus register array
  */
-mb_holding_reg_array_t *get_reg_array(void);
+mb_holding_reg_array_t* get_reg_array(void);
 
 #endif /* MB_REGS_H_ */

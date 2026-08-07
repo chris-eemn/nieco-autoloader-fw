@@ -42,30 +42,24 @@
  * Module Variable Definitions
  *******************************************************************************/
 
-static const char *s_param_names[STEPPER_CLI_NUM_PARAMS] = {
-  [STEPPER_CLI_AUTO]  = "auto",
-  [STEPPER_CLI_CW]    = "cw",
-  [STEPPER_CLI_CCW]   = "ccw",
-  [STEPPER_CLI_HOME]  = "home",
-  [STEPPER_CLI_RPM]   = "rpm",
-  [STEPPER_CLI_STEP]  = "step",
-  [STEPPER_CLI_CLEAR] = "clear",
-  [STEPPER_CLI_ENC]   = "enc",
+static const char* s_param_names[STEPPER_CLI_NUM_PARAMS] = {
+    [STEPPER_CLI_AUTO] = "auto", [STEPPER_CLI_CW] = "cw",     [STEPPER_CLI_CCW] = "ccw",     [STEPPER_CLI_HOME] = "home",
+    [STEPPER_CLI_RPM] = "rpm",   [STEPPER_CLI_STEP] = "step", [STEPPER_CLI_CLEAR] = "clear", [STEPPER_CLI_ENC] = "enc",
 };
 
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
-static stepper_cli_param_enum lookup_param(const char *name);
-static axis_t *stepper_cli_lookup_axis(int32_t motor_num);
+static stepper_cli_param_enum lookup_param(const char* name);
+static axis_t* stepper_cli_lookup_axis(int32_t motor_num);
 static void stepper_cli_home(int32_t motor_num);
 
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
 
-void stepper_cli_set_handler(char *param, int32_t val) {
+void stepper_cli_set_handler(char* param, int32_t val) {
   if (param == NULL) {
     return;
   }
@@ -83,35 +77,31 @@ void stepper_cli_set_handler(char *param, int32_t val) {
       break;
 
     case STEPPER_CLI_CW: {
-      axis_t *ax = stepper_cli_lookup_axis(val);
+      axis_t* ax = stepper_cli_lookup_axis(val);
       if (ax == NULL) {
         break;
       }
-      stepper_status_enum ret = axis_move(ax, stepper_ctrl_get_steps(),
-                                          stepper_ctrl_get_rpm(), STEPPER_DIR_CW);
+      stepper_status_enum ret = axis_move(ax, stepper_ctrl_get_steps(), stepper_ctrl_get_rpm(), STEPPER_DIR_CW);
       if (ret == STEPPER_OK) {
         app_console_print("[STEPPER] Motor %ld: manual CW move started.\r\n", val);
       }
       else {
-        app_console_print("[STEPPER] Motor %ld: CW start failed: %d (axis=%d)\r\n",
-                          val, (int)ret, (int)axis_get_status(ax));
+        app_console_print("[STEPPER] Motor %ld: CW start failed: %d (axis=%d)\r\n", val, (int)ret, (int)axis_get_status(ax));
       }
       break;
     }
 
     case STEPPER_CLI_CCW: {
-      axis_t *ax = stepper_cli_lookup_axis(val);
+      axis_t* ax = stepper_cli_lookup_axis(val);
       if (ax == NULL) {
         break;
       }
-      stepper_status_enum ret = axis_move(ax, stepper_ctrl_get_steps(),
-                                          stepper_ctrl_get_rpm(), STEPPER_DIR_CCW);
+      stepper_status_enum ret = axis_move(ax, stepper_ctrl_get_steps(), stepper_ctrl_get_rpm(), STEPPER_DIR_CCW);
       if (ret == STEPPER_OK) {
         app_console_print("[STEPPER] Motor %ld: manual CCW move started.\r\n", val);
       }
       else {
-        app_console_print("[STEPPER] Motor %ld: CCW start failed: %d (axis=%d)\r\n",
-                          val, (int)ret, (int)axis_get_status(ax));
+        app_console_print("[STEPPER] Motor %ld: CCW start failed: %d (axis=%d)\r\n", val, (int)ret, (int)axis_get_status(ax));
       }
       break;
     }
@@ -142,13 +132,12 @@ void stepper_cli_set_handler(char *param, int32_t val) {
 
     case STEPPER_CLI_CLEAR: {
       for (uint8_t motor_num = 1U; motor_num <= STEPPER_CTRL_MAX_MOTORS; motor_num++) {
-        axis_t *ax = stepper_ctrl_get_axis(motor_num);
+        axis_t* ax = stepper_ctrl_get_axis(motor_num);
         if (ax != NULL) {
           axis_fault_reset(ax);
         }
       }
-      app_console_print(
-          "[STEPPER] All motors: fault reset requested - supervisor will complete in ~2 ticks.\r\n");
+      app_console_print("[STEPPER] All motors: fault reset requested - supervisor will complete in ~2 ticks.\r\n");
       break;
     }
 
@@ -158,7 +147,7 @@ void stepper_cli_set_handler(char *param, int32_t val) {
   }
 }
 
-void stepper_cli_get_handler(char *param) {
+void stepper_cli_get_handler(char* param) {
   if (param == NULL) {
     return;
   }
@@ -170,7 +159,7 @@ void stepper_cli_get_handler(char *param) {
 
     case STEPPER_CLI_CW:
     case STEPPER_CLI_CCW: {
-      axis_t *ax = stepper_ctrl_get_axis(1U);
+      axis_t* ax = stepper_ctrl_get_axis(1U);
       axis_status_enum st = (ax != NULL) ? axis_get_status(ax) : AXIS_STATUS_FAULT;
       app_console_print("[STEPPER] motor 1 axis status = %d\r\n", (int)st);
       break;
@@ -186,9 +175,8 @@ void stepper_cli_get_handler(char *param) {
 
     case STEPPER_CLI_ENC: {
       for (uint8_t motor_num = 1U; motor_num <= STEPPER_CTRL_MAX_MOTORS; motor_num++) {
-        axis_t *ax = stepper_ctrl_get_axis(motor_num);
-        app_console_print("[STEPPER] encoder%u count = %ld\r\n",
-                          (uint32_t)motor_num, axis_get_encoder_count(ax));
+        axis_t* ax = stepper_ctrl_get_axis(motor_num);
+        app_console_print("[STEPPER] encoder%u count = %ld\r\n", (uint32_t)motor_num, axis_get_encoder_count(ax));
       }
       break;
     }
@@ -202,16 +190,11 @@ void stepper_cli_get_handler(char *param) {
 void stepper_cli_list_handler(void) {
   app_console_print("Stepper test parameters:\r\n");
   app_console_print("  auto  1|0      start/stop continuous CW->3s->CCW->3s loop (motor 1 only)\r\n");
-  app_console_print("  cw    <motor>  run one CW move on <motor> (1-%u) then idle\r\n",
-                    STEPPER_CTRL_MAX_MOTORS);
-  app_console_print("  ccw   <motor>  run one CCW move on <motor> (1-%u) then idle\r\n",
-                    STEPPER_CTRL_MAX_MOTORS);
-  app_console_print("  home  <motor>  home <motor> (1-%u)\r\n",
-                    STEPPER_CTRL_MAX_MOTORS);
-  app_console_print("  rpm   <value>  move speed in RPM, shared by all motors (default %u)\r\n",
-                    STEPPER_CTRL_DEFAULT_RPM);
-  app_console_print("  step  <value>  microsteps per leg, shared by all motors (default %u)\r\n",
-                    STEPPER_CTRL_DEFAULT_STEPS);
+  app_console_print("  cw    <motor>  run one CW move on <motor> (1-%u) then idle\r\n", STEPPER_CTRL_MAX_MOTORS);
+  app_console_print("  ccw   <motor>  run one CCW move on <motor> (1-%u) then idle\r\n", STEPPER_CTRL_MAX_MOTORS);
+  app_console_print("  home  <motor>  home <motor> (1-%u)\r\n", STEPPER_CTRL_MAX_MOTORS);
+  app_console_print("  rpm   <value>  move speed in RPM, shared by all motors (default %u)\r\n", STEPPER_CTRL_DEFAULT_RPM);
+  app_console_print("  step  <value>  microsteps per leg, shared by all motors (default %u)\r\n", STEPPER_CTRL_DEFAULT_STEPS);
   app_console_print("  clear <ignored>  full fault reset for all motors (axis latch + DRV8424 sleep/wake)\r\n");
   app_console_print("  enc            current encoder count for every motor\r\n");
 }
@@ -225,7 +208,7 @@ void stepper_cli_list_handler(void) {
  * @param motor_num 1-based motor number, as parsed from the CLI value argument.
  */
 static void stepper_cli_home(int32_t motor_num) {
-  axis_t *ax = stepper_cli_lookup_axis(motor_num);
+  axis_t* ax = stepper_cli_lookup_axis(motor_num);
   if (ax == NULL) {
     return;
   }
@@ -235,8 +218,7 @@ static void stepper_cli_home(int32_t motor_num) {
     app_console_print("[STEPPER] Motor %ld: homing started.\r\n", motor_num);
   }
   else {
-    app_console_print("[STEPPER] Motor %ld: homing start failed: %d (axis=%d)\r\n",
-                      motor_num, (int)status, (int)axis_get_status(ax));
+    app_console_print("[STEPPER] Motor %ld: homing start failed: %d (axis=%d)\r\n", motor_num, (int)status, (int)axis_get_status(ax));
   }
 }
 
@@ -247,13 +229,13 @@ static void stepper_cli_home(int32_t motor_num) {
  * @param motor_num 1-based motor number, as parsed from the CLI value argument.
  * @return Axis handle on success, or NULL if motor_num is invalid/unbound.
  */
-static axis_t *stepper_cli_lookup_axis(int32_t motor_num) {
+static axis_t* stepper_cli_lookup_axis(int32_t motor_num) {
   if ((motor_num < 1) || (motor_num > (int32_t)STEPPER_CTRL_MAX_MOTORS)) {
     app_console_print("[STEPPER] Motor number must be 1-%u.\r\n", STEPPER_CTRL_MAX_MOTORS);
     return NULL;
   }
 
-  axis_t *ax = stepper_ctrl_get_axis((uint8_t)motor_num);
+  axis_t* ax = stepper_ctrl_get_axis((uint8_t)motor_num);
   if (ax == NULL) {
     app_console_print("[STEPPER] Motor %ld not initialised.\r\n", motor_num);
   }
@@ -266,7 +248,7 @@ static axis_t *stepper_cli_lookup_axis(int32_t motor_num) {
  * @param name Parameter name. Must not be NULL.
  * @return Matching enum value, or STEPPER_CLI_NUM_PARAMS if not found.
  */
-static stepper_cli_param_enum lookup_param(const char *name) {
+static stepper_cli_param_enum lookup_param(const char* name) {
   if (name == NULL) {
     return STEPPER_CLI_NUM_PARAMS;
   }

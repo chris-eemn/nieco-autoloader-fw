@@ -45,8 +45,8 @@ static volatile int32_t s_rxOk;
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
-static void console_uart_rx_cplt_cb(hal_uart_handle_t *huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event);
-static void console_uart_error_cb(hal_uart_handle_t *huart);
+static void console_uart_rx_cplt_cb(hal_uart_handle_t* huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event);
+static void console_uart_error_cb(hal_uart_handle_t* huart);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -95,7 +95,7 @@ int32_t console_port_receive(uint8_t* byte, uint32_t timeout_ms) {
  * @brief UART RX-complete callback registered on the console UART handle.
  *        Called from IRQ context on successful single-byte receive.
  */
-static void console_uart_rx_cplt_cb(hal_uart_handle_t *huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event) {
+static void console_uart_rx_cplt_cb(hal_uart_handle_t* huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event) {
   (void)huart;
   (void)size_byte;
   (void)rx_event;
@@ -109,7 +109,7 @@ static void console_uart_rx_cplt_cb(hal_uart_handle_t *huart, uint32_t size_byte
  * @brief UART error callback registered on the console UART handle.
  *        Called from IRQ context on framing/parity/overrun/noise error.
  */
-static void console_uart_error_cb(hal_uart_handle_t *huart) {
+static void console_uart_error_cb(hal_uart_handle_t* huart) {
   (void)huart;
   BaseType_t higher_priority_task_woken = pdFALSE;
   s_rxOk = 0;

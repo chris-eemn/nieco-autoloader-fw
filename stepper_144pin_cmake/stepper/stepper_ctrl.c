@@ -22,12 +22,12 @@
  * Module Variable Definitions
  *******************************************************************************/
 
-static volatile uint32_t s_rpm            = STEPPER_CTRL_DEFAULT_RPM;
-static volatile uint32_t s_steps          = STEPPER_CTRL_DEFAULT_STEPS;
-static volatile uint8_t  s_stop_requested = 0U;
-static volatile uint8_t  s_running        = 0U;
-static QueueHandle_t     s_cmd_q          = NULL;
-static axis_t           *s_axes[STEPPER_CTRL_MAX_MOTORS] = { NULL };
+static volatile uint32_t s_rpm = STEPPER_CTRL_DEFAULT_RPM;
+static volatile uint32_t s_steps = STEPPER_CTRL_DEFAULT_STEPS;
+static volatile uint8_t s_stop_requested = 0U;
+static volatile uint8_t s_running = 0U;
+static QueueHandle_t s_cmd_q = NULL;
+static axis_t* s_axes[STEPPER_CTRL_MAX_MOTORS] = {NULL};
 
 /*******************************************************************************
  * Public Function Definitions
@@ -38,7 +38,7 @@ void stepper_ctrl_init(void) {
   configASSERT(s_cmd_q != NULL);
 }
 
-void stepper_ctrl_set_axis(uint8_t motor_num, axis_t *axis) {
+void stepper_ctrl_set_axis(uint8_t motor_num, axis_t* axis) {
   if ((motor_num < 1U) || (motor_num > STEPPER_CTRL_MAX_MOTORS)) {
     return;
   }
@@ -46,7 +46,7 @@ void stepper_ctrl_set_axis(uint8_t motor_num, axis_t *axis) {
   s_axes[motor_num - 1U] = axis;
 }
 
-axis_t *stepper_ctrl_get_axis(uint8_t motor_num) {
+axis_t* stepper_ctrl_get_axis(uint8_t motor_num) {
   if ((motor_num < 1U) || (motor_num > STEPPER_CTRL_MAX_MOTORS)) {
     return NULL;
   }
@@ -55,7 +55,7 @@ axis_t *stepper_ctrl_get_axis(uint8_t motor_num) {
 }
 
 stepper_status_enum stepper_ctrl_home(uint8_t motor_num) {
-  axis_t *axis = stepper_ctrl_get_axis(motor_num);
+  axis_t* axis = stepper_ctrl_get_axis(motor_num);
   stepper_status_enum status = STEPPER_INVALID;
 
   if (axis != NULL) {
@@ -87,19 +87,18 @@ void stepper_ctrl_send_cmd(stepper_cmd_enum cmd) {
   (void)xQueueOverwrite(s_cmd_q, &cmd);
 }
 
-uint8_t stepper_ctrl_recv_cmd(stepper_cmd_enum *cmd_out, uint32_t timeout_ms) {
+uint8_t stepper_ctrl_recv_cmd(stepper_cmd_enum* cmd_out, uint32_t timeout_ms) {
   if (cmd_out == NULL) {
     return 0U;
   }
 
-  TickType_t ticks =
-      (timeout_ms == STEPPER_CTRL_WAIT_FOREVER) ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms);
+  TickType_t ticks = (timeout_ms == STEPPER_CTRL_WAIT_FOREVER) ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms);
 
   return (xQueueReceive(s_cmd_q, cmd_out, ticks) == pdTRUE) ? 1U : 0U;
 }
 
 void stepper_ctrl_request_stop(void) {
-  s_running        = 0U;
+  s_running = 0U;
   s_stop_requested = 1U;
 
   if (s_cmd_q != NULL) {
@@ -118,7 +117,7 @@ uint8_t stepper_ctrl_is_stop_requested(void) {
 }
 
 void stepper_ctrl_notify_idle(void) {
-  s_running        = 0U;
+  s_running = 0U;
   s_stop_requested = 0U;
 }
 

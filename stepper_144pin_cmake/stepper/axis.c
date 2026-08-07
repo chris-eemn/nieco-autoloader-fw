@@ -24,7 +24,7 @@
  *******************************************************************************/
 
 #define AXIS_SUPERVISOR_STACK_SIZE 256U
-#define AXIS_SUPERVISOR_PRIORITY   (tskIDLE_PRIORITY + 1U)
+#define AXIS_SUPERVISOR_PRIORITY (tskIDLE_PRIORITY + 1U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -32,25 +32,25 @@
 
 /* Internal homing sub-states, only meaningful when status == AXIS_STATUS_HOMING. */
 typedef enum {
-  HOMING_IDLE   = 0, /* Not homing                                          */
-  HOMING_SEEK,       /* Driving toward endstop, waiting for ISR lag event   */
-  HOMING_SETTLE,       /* Settling after endstop hit, before backoff           */
-  HOMING_BACKOFF,    /* Backing off from endstop                            */
+  HOMING_IDLE = 0, /* Not homing                                          */
+  HOMING_SEEK,     /* Driving toward endstop, waiting for ISR lag event   */
+  HOMING_SETTLE,   /* Settling after endstop hit, before backoff           */
+  HOMING_BACKOFF,  /* Backing off from endstop                            */
 } homing_state_enum;
 
 struct axis_s {
-  stepper_t        *motor;
-  encoder_t        *encoder;
-  axis_config_t     config;
+  stepper_t* motor;
+  encoder_t* encoder;
+  axis_config_t config;
 
   volatile axis_status_enum status;
-  volatile uint8_t          fault_from_isr;     /* Set by fault ISR callback; observed by supervisor */
-  volatile uint8_t          fault_reset_pending; /* 1=sleep requested, 2=sleeping (wake next tick)   */
+  volatile uint8_t fault_from_isr;      /* Set by fault ISR callback; observed by supervisor */
+  volatile uint8_t fault_reset_pending; /* 1=sleep requested, 2=sleeping (wake next tick)   */
 
   /* Homing */
   homing_state_enum homing_substate;
 
-  uint32_t settle_delay_ms; /**< Time to wait after hitting the endstop before starting the back-off move. */
+  uint32_t settle_delay_ms;    /**< Time to wait after hitting the endstop before starting the back-off move. */
   uint32_t settle_end_time_ms; /**< Absolute time when the settle delay ends. Written by the supervisor task. */
 };
 
@@ -58,15 +58,15 @@ struct axis_s {
  * Module Variable Definitions
  *******************************************************************************/
 
-static axis_t  s_axes[AXIS_MAX_INSTANCES];
+static axis_t s_axes[AXIS_MAX_INSTANCES];
 static uint8_t s_axis_count = 0U;
 
 /* Supervisor task: created once by the first axis_init(), shared by all axes.
  * Using a dedicated low-priority task (rather than a FreeRTOS software timer or
  * a sub-rate ISR callback) keeps the supervisor logic cleanly separate from the
  * step-pulse ISR and avoids stack constraints of the timer daemon task. */
-static TaskHandle_t s_supervisor_handle    = NULL;
-static uint32_t     s_supervisor_period_ms = 0U;
+static TaskHandle_t s_supervisor_handle = NULL;
+static uint32_t s_supervisor_period_ms = 0U;
 
 /*******************************************************************************
  * Function Prototypes
@@ -155,9 +155,9 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
     configASSERT(ret == pdPASS);
   }
 
-  app_console_print("[AXIS] Instance %u init OK. period=%lums encoder=%lu/%lu counts/ustep max_error=%lu counts.\r\n",
-                    (unsigned)(s_axis_count - 1U), axis->config.supervisor_period_ms, axis->config.encoder_counts_numerator,
-                    axis->config.encoder_counts_denominator, axis->config.max_sync_error_counts);
+  app_console_print("[AXIS] Instance %u init OK. period=%lums encoder=%lu/%lu counts/ustep max_error=%lu counts.\r\n", (unsigned)(s_axis_count - 1U),
+                    axis->config.supervisor_period_ms, axis->config.encoder_counts_numerator, axis->config.encoder_counts_denominator,
+                    axis->config.max_sync_error_counts);
 
   return axis;
 }
@@ -191,7 +191,7 @@ void axis_update_config(axis_t* axis, const axis_config_t* config) {
   (void)stepper_sync_configure(axis->motor, axis->encoder, &sync_config);
 }
 
-axis_status_enum axis_get_status(const axis_t *axis) {
+axis_status_enum axis_get_status(const axis_t* axis) {
   if (axis == NULL) {
     return AXIS_STATUS_INVALID;
   }
@@ -199,7 +199,7 @@ axis_status_enum axis_get_status(const axis_t *axis) {
   return axis->status;
 }
 
-int32_t axis_get_encoder_count(const axis_t *axis) {
+int32_t axis_get_encoder_count(const axis_t* axis) {
   if (axis == NULL) {
     return 0;
   }
@@ -207,7 +207,7 @@ int32_t axis_get_encoder_count(const axis_t *axis) {
   return encoder_get_count(axis->encoder);
 }
 
-stepper_status_enum axis_move(axis_t *axis, uint32_t steps, uint32_t rpm, uint8_t direction) {
+stepper_status_enum axis_move(axis_t* axis, uint32_t steps, uint32_t rpm, uint8_t direction) {
   if (axis == NULL) {
     return STEPPER_INVALID;
   }
@@ -232,7 +232,7 @@ stepper_status_enum axis_move(axis_t *axis, uint32_t steps, uint32_t rpm, uint8_
   return STEPPER_OK;
 }
 
-uint8_t axis_is_busy(const axis_t *axis) {
+uint8_t axis_is_busy(const axis_t* axis) {
   if (axis == NULL) {
     return 0U;
   }
@@ -240,7 +240,7 @@ uint8_t axis_is_busy(const axis_t *axis) {
   return stepper_is_busy(axis->motor);
 }
 
-stepper_status_enum axis_home(axis_t *axis) {
+stepper_status_enum axis_home(axis_t* axis) {
   if (axis == NULL) {
     return STEPPER_INVALID;
   }
@@ -253,39 +253,37 @@ stepper_status_enum axis_home(axis_t *axis) {
     return STEPPER_BUSY;
   }
 
-  if ((axis->status == AXIS_STATUS_FAULT) || (axis->status == AXIS_STATUS_STALLED) ||
-      (stepper_is_fault(axis->motor) != 0U)) {
+  if ((axis->status == AXIS_STATUS_FAULT) || (axis->status == AXIS_STATUS_STALLED) || (stepper_is_fault(axis->motor) != 0U)) {
     return STEPPER_FAULT;
   }
 
-  stepper_status_enum ret =
-      stepper_move_start(axis->motor, axis->config.home_max_steps, axis->config.home_rpm, axis->config.home_direction);
+  stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.home_max_steps, axis->config.home_rpm, axis->config.home_direction);
 
   if (ret != STEPPER_OK) {
     return ret;
   }
 
   axis->homing_substate = HOMING_SEEK;
-  axis->status          = AXIS_STATUS_HOMING;
+  axis->status = AXIS_STATUS_HOMING;
 
-  app_console_print("[AXIS] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", axis->config.home_direction,
-                    axis->config.home_rpm, axis->config.home_max_steps);
+  app_console_print("[AXIS] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", axis->config.home_direction, axis->config.home_rpm,
+                    axis->config.home_max_steps);
 
   return STEPPER_OK;
 }
 
-void axis_clear_fault(axis_t *axis) {
+void axis_clear_fault(axis_t* axis) {
   if (axis == NULL) {
     return;
   }
 
   axis->homing_substate = HOMING_IDLE;
-  axis->fault_from_isr  = 0U;
-  axis->status          = AXIS_STATUS_NOT_HOMED;
+  axis->fault_from_isr = 0U;
+  axis->status = AXIS_STATUS_NOT_HOMED;
   (void)stepper_sync_take_event(axis->motor, NULL);
 }
 
-void axis_fault_reset(axis_t *axis) {
+void axis_fault_reset(axis_t* axis) {
   if (axis == NULL) {
     return;
   }
@@ -293,7 +291,7 @@ void axis_fault_reset(axis_t *axis) {
   axis->fault_reset_pending = 1U;
 }
 
-void axis_stop(axis_t *axis) {
+void axis_stop(axis_t* axis) {
   if (axis == NULL) {
     return;
   }
@@ -302,7 +300,7 @@ void axis_stop(axis_t *axis) {
 
   if (axis->status == AXIS_STATUS_HOMING) {
     axis->homing_substate = HOMING_IDLE;
-    axis->status          = AXIS_STATUS_NOT_HOMED;
+    axis->status = AXIS_STATUS_NOT_HOMED;
   }
 }
 
@@ -410,7 +408,7 @@ static void handle_homing_tick(axis_t* axis) {
       }
       break;
     }
-    
+
     case HOMING_SETTLE: {
       /* Wait for the seek deceleration to finish before timing the settle. */
       if (stepper_is_busy(axis->motor) != 0U) {
@@ -422,13 +420,13 @@ static void handle_homing_tick(axis_t* axis) {
         axis->homing_substate = HOMING_BACKOFF;
       }
       break;
-  }
+    }
 
     case HOMING_BACKOFF: {
       if (stepper_is_busy(axis->motor) == 0U) {
         encoder_zero(axis->encoder);
         axis->homing_substate = HOMING_IDLE;
-        axis->status          = AXIS_STATUS_OK;
+        axis->status = AXIS_STATUS_OK;
         app_console_print("[AXIS] Homing complete. Encoder zeroed.\r\n");
       }
       break;
@@ -442,7 +440,7 @@ static void handle_homing_tick(axis_t* axis) {
 /**
  * @brief Process one supervisor tick for a single axis instance.
  */
-static void supervisor_tick(axis_t *axis) {
+static void supervisor_tick(axis_t* axis) {
   /* Two-tick hardware reset sequence driven by axis_fault_reset().
    * Tick 1 (pending==1): assert nSLP low; the supervisor period (≥25ms) acts as
    * the sleep pulse — no explicit delay needed.
@@ -489,7 +487,7 @@ static void supervisor_tick(axis_t *axis) {
  * software timer) so that the supervisor stack is independent of the timer
  * daemon, avoiding stack overflow in that shared context.
  */
-static void axis_supervisor_task(void *pv) {
+static void axis_supervisor_task(void* pv) {
   (void)pv;
 
   TickType_t last_wake = xTaskGetTickCount();

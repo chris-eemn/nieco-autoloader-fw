@@ -38,19 +38,17 @@
  *******************************************************************************/
 
 /** Names accepted by "param get"/"param set", matching the cal_data_params_t field names. */
-static const char* s_param_names[CAL_DATA_CLI_NUM_PARAMS] = {
-    [CAL_DATA_CLI_PARAM_INVALID] = "invalid",
-    [CAL_DATA_CLI_PUSHER_RPM] = "pusher_rpm",
-    [CAL_DATA_CLI_LIFTER_RPM] = "lifter_rpm",
-    [CAL_DATA_CLI_MAX_SYNC_ERROR_COUNTS] = "max_sync_error_counts",
-    [CAL_DATA_CLI_HOME_RPM] = "home_rpm",
-    [CAL_DATA_CLI_HOME_BACKOFF_STEPS] = "home_backoff_steps",
-    [CAL_DATA_CLI_HOME_MAX_STEPS] = "home_max_steps",
-    [CAL_DATA_CLI_SUPERVISOR_PERIOD_MS] = "supervisor_period_ms",
-    [CAL_DATA_CLI_DEFAULT_MOVE_RPM] = "default_move_rpm",
-    [CAL_DATA_CLI_DEFAULT_MOVE_STEPS] = "default_move_steps",
-    [CAL_DATA_CLI_HOME_SETTLE_DELAY_MS] = "home_settle_delay_ms"
-};
+static const char* s_param_names[CAL_DATA_CLI_NUM_PARAMS] = {[CAL_DATA_CLI_PARAM_INVALID] = "invalid",
+                                                             [CAL_DATA_CLI_PUSHER_RPM] = "pusher_rpm",
+                                                             [CAL_DATA_CLI_LIFTER_RPM] = "lifter_rpm",
+                                                             [CAL_DATA_CLI_MAX_SYNC_ERROR_COUNTS] = "max_sync_error_counts",
+                                                             [CAL_DATA_CLI_HOME_RPM] = "home_rpm",
+                                                             [CAL_DATA_CLI_HOME_BACKOFF_STEPS] = "home_backoff_steps",
+                                                             [CAL_DATA_CLI_HOME_MAX_STEPS] = "home_max_steps",
+                                                             [CAL_DATA_CLI_SUPERVISOR_PERIOD_MS] = "supervisor_period_ms",
+                                                             [CAL_DATA_CLI_DEFAULT_MOVE_RPM] = "default_move_rpm",
+                                                             [CAL_DATA_CLI_DEFAULT_MOVE_STEPS] = "default_move_steps",
+                                                             [CAL_DATA_CLI_HOME_SETTLE_DELAY_MS] = "home_settle_delay_ms"};
 
 /*******************************************************************************
  * Function Prototypes
@@ -92,7 +90,7 @@ void cal_data_cli_set_handler(char* param, int32_t val) {
       /* Persisted here rather than on a separate command: a set the operator has to remember to
        * follow with a save is a set that silently reverts on the next power cycle. On failure the
        * RAM copy still holds the new value, so say so rather than implying nothing happened. */
-      
+
       if (cal_data_save() == true) {
         app_console_print("[PARAM] %s = %lu (saved)\r\n", s_param_names[id], (unsigned long)*value);
         stepper_system_update_configs(); /* Apply the new values to the axes immediately. */
@@ -167,7 +165,7 @@ static uint32_t* param_value_ptr(cal_data_cli_param_enum param) {
       case CAL_DATA_CLI_HOME_RPM:
         value = &params->home_rpm;
         break;
-      
+
       case CAL_DATA_CLI_HOME_SETTLE_DELAY_MS:
         value = &params->home_settle_delay_ms;
         break;

@@ -112,7 +112,7 @@ typedef enum {
  *        regardless of what the caller passed
  * @return bool true if both commands were accepted into the w25q queue
  */
-bool cal_data_position_save(uint8_t pair_index, const cal_data_position_t *position);
+bool cal_data_position_save(uint8_t pair_index, const cal_data_position_t* position);
 
 /**
  * @brief reports how far the most recent save for a pair has got
@@ -137,7 +137,7 @@ cal_data_save_status_enum cal_data_position_save_status(uint8_t pair_index);
  * @param position destination for the stored position; must not be NULL
  * @return bool true if a valid position was recovered
  */
-bool cal_data_position_load(uint8_t pair_index, cal_data_position_t *position);
+bool cal_data_position_load(uint8_t pair_index, cal_data_position_t* position);
 
 /**
  * @brief queues an erase of one pair's position section, discarding any stored position

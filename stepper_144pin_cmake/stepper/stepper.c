@@ -184,7 +184,7 @@ uint32_t stepper_rpm_to_ticks(uint32_t rpm) {
   return (STEPPER_TIMER_TICK_HZ * 60UL) / (rpm * STEPPER_USTEPS_PER_REV * 2UL);
 }
 
-stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_t rpm, uint8_t direction) {
+stepper_status_enum stepper_move_start(stepper_t* motor, uint32_t steps, uint32_t rpm, uint8_t direction) {
   if (motor == NULL) {
     return STEPPER_INVALID;
   }
@@ -228,7 +228,7 @@ stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_
   return STEPPER_OK;
 }
 
-uint8_t stepper_is_busy(stepper_t *motor) {
+uint8_t stepper_is_busy(stepper_t* motor) {
   if (motor == NULL) {
     return 0U;
   }
@@ -236,13 +236,13 @@ uint8_t stepper_is_busy(stepper_t *motor) {
   return motor->running;
 }
 
-void stepper_register_done_cb(stepper_t *motor, stepper_done_cb_t cb) {
+void stepper_register_done_cb(stepper_t* motor, stepper_done_cb_t cb) {
   if (motor != NULL) {
     motor->done_cb = cb;
   }
 }
 
-void stepper_stop(stepper_t *motor) {
+void stepper_stop(stepper_t* motor) {
   if (motor == NULL) {
     return;
   }
@@ -254,19 +254,19 @@ void stepper_stop(stepper_t *motor) {
   app_console_print("[STEPPER] Stopped at step %lu\r\n", motor->steps_done);
 }
 
-void stepper_enable(stepper_t *motor) {
+void stepper_enable(stepper_t* motor) {
   if (motor != NULL) {
     HAL_GPIO_WritePin(motor->pins.en.port, motor->pins.en.pin, EN_ACTIVE);
   }
 }
 
-void stepper_disable(stepper_t *motor) {
+void stepper_disable(stepper_t* motor) {
   if (motor != NULL) {
     HAL_GPIO_WritePin(motor->pins.en.port, motor->pins.en.pin, EN_INACTIVE);
   }
 }
 
-void stepper_wake(stepper_t *motor) {
+void stepper_wake(stepper_t* motor) {
   if (motor != NULL) {
     HAL_GPIO_WritePin(motor->pins.nslp.port, motor->pins.nslp.pin, NSLP_WAKE);
     /* DRV8424 requires ~1ms after wake before accepting STEP pulses */
@@ -274,13 +274,13 @@ void stepper_wake(stepper_t *motor) {
   }
 }
 
-void stepper_sleep(stepper_t *motor) {
+void stepper_sleep(stepper_t* motor) {
   if (motor != NULL) {
     HAL_GPIO_WritePin(motor->pins.nslp.port, motor->pins.nslp.pin, NSLP_SLEEP);
   }
 }
 
-uint8_t stepper_is_fault(stepper_t *motor) {
+uint8_t stepper_is_fault(stepper_t* motor) {
   if (motor == NULL) {
     return 0U;
   }
@@ -288,7 +288,7 @@ uint8_t stepper_is_fault(stepper_t *motor) {
   return motor->fault_latched;
 }
 
-void stepper_register_fault_exti(stepper_t *motor, hal_exti_handle_t *hexti) {
+void stepper_register_fault_exti(stepper_t* motor, hal_exti_handle_t* hexti) {
   if ((motor == NULL) || (hexti == NULL)) {
     return;
   }
@@ -301,13 +301,13 @@ void stepper_register_fault_exti(stepper_t *motor, hal_exti_handle_t *hexti) {
   configASSERT(ret == HAL_OK);
 }
 
-void stepper_register_fault_cb(stepper_t *motor, stepper_fault_cb_t cb) {
+void stepper_register_fault_cb(stepper_t* motor, stepper_fault_cb_t cb) {
   if (motor != NULL) {
     motor->fault_cb = cb;
   }
 }
 
-void stepper_clear_fault(stepper_t *motor) {
+void stepper_clear_fault(stepper_t* motor) {
   if (motor != NULL) {
     motor->fault_latched = 0U;
   }
@@ -325,11 +325,11 @@ void stepper_clear_fault(stepper_t *motor) {
  * at the rate defined per motor by tick_period. On completion: disables driver
  * outputs and fires the optional done callback.
  */
-static void stepper_isr_cb(hal_tim_handle_t *htim) {
+static void stepper_isr_cb(hal_tim_handle_t* htim) {
   (void)htim;
 
   for (uint8_t i = 0U; i < s_motor_count; i++) {
-    stepper_t *m = &s_motors[i];
+    stepper_t* m = &s_motors[i];
 
     if (m->running == 0U) {
       continue;

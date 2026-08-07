@@ -26,7 +26,7 @@
 
 /* RS-485 DE (driver enable) pin — replace with your CubeMX IOC pin labels */
 #if 0
-#define RS485_DE_PIN  GPIO_PIN_0
+#define RS485_DE_PIN GPIO_PIN_0
 #define RS485_DE_PORT GPIOA
 #endif
 
@@ -58,9 +58,9 @@ static uint8_t s_rx_byte = 0U;
  *******************************************************************************/
 static void set_for_rx(void);
 static void set_for_tx(void);
-static void mb_uart_tx_cplt_cb(hal_uart_handle_t *huart);
-static void mb_uart_rx_cplt_cb(hal_uart_handle_t *huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event);
-static void mb_timer_update_cb(hal_tim_handle_t *htim);
+static void mb_uart_tx_cplt_cb(hal_uart_handle_t* huart);
+static void mb_uart_rx_cplt_cb(hal_uart_handle_t* huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event);
+static void mb_timer_update_cb(hal_tim_handle_t* htim);
 
 void ui_slave_init(void* context);
 void ui_slave_xmit_frame(uint8_t* data, uint16_t data_len);
@@ -73,13 +73,13 @@ bool ui_slave_is_writing(void);
 static void Error_Handler(void);
 
 modbus_slave_port_fns_t ui_slave_port_fns = {
-    .init                = ui_slave_init,
-    .xmit_frame          = ui_slave_xmit_frame,
+    .init = ui_slave_init,
+    .xmit_frame = ui_slave_xmit_frame,
     .set_timer_period_us = ui_slave_set_timer_period_us,
-    .stop_timer          = ui_slave_stop_timer,
-    .reset_timer         = ui_slave_reset_timer,
-    .start_read          = ui_slave_start_read,
-    .is_writing          = ui_slave_is_writing,
+    .stop_timer = ui_slave_stop_timer,
+    .reset_timer = ui_slave_reset_timer,
+    .start_read = ui_slave_start_read,
+    .is_writing = ui_slave_is_writing,
 };
 
 /*******************************************************************************
@@ -188,9 +188,10 @@ static void set_for_tx(void) {
  *        and re-arms single-byte reception.
  * @param huart Handle of the UART peripheral that completed transmission.
  */
-static void mb_uart_tx_cplt_cb(hal_uart_handle_t *huart) {
+static void mb_uart_tx_cplt_cb(hal_uart_handle_t* huart) {
   /* Poll TC so the last bit has left the wire before driving DE low */
-  while (LL_USART_IsActiveFlag_TC((USART_TypeDef *)((uint32_t)(huart->instance))) == 0U) {}
+  while (LL_USART_IsActiveFlag_TC((USART_TypeDef*)((uint32_t)(huart->instance))) == 0U) {
+  }
   s_is_writing = false;
   set_for_rx();
   hal_status_t status = HAL_UART_Receive_IT(mb_slave_gethandle(), &s_rx_byte, 1U);
@@ -206,7 +207,7 @@ static void mb_uart_tx_cplt_cb(hal_uart_handle_t *huart) {
  * @param size_byte Number of bytes received (unused — always 1).
  * @param rx_event  Reception event type (unused).
  */
-static void mb_uart_rx_cplt_cb(hal_uart_handle_t *huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event) {
+static void mb_uart_rx_cplt_cb(hal_uart_handle_t* huart, uint32_t size_byte, hal_uart_rx_event_types_t rx_event) {
   (void)huart;
   (void)size_byte;
   (void)rx_event;
@@ -224,13 +225,12 @@ static void mb_uart_rx_cplt_cb(hal_uart_handle_t *huart, uint32_t size_byte, hal
  *        Notifies the Modbus stack of a frame timeout when TIM15 expires.
  * @param htim Handle of the timer peripheral that expired.
  */
-static void mb_timer_update_cb(hal_tim_handle_t *htim) {
+static void mb_timer_update_cb(hal_tim_handle_t* htim) {
   (void)htim;
   if (s_mb_ctx != NULL) {
     MB_TimerExpired(s_mb_ctx);
   }
 }
-
 
 static void Error_Handler(void) {
   /* User can add his own implementation to report the HAL error return state */

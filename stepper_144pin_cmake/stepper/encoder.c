@@ -35,13 +35,13 @@ typedef enum {
 struct encoder_s {
   encoder_src_enum src; /* Which HAL API to use for this instance's timer handle */
   union {
-    hal_tim_handle_t   *htim;   /* Valid when src == ENCODER_SRC_TIM             */
-    hal_lptim_handle_t *hlptim; /* Valid when src == ENCODER_SRC_LPTIM           */
+    hal_tim_handle_t* htim;     /* Valid when src == ENCODER_SRC_TIM             */
+    hal_lptim_handle_t* hlptim; /* Valid when src == ENCODER_SRC_LPTIM           */
   } handle;
-  int32_t           accumulated; /* Signed count from last encoder_zero()            */
-  uint32_t          last_raw;    /* Raw counter captured at last get_count()         */
-  int32_t           prev_count;  /* Accumulated count at last encoder_get_delta() call */
-  void (*index_cb)(encoder_t *); /* Index/Z pulse callback (stub, not yet wired)     */
+  int32_t accumulated;          /* Signed count from last encoder_zero()            */
+  uint32_t last_raw;            /* Raw counter captured at last get_count()         */
+  int32_t prev_count;           /* Accumulated count at last encoder_get_delta() call */
+  void (*index_cb)(encoder_t*); /* Index/Z pulse callback (stub, not yet wired)     */
 };
 
 /*******************************************************************************
@@ -49,7 +49,7 @@ struct encoder_s {
  *******************************************************************************/
 
 static encoder_t s_encoders[ENCODER_MAX_INSTANCES];
-static uint8_t   s_encoder_count = 0U;
+static uint8_t s_encoder_count = 0U;
 
 /*******************************************************************************
  * Function Prototypes
@@ -59,7 +59,7 @@ static uint8_t   s_encoder_count = 0U;
  * Public Function Definitions
  *******************************************************************************/
 
-encoder_t *encoder_init(hal_tim_handle_t *htim) {
+encoder_t* encoder_init(hal_tim_handle_t* htim) {
   if (htim == NULL) {
     return NULL;
   }
@@ -69,22 +69,22 @@ encoder_t *encoder_init(hal_tim_handle_t *htim) {
     return NULL;
   }
 
-  encoder_t *enc = &s_encoders[s_encoder_count];
+  encoder_t* enc = &s_encoders[s_encoder_count];
   s_encoder_count++;
 
-  enc->src         = ENCODER_SRC_TIM;
+  enc->src = ENCODER_SRC_TIM;
   enc->handle.htim = htim;
   enc->accumulated = 0;
-  enc->last_raw    = HAL_TIM_GetCounter(htim);
-  enc->prev_count  = 0;
-  enc->index_cb    = NULL;
+  enc->last_raw = HAL_TIM_GetCounter(htim);
+  enc->prev_count = 0;
+  enc->index_cb = NULL;
 
   app_console_print("[ENCODER] Instance %u init OK. raw=%lu\r\n", (unsigned)(s_encoder_count - 1U), enc->last_raw);
 
   return enc;
 }
 
-encoder_t *encoder_init_lptim(hal_lptim_handle_t *hlptim) {
+encoder_t* encoder_init_lptim(hal_lptim_handle_t* hlptim) {
   if (hlptim == NULL) {
     return NULL;
   }
@@ -143,12 +143,12 @@ int32_t encoder_get_delta(encoder_t* enc) {
 
   int32_t current = encoder_get_count(enc);
   int32_t delta = current - enc->prev_count;
-  enc->prev_count    = current;
+  enc->prev_count = current;
 
   return delta;
 }
 
-void encoder_zero(encoder_t *enc) {
+void encoder_zero(encoder_t* enc) {
   if (enc == NULL) {
     return;
   }
@@ -170,10 +170,10 @@ void encoder_zero(encoder_t *enc) {
   }
 
   enc->accumulated = 0;
-  enc->prev_count  = 0;
+  enc->prev_count = 0;
 }
 
-void encoder_register_index_cb(encoder_t *enc, void (*cb)(encoder_t *enc)) {
+void encoder_register_index_cb(encoder_t* enc, void (*cb)(encoder_t* enc)) {
   /* TODO: Index/Z pulse support is not yet implemented. Hardware wiring
    * (EXTI vs. secondary timer channel capture) is not yet confirmed.
    * This stub reserves the API surface for a future non-breaking addition. */

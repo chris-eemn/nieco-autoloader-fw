@@ -200,7 +200,7 @@ stepper_sync_event_enum stepper_sync_take_event(stepper_t* motor, uint32_t* devi
  *         STEPPER_FAULT   if nFAULT is asserted,
  *         STEPPER_INVALID if motor is NULL.
  */
-stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_t rpm, uint8_t direction);
+stepper_status_enum stepper_move_start(stepper_t* motor, uint32_t steps, uint32_t rpm, uint8_t direction);
 
 /**
  * @brief  Check whether a move is currently in progress.
@@ -208,7 +208,7 @@ stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  * @return 1 if a move is running, 0 if idle or motor is NULL.
  */
-uint8_t stepper_is_busy(stepper_t *motor);
+uint8_t stepper_is_busy(stepper_t* motor);
 
 /**
  * @brief  Register a callback invoked from ISR context when a move completes.
@@ -217,7 +217,7 @@ uint8_t stepper_is_busy(stepper_t *motor);
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  * @param  cb     ISR-safe callback, or NULL.
  */
-void stepper_register_done_cb(stepper_t *motor, stepper_done_cb_t cb);
+void stepper_register_done_cb(stepper_t* motor, stepper_done_cb_t cb);
 
 /**
  * @brief  Register an EXTI handle for continuous nFAULT monitoring.
@@ -230,7 +230,7 @@ void stepper_register_done_cb(stepper_t *motor, stepper_done_cb_t cb);
  *                nFAULT GPIO line (e.g. from m1_fault_exti_gethandle()).
  *                Must not be NULL.
  */
-void stepper_register_fault_exti(stepper_t *motor, hal_exti_handle_t *hexti);
+void stepper_register_fault_exti(stepper_t* motor, hal_exti_handle_t* hexti);
 
 /**
  * @brief  Register a callback invoked from ISR context when a fault is detected.
@@ -240,7 +240,7 @@ void stepper_register_fault_exti(stepper_t *motor, hal_exti_handle_t *hexti);
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  * @param  cb     ISR-safe callback, or NULL.
  */
-void stepper_register_fault_cb(stepper_t *motor, stepper_fault_cb_t cb);
+void stepper_register_fault_cb(stepper_t* motor, stepper_fault_cb_t cb);
 
 /**
  * @brief  Clear the software fault latch.
@@ -250,28 +250,28 @@ void stepper_register_fault_cb(stepper_t *motor, stepper_fault_cb_t cb);
  *
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  */
-void stepper_clear_fault(stepper_t *motor);
+void stepper_clear_fault(stepper_t* motor);
 
 /**
  * @brief  Immediately stop the motor and disable driver outputs.
  *
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  */
-void stepper_stop(stepper_t *motor);
+void stepper_stop(stepper_t* motor);
 
 /**
  * @brief  Enable driver outputs (nEN active).
  *
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  */
-void stepper_enable(stepper_t *motor);
+void stepper_enable(stepper_t* motor);
 
 /**
  * @brief  Disable driver outputs (nEN inactive). Motor will freewheel.
  *
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  */
-void stepper_disable(stepper_t *motor);
+void stepper_disable(stepper_t* motor);
 
 /**
  * @brief  Wake the driver (nSLP active).
@@ -279,14 +279,14 @@ void stepper_disable(stepper_t *motor);
  *
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  */
-void stepper_wake(stepper_t *motor);
+void stepper_wake(stepper_t* motor);
 
 /**
  * @brief  Put the driver to sleep (nSLP inactive). Clears any latched fault.
  *
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  */
-void stepper_sleep(stepper_t *motor);
+void stepper_sleep(stepper_t* motor);
 
 /**
  * @brief  Check whether a fault has been latched for this motor.
@@ -300,7 +300,7 @@ void stepper_sleep(stepper_t *motor);
  * @param  motor  Handle returned by stepper_init(). Must not be NULL.
  * @return 1 if a fault is latched, 0 if no fault or motor is NULL.
  */
-uint8_t stepper_is_fault(stepper_t *motor);
+uint8_t stepper_is_fault(stepper_t* motor);
 
 /**
  * @brief  Convert RPM to timer ticks between step pulse edges.

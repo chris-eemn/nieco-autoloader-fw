@@ -34,34 +34,31 @@
  * Function Prototypes
  *******************************************************************************/
 
-static void cmd_param_handler(int32_t argc, char **argv);
-static void cmd_test_handler(int32_t argc, char **argv);
-static void cmd_dispatch(console_command_get_fn_t get_fn,
-                         console_command_set_fn_t set_fn,
-                         console_command_list_fn_t list_fn,
-                         int32_t argc,
-                         char **argv);
+static void cmd_param_handler(int32_t argc, char** argv);
+static void cmd_test_handler(int32_t argc, char** argv);
+static void cmd_dispatch(console_command_get_fn_t get_fn, console_command_set_fn_t set_fn, console_command_list_fn_t list_fn, int32_t argc,
+                         char** argv);
 
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
 
 static const console_command_t s_paramCmd = {
-  .name    = "param",
-  .help    = "[set/get/list/reset] [param] [value]\t get/set/list/reset cal-data parameters",
-  .handler = cmd_param_handler,
-  .get_fn  = cal_data_cli_get_handler,
-  .set_fn  = cal_data_cli_set_handler,
-  .list_fn = cal_data_cli_list_handler,
+    .name = "param",
+    .help = "[set/get/list/reset] [param] [value]\t get/set/list/reset cal-data parameters",
+    .handler = cmd_param_handler,
+    .get_fn = cal_data_cli_get_handler,
+    .set_fn = cal_data_cli_set_handler,
+    .list_fn = cal_data_cli_list_handler,
 };
 
 static const console_command_t s_testCmd = {
-  .name    = "test",
-  .help    = "[set/get/list] [auto|start|rpm|step] [value]\t control stepper cycle",
-  .handler = cmd_test_handler,
-  .get_fn  = stepper_cli_get_handler,
-  .set_fn  = stepper_cli_set_handler,
-  .list_fn = stepper_cli_list_handler,
+    .name = "test",
+    .help = "[set/get/list] [auto|start|rpm|step] [value]\t control stepper cycle",
+    .handler = cmd_test_handler,
+    .get_fn = stepper_cli_get_handler,
+    .set_fn = stepper_cli_set_handler,
+    .list_fn = stepper_cli_list_handler,
 };
 
 /*******************************************************************************
@@ -82,7 +79,7 @@ void app_console_commands_register(void) {
  * @param argc Argument count.
  * @param argv Argument vector; argv[1] is the subcommand (get/set/list/reset).
  */
-static void cmd_param_handler(int32_t argc, char **argv) {
+static void cmd_param_handler(int32_t argc, char** argv) {
   if (argv == NULL) {
     return;
   }
@@ -110,7 +107,7 @@ static void cmd_param_handler(int32_t argc, char **argv) {
  * @param argc Argument count.
  * @param argv Argument vector; argv[1] is the subcommand (get/set/list).
  */
-static void cmd_test_handler(int32_t argc, char **argv) {
+static void cmd_test_handler(int32_t argc, char** argv) {
   if (argv == NULL) {
     return;
   }
@@ -135,11 +132,8 @@ static void cmd_test_handler(int32_t argc, char **argv) {
  * @param argc    Argument count from the CLI.
  * @param argv    Argument vector from the CLI.
  */
-static void cmd_dispatch(console_command_get_fn_t get_fn,
-                         console_command_set_fn_t set_fn,
-                         console_command_list_fn_t list_fn,
-                         int32_t argc,
-                         char **argv) {
+static void cmd_dispatch(console_command_get_fn_t get_fn, console_command_set_fn_t set_fn, console_command_list_fn_t list_fn, int32_t argc,
+                         char** argv) {
   if (argv == NULL) {
     return;
   }

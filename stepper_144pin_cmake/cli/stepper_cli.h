@@ -42,14 +42,14 @@ typedef enum {
  * @brief CLI get handler — prints the current value of a stepper parameter.
  * @param param Parameter name string ("auto", "cw", "ccw", "rpm", "step").
  */
-void stepper_cli_get_handler(char *param);
+void stepper_cli_get_handler(char* param);
 
 /**
  * @brief CLI set handler — applies the given value to a stepper parameter.
  * @param param Parameter name string ("auto", "cw", "ccw", "rpm", "step").
  * @param val   Value to apply.
  */
-void stepper_cli_set_handler(char *param, int32_t val);
+void stepper_cli_set_handler(char* param, int32_t val);
 
 /**
  * @brief CLI list handler — prints all available parameter names and usage.

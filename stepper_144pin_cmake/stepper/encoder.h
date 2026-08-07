@@ -77,7 +77,7 @@ typedef struct encoder_s encoder_t;
  * @return Opaque encoder handle on success.
  *         NULL if htim is NULL or the encoder pool is exhausted.
  */
-encoder_t *encoder_init(hal_tim_handle_t *htim);
+encoder_t* encoder_init(hal_tim_handle_t* htim);
 
 /**
  * @brief  Allocate and initialise an LPTIM-backed encoder instance from the internal pool.
@@ -140,7 +140,7 @@ int32_t encoder_get_delta(encoder_t* enc);
  *
  * @param  enc  Handle returned by encoder_init() or encoder_init_lptim(). Must not be NULL.
  */
-void encoder_zero(encoder_t *enc);
+void encoder_zero(encoder_t* enc);
 
 /**
  * @brief  Register an index (Z) pulse callback.
@@ -153,6 +153,6 @@ void encoder_zero(encoder_t *enc);
  * @param  enc  Handle returned by encoder_init(). Must not be NULL.
  * @param  cb   Callback to invoke on index pulse. Pass NULL to clear.
  */
-void encoder_register_index_cb(encoder_t *enc, void (*cb)(encoder_t *enc));
+void encoder_register_index_cb(encoder_t* enc, void (*cb)(encoder_t* enc));
 
 #endif /* ENCODER_H_ */

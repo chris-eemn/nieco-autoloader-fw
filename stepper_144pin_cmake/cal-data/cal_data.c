@@ -52,12 +52,9 @@ typedef struct {
   cal_data_params_t params;
 } cal_data_record_t;
 
-_Static_assert(sizeof(cal_data_record_t) <= CAL_DATA_MAX_WRITE_LEN,
-               "cal-data general record no longer fits in a single spi_flash_io_write() call");
-_Static_assert(sizeof(cal_data_record_t) <= CAL_DATA_GENERAL_SIZE,
-               "cal-data general record no longer fits in the sectors reserved for it");
-_Static_assert(CAL_DATA_ALLOCATED_SIZE <= W25Q_CAL_DATA_SIZE,
-               "cal-data sections overflow the cal-data region of the W25Q");
+_Static_assert(sizeof(cal_data_record_t) <= CAL_DATA_MAX_WRITE_LEN, "cal-data general record no longer fits in a single spi_flash_io_write() call");
+_Static_assert(sizeof(cal_data_record_t) <= CAL_DATA_GENERAL_SIZE, "cal-data general record no longer fits in the sectors reserved for it");
+_Static_assert(CAL_DATA_ALLOCATED_SIZE <= W25Q_CAL_DATA_SIZE, "cal-data sections overflow the cal-data region of the W25Q");
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -66,16 +63,16 @@ _Static_assert(CAL_DATA_ALLOCATED_SIZE <= W25Q_CAL_DATA_SIZE,
  * configured in stepper_system.c and stepper_ctrl.h so that provisioning a blank chip
  * reproduces today's behaviour rather than changing it. */
 static const cal_data_params_t default_params = {
-  .pusher_rpm            = 30U,
-  .lifter_rpm            = 30U,
-  .max_sync_error_counts = 10U,
-  .home_rpm              = 10U,
-  .home_backoff_steps    = 800U,
-  .home_settle_delay_ms  = 100U,
-  .home_max_steps        = 50000U,
-  .supervisor_period_ms  = 25U,
-  .default_move_rpm      = 5U,
-  .default_move_steps    = 800U,
+    .pusher_rpm = 30U,
+    .lifter_rpm = 30U,
+    .max_sync_error_counts = 10U,
+    .home_rpm = 10U,
+    .home_backoff_steps = 800U,
+    .home_settle_delay_ms = 100U,
+    .home_max_steps = 50000U,
+    .supervisor_period_ms = 25U,
+    .default_move_rpm = 5U,
+    .default_move_steps = 800U,
 };
 
 /** Live RAM copy handed out by cal_data_get(). */
@@ -92,7 +89,7 @@ static bool cal_data_valid = false;
  * @param record destination for the record read back from flash; must not be NULL
  * @return bool true if the read succeeded and the record is one this firmware can use
  */
-static bool read_record(cal_data_record_t *record);
+static bool read_record(cal_data_record_t* record);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -104,7 +101,8 @@ bool cal_data_init(void) {
 
   if (cal_data_valid == true) {
     cal_params = record.params;
-  } else {
+  }
+  else {
     /* Nothing usable on flash -- provision the section so the next boot reads back cleanly.
      * A failed save is not escalated here: the defaults are already live in RAM, so the
      * application runs correctly either way and simply re-provisions on the next boot. */
@@ -115,7 +113,7 @@ bool cal_data_init(void) {
   return cal_data_valid;
 }
 
-cal_data_params_t *cal_data_get(void) {
+cal_data_params_t* cal_data_get(void) {
   return &cal_params;
 }
 
@@ -123,15 +121,14 @@ bool cal_data_save(void) {
   cal_data_record_t record;
   bool saved;
 
-  record.header.magic   = CAL_DATA_MAGIC;
+  record.header.magic = CAL_DATA_MAGIC;
   record.header.version = CAL_DATA_VERSION;
-  record.params         = cal_params;
+  record.params = cal_params;
 
   saved = spi_flash_io_erase_range(CAL_DATA_GENERAL_BASE_ADDRESS, (uint32_t)sizeof(record));
 
   if (saved == true) {
-    saved = spi_flash_io_write(CAL_DATA_GENERAL_BASE_ADDRESS, (const uint8_t *)&record,
-                               (uint32_t)sizeof(record));
+    saved = spi_flash_io_write(CAL_DATA_GENERAL_BASE_ADDRESS, (const uint8_t*)&record, (uint32_t)sizeof(record));
   }
 
   if (saved == true) {
@@ -152,11 +149,11 @@ bool cal_data_is_valid(void) {
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
-static bool read_record(cal_data_record_t *record) {
+static bool read_record(cal_data_record_t* record) {
   bool usable = false;
 
   if (record != NULL) {
-    if (spi_flash_io_read(CAL_DATA_GENERAL_BASE_ADDRESS, (uint8_t *)record, (uint32_t)sizeof(*record)) == true) {
+    if (spi_flash_io_read(CAL_DATA_GENERAL_BASE_ADDRESS, (uint8_t*)record, (uint32_t)sizeof(*record)) == true) {
       usable = (record->header.magic == CAL_DATA_MAGIC) && (record->header.version == CAL_DATA_VERSION);
     }
   }

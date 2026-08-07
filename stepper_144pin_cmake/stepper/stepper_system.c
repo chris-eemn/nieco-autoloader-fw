@@ -40,7 +40,7 @@
  * encoder resolution will replace these values after mechanical integration. */
 #define STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR (5U)
 #define STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR (2U)
-#define STEPPER_SYSTEM_HOMING_SETTLING_DELAY_DEFAULT_MS (100) // ms
+#define STEPPER_SYSTEM_HOMING_SETTLING_DELAY_DEFAULT_MS (100)  // ms
 
 /*******************************************************************************
  * Module Typedefs
@@ -145,7 +145,7 @@ bool stepper_system_init(void) {
 }
 
 void stepper_system_update_configs(void) {
-  cal_data_params_t *cal_params_ptr = cal_data_get();
+  cal_data_params_t* cal_params_ptr = cal_data_get();
   if (cal_params_ptr == NULL) {
     app_console_print("[ERROR] Failed to get cal_data_params_t\r\n");
     return;
