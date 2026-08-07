@@ -19,6 +19,7 @@
 
 #include "app_console.h"
 #include "axis.h"
+#include "cal_data.h"
 #include "encoder.h"
 #include "main.h"
 #include "mx_i2c1.h"
@@ -39,6 +40,7 @@
  * encoder resolution will replace these values after mechanical integration. */
 #define STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR (5U)
 #define STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR (2U)
+#define STEPPER_SYSTEM_HOMING_SETTLING_DELAY_DEFAULT_MS (100) // ms
 
 /*******************************************************************************
  * Module Typedefs
@@ -102,7 +104,7 @@ static const axis_config_t s_axis_config = {
     .encoder_counts_numerator = STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR,
     .encoder_counts_denominator = STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR,
     .max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS,
-    .backoff_steps = 800U,
+    .backoff_steps = 200U,
     .home_direction = STEPPER_DIR_CW,
     .home_rpm = 10U,
     .home_max_steps = 50000U,
@@ -134,10 +136,62 @@ bool stepper_system_init(void) {
       initialized = stepper_system_init_axes();
     }
 
+    stepper_system_update_configs();
+
     s_initialized = initialized;
   }
 
   return initialized;
+}
+
+void stepper_system_update_configs(void) {
+  cal_data_params_t *cal_params_ptr = cal_data_get();
+  if (cal_params_ptr == NULL) {
+    app_console_print("[ERROR] Failed to get cal_data_params_t\r\n");
+    return;
+  }
+
+  for (size_t i = 0U; i < STEPPER_SYSTEM_MOTOR_COUNT; i++) {
+    if (s_axes[i] != NULL) {
+      axis_config_t axis_config = s_axis_config;
+      axis_config.home_rpm = cal_params_ptr->home_rpm;
+      axis_config.backoff_steps = cal_params_ptr->home_backoff_steps;
+      axis_config.home_max_steps = cal_params_ptr->home_max_steps;
+      axis_config.max_sync_error_counts = cal_params_ptr->max_sync_error_counts;
+      axis_config.supervisor_period_ms = cal_params_ptr->supervisor_period_ms;
+      axis_config.settle_delay_ms = cal_params_ptr->home_settle_delay_ms;
+
+      if (axis_config.supervisor_period_ms == 0U) {
+        axis_config.supervisor_period_ms = AXIS_DEFAULT_SUPERVISOR_PERIOD_MS;
+      }
+      if (axis_config.max_sync_error_counts == 0U) {
+        axis_config.max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS;
+      }
+      if (axis_config.home_rpm == 0U) {
+        axis_config.home_rpm = 10U;
+      }
+      if (axis_config.backoff_steps == 0U) {
+        axis_config.backoff_steps = 200U;
+      }
+      if (axis_config.home_max_steps == 0U) {
+        axis_config.home_max_steps = 50000U;
+      }
+      if (axis_config.encoder_counts_numerator == 0U) {
+        axis_config.encoder_counts_numerator = STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR;
+      }
+      if (axis_config.encoder_counts_denominator == 0U) {
+        axis_config.encoder_counts_denominator = STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR;
+      }
+      if ((axis_config.home_direction != STEPPER_DIR_CW) && (axis_config.home_direction != STEPPER_DIR_CCW)) {
+        axis_config.home_direction = STEPPER_DIR_CW;
+      }
+      if (axis_config.settle_delay_ms == 0U) {
+        axis_config.settle_delay_ms = STEPPER_SYSTEM_HOMING_SETTLING_DELAY_DEFAULT_MS;
+      }
+
+      axis_update_config(s_axes[i], &axis_config);
+    }
+  }
 }
 
 /*******************************************************************************

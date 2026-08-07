@@ -18,6 +18,7 @@
 #include "cal_data_cli.h"
 #include "cal_data.h"
 #include "app_console.h"
+#include "stepper_system.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -48,6 +49,7 @@ static const char* s_param_names[CAL_DATA_CLI_NUM_PARAMS] = {
     [CAL_DATA_CLI_SUPERVISOR_PERIOD_MS] = "supervisor_period_ms",
     [CAL_DATA_CLI_DEFAULT_MOVE_RPM] = "default_move_rpm",
     [CAL_DATA_CLI_DEFAULT_MOVE_STEPS] = "default_move_steps",
+    [CAL_DATA_CLI_HOME_SETTLE_DELAY_MS] = "home_settle_delay_ms"
 };
 
 /*******************************************************************************
@@ -90,8 +92,10 @@ void cal_data_cli_set_handler(char* param, int32_t val) {
       /* Persisted here rather than on a separate command: a set the operator has to remember to
        * follow with a save is a set that silently reverts on the next power cycle. On failure the
        * RAM copy still holds the new value, so say so rather than implying nothing happened. */
+      
       if (cal_data_save() == true) {
         app_console_print("[PARAM] %s = %lu (saved)\r\n", s_param_names[id], (unsigned long)*value);
+        stepper_system_update_configs(); /* Apply the new values to the axes immediately. */
       }
       else {
         app_console_print("[PARAM] %s = %lu -- FLASH SAVE FAILED, RAM only\r\n", s_param_names[id], (unsigned long)*value);
@@ -162,6 +166,10 @@ static uint32_t* param_value_ptr(cal_data_cli_param_enum param) {
 
       case CAL_DATA_CLI_HOME_RPM:
         value = &params->home_rpm;
+        break;
+      
+      case CAL_DATA_CLI_HOME_SETTLE_DELAY_MS:
+        value = &params->home_settle_delay_ms;
         break;
 
       case CAL_DATA_CLI_HOME_BACKOFF_STEPS:

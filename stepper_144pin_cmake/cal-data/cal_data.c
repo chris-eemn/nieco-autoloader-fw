@@ -71,6 +71,7 @@ static const cal_data_params_t default_params = {
   .max_sync_error_counts = 10U,
   .home_rpm              = 10U,
   .home_backoff_steps    = 800U,
+  .home_settle_delay_ms  = 100U,
   .home_max_steps        = 50000U,
   .supervisor_period_ms  = 25U,
   .default_move_rpm      = 5U,

@@ -42,7 +42,7 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (2U)
+#define CAL_DATA_VERSION (3U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -60,6 +60,7 @@ typedef struct {
   uint32_t max_sync_error_counts; /**< Maximum encoder following error. Maps to
                                    *   axis_config_t.max_sync_error_counts. */
   uint32_t home_rpm;             /**< Speed of the homing seek and back-off moves, RPM. */
+  uint32_t home_settle_delay_ms; /**< Time to wait after hitting the endstop before starting the back-off move. */
   uint32_t home_backoff_steps;   /**< Back-off distance in microsteps after the endstop is hit. */
   uint32_t home_max_steps;       /**< Homing seek limit in microsteps before a timeout fault. */
   uint32_t supervisor_period_ms; /**< Axis supervisor tick period. */

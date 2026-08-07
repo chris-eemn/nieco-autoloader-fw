@@ -44,4 +44,15 @@
  */
 bool stepper_system_init(void);
 
+/**
+ * @brief Update stepper related configs from cal_data_params_t when parameters change.
+ *
+ *        Called after cal_data_init() and whenever a cal_data parameter is
+ *        changed to apply user-modified values without requiring a power cycle.
+ *        This updates all relevant configuration structures, not just
+ *        axis_config_t. Axes must have been constructed already
+ *        (stepper_system_init()).
+ */
+void stepper_system_update_configs(void);
+
 #endif /* STEPPER_SYSTEM_H_ */

@@ -157,6 +157,35 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
   return axis;
 }
 
+void axis_update_config(axis_t* axis, const axis_config_t* config) {
+  if ((axis == NULL) || (config == NULL)) {
+    return;
+  }
+
+  /* Apply defaults for zero-valued config fields. */
+  axis->config = *config;
+  if (axis->config.supervisor_period_ms == 0U) {
+    axis->config.supervisor_period_ms = AXIS_DEFAULT_SUPERVISOR_PERIOD_MS;
+  }
+  if (axis->config.encoder_counts_numerator == 0U) {
+    axis->config.encoder_counts_numerator = AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR;
+  }
+  if (axis->config.encoder_counts_denominator == 0U) {
+    axis->config.encoder_counts_denominator = AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR;
+  }
+  if (axis->config.max_sync_error_counts == 0U) {
+    axis->config.max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS;
+  }
+
+  stepper_sync_config_t sync_config = {
+      .encoder_counts_numerator = axis->config.encoder_counts_numerator,
+      .encoder_counts_denominator = axis->config.encoder_counts_denominator,
+      .max_error_counts = axis->config.max_sync_error_counts,
+  };
+
+  (void)stepper_sync_configure(axis->motor, axis->encoder, &sync_config);
+}
+
 axis_status_enum axis_get_status(const axis_t *axis) {
   if (axis == NULL) {
     return AXIS_STATUS_INVALID;

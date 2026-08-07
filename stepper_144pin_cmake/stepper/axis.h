@@ -123,6 +123,8 @@ typedef struct {
   /** Maximum microsteps allowed during the homing seek before declaring a timeout fault.
    *  The stepper enforces this limit automatically at the driver level (must be > 0). */
   uint32_t home_max_steps;
+
+  uint32_t settle_delay_ms; /**< Time to wait after hitting the endstop before starting the back-off move. */
 } axis_config_t;
 
 /** Opaque axis handle. Allocated from an internal static pool by axis_init(). */
@@ -255,4 +257,11 @@ void axis_fault_reset(axis_t *axis);
  */
 void axis_stop(axis_t *axis);
 
+/**
+ * @brief  Update the axis configuration at runtime.
+ *
+ * @param  axis  Handle returned by axis_init(). Must not be NULL.
+ * @param  config  New configuration to apply. Must not be NULL.
+ */
+void axis_update_config(axis_t *axis, const axis_config_t *config);
 #endif /* AXIS_H_ */
