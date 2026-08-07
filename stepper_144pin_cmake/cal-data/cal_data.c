@@ -69,10 +69,11 @@ static const cal_data_params_t default_params = {
     .home_rpm = 10U,
     .home_backoff_steps = 800U,
     .home_settle_delay_ms = 100U,
-    .home_max_steps = 50000U,
+    .home_max_steps = 2000U,
     .supervisor_period_ms = 25U,
     .default_move_rpm = 5U,
     .default_move_steps = 800U,
+    .load_offset = 200U,
 };
 
 /** Live RAM copy handed out by cal_data_get(). */

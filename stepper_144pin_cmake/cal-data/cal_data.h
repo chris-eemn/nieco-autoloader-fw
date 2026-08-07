@@ -42,7 +42,7 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (3U)
+#define CAL_DATA_VERSION (4U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -66,6 +66,7 @@ typedef struct {
   uint32_t supervisor_period_ms;  /**< Axis supervisor tick period. */
   uint32_t default_move_rpm;      /**< Speed used for a move when none is specified. */
   uint32_t default_move_steps;    /**< Microsteps used for a move when none is specified. */
+  uint32_t load_offset;           /**< Microstep backup after lifters hit the top during startup homing. */
 } cal_data_params_t;
 
 /*******************************************************************************
