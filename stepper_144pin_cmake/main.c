@@ -21,6 +21,7 @@
 #include "FreeRTOS.h"
 #include "app_bringup_task.h"
 #include "app_console.h"
+#include "app_task.h"
 #include "mb_regs.h"
 #include "stepper_ctrl.h"
 #include "task.h"
@@ -54,6 +55,10 @@ int main(void) {
   stepper_ctrl_init();
   mb_regs_init();
   usb_loader_start();
+
+  if (app_task_start() == false) {
+    while (1);
+  }
 
   if (app_bringup_task_start() == false) {
     while (1);
