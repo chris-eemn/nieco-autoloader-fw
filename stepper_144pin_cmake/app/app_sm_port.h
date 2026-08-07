@@ -34,6 +34,7 @@ typedef enum {
   APP_SM_TIMEOUT_UNLOCK,
   APP_SM_TIMEOUT_STARTUP_PUSHER_HOME,
   APP_SM_TIMEOUT_STARTUP_LIFTER_HOME,
+  APP_SM_TIMEOUT_STARTUP_DELAY,
   APP_SM_TIMEOUT_MOTION,
   APP_SM_TIMEOUT_DOOR,
 } app_sm_timeout_id_enum;
@@ -114,6 +115,12 @@ void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms);
 /** @brief Cancel the currently armed sequence timeout. */
 void app_sm_port_cancel_timeout(void);
 
+/**
+ * @brief Cancel one pending timeout by ID.
+ * @param timeout Timeout ID to cancel.
+ * @return true if a pending timeout was cancelled, false if it had already fired.
+ */
+bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout);
 /**
  * @brief Publish application state for Modbus and diagnostics.
  * @param sm Current application state model.

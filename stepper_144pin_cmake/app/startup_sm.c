@@ -22,6 +22,7 @@
 /*******************************************************************************
  * Module Macros
  *******************************************************************************/
+#define LIFT_HOMING_SETTLE_DELAY_MS (250U)  // time to wait after lift homing before starting the next step.
 
 /*******************************************************************************
  * Module Typedefs
@@ -63,15 +64,18 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     case STARTUP_LOCK_DOOR:
       if (event->id == APP_EV_LOCK_CONFIRMED) {
         app_console_print("[Startup SM] Door locked\r\n");
-        app_sm_port_cancel_timeout();
+        app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
         sm->startup.state = STARTUP_HOME_PUSHERS;
         for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
           app_sm_port_home_pusher(i);
           app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
         }
       }
-      else if (event->id == APP_EV_TIMEOUT) {
+      else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_LOCK)) {
         sm->startup.state = STARTUP_FAILED;
+      }
+      else {
+        app_console_print("[Startup SM] Unexpected event in STARTUP_LOCK_DOOR: id=%d, value=%d\r\n", event->id, event->value);
       }
       break;
 
@@ -90,16 +94,19 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         if (all_pushers_homed) {
           app_console_print("[Startup SM] Pushers homed\r\n");
           sm->startup.state = STARTUP_HOME_LIFTS_DOWN;
-          app_sm_port_cancel_timeout();
+          app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
           for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
             app_sm_port_home_lift(i, DIR_LIFTER_DOWN);
             app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
           }
         }
       }
-      else if (event->id == APP_EV_TIMEOUT) {
+      else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_MOTION)) {
         app_console_print("[Startup SM] Pushers home timeout\r\n");
         sm->startup.state = STARTUP_FAILED;
+      }
+      else {
+        app_console_print("[Startup SM] Unexpected event in STARTUP_HOME_PUSHERS: id=%d, value=%d\r\n", event->id, event->value);
       }
       break;
 
@@ -118,16 +125,30 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
         if (all_lifts_homed_down) {
           app_console_print("[Startup SM] Lifts homed down\r\n");
-          sm->startup.state = STARTUP_HOME_LIFTS_UP;
-          app_sm_port_cancel_timeout();
-          for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
-            app_sm_port_home_lift(i, DIR_LIFTER_UP);
-            app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
-          }
+          sm->startup.state = STARTUP_HOME_LIFTS_DELAY;
+          app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
+          app_sm_port_arm_timeout(APP_SM_TIMEOUT_STARTUP_DELAY, LIFT_HOMING_SETTLE_DELAY_MS);
         }
       }
-      else if (event->id == APP_EV_TIMEOUT) {
+      else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_MOTION)) {
+        app_console_print("[Startup SM] Lifts home down timeout\r\n");
         sm->startup.state = STARTUP_FAILED;
+      }
+      else {
+        app_console_print("[Startup SM] Unexpected event in STARTUP_HOME_LIFTS_DOWN: id=%d, value=%d\r\n", event->id, event->value);
+      }
+      break;
+
+    case STARTUP_HOME_LIFTS_DELAY:
+      if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_STARTUP_DELAY)) {
+        sm->startup.state = STARTUP_HOME_LIFTS_UP;
+        for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+          app_sm_port_home_lift(i, DIR_LIFTER_UP);
+          app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
+        }
+      }
+      else {
+        app_console_print("[Startup SM] Unexpected event in STARTUP_HOME_LIFTS_DELAY: id=%d, value=%d\r\n", event->id, event->value);
       }
       break;
 
