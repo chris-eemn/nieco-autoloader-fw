@@ -14,6 +14,7 @@
 
 #include "axis.h"
 #include "app_sm_port.h"
+#include "stepper.h"
 #include "stepper_ctrl.h"
 
 #include <stddef.h>
@@ -47,11 +48,11 @@ void app_sm_port_unlock_door(void) {
 }
 
 void app_sm_port_home_pushers(void) {
-  axis_home(stepper_ctrl_get_axis(1));
+  axis_home(stepper_ctrl_get_axis(1), STEPPER_DIR_CW);
 }
 
 void app_sm_port_home_lifts(void) {
-  /* TODO: Command the fitted lift axes and post APP_EV_MOTION_DONE on completion. */
+  axis_home(stepper_ctrl_get_axis(2), STEPPER_DIR_CCW);
 }
 
 void app_sm_port_count_cartridges(void) {

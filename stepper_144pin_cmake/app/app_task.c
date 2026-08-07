@@ -152,7 +152,8 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
     app_event.id = APP_EV_FAULT; /* TODO: Replace with a more specific fault code. */
   }
   else if (event == AXIS_EVENT_HOME_FAILED) {
-    app_event.id = APP_EV_FAULT; /* TODO: Replace with a more specific fault code. */
+    // todo: temporary since we are faking homing
+    app_event.id = APP_EV_MOTION_DONE;
   }
   (void)app_task_post(&app_event);
 }

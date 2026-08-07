@@ -75,12 +75,14 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case STARTUP_HOME_PUSHERS:
       if (event->id == APP_EV_MOTION_DONE) {
+        app_console_print("[Startup SM] Pushers homed\r\n");
         app_sm_port_cancel_timeout();
         sm->startup = STARTUP_HOME_LIFTS;
         app_sm_port_home_lifts();
         app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION);
       }
       else if (event->id == APP_EV_TIMEOUT) {
+        app_console_print("[Startup SM] Pushers home timeout\r\n");
         sm->startup = STARTUP_FAILED;
       }
       break;
