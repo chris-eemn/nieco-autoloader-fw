@@ -8,17 +8,17 @@
  * @copyright Copyright (c) 2026 Embedded Design Solutions, LLC.  All Rights Reserved.
  *
  * Composes one stepper_t and one encoder_t into a single, generic axis. Adds:
- *   - Continuous stall detection (encoder stopped while motor commanded to run).
+ *   - Per-step following-error stall detection in the step ISR.
  *   - Homing (drive to endstop, back off, zero encoder).
  *   - Fault integration (stepper fault surfaces into combined axis status).
  *
  * All logic is generic. No assumptions are made about what the axis moves.
  *
  * A shared supervisor task is created automatically on the first axis_init()
- * call and runs at a fixed period (default 50 ms, configurable via the first
+ * call and runs at a fixed period (default 25 ms, configurable via the first
  * axis's config). All subsequent axes share that period regardless of their own
- * supervisor_period_ms field. Homing and stall windows (in ms) are converted to
- * sample counts at axis_init() time using the period that was established.
+ * supervisor_period_ms field. Stall and homing-endstop detection occur directly
+ * in the step ISR using max_sync_error_counts.
  *
  * Use axis_get_status() and axis_is_busy() to observe non-blocking motion. The
  * supervisor drives all homing and fault state transitions.
@@ -32,8 +32,7 @@
  *     .home_rpm             = 10,
  *     .home_max_steps       = 50000,
  *     .backoff_steps        = 800,
- *     .stationary_window_ms = 50,
- *     .stall_window_ms      = 100,
+ *     .max_sync_error_counts = 10,
  *   };
  *   axis_t *ax = axis_init(motor, enc, m1_fault_exti_gethandle(), &cfg);
  *
@@ -63,9 +62,6 @@
 /** Default supervisor task period in ms, applied when config.supervisor_period_ms == 0. */
 #define AXIS_DEFAULT_SUPERVISOR_PERIOD_MS 25U
 
-/** Default stationary/stall window in ms, applied when the config field is 0. */
-#define AXIS_DEFAULT_WINDOW_MS 150U
-
 /** Bench encoder produces 2.5 counts per microstep at the current 8-microstep setting. */
 #define AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR 5U
 #define AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR 2U
@@ -82,7 +78,7 @@
  *   NOT_HOMED → HOMING (via axis_home())
  *   HOMING    → OK     (homing succeeded)
  *   HOMING    → FAULT  (homing timeout or stepper fault)
- *   OK        → STALLED (encoder stopped while commanded moving)
+ *   OK        → STALLED (encoder lag exceeds max_sync_error_counts)
  *   OK/HOMING → FAULT  (stepper fault detected)
  *   STALLED   → NOT_HOMED (via axis_clear_fault())
  *   FAULT     → NOT_HOMED (via axis_fault_reset(), deferred over two supervisor ticks)
@@ -94,7 +90,7 @@ typedef enum {
                               *!< known absolute position/encoder reference. */
   AXIS_STATUS_HOMING,        /*!< Homing move in progress                      */
   AXIS_STATUS_OK,            /*!< Normal operating state                        */
-  AXIS_STATUS_STALLED = 66,  /*!< Encoder did not move while motor was running  */
+  AXIS_STATUS_STALLED = 66,  /*!< Encoder lag exceeded the following-error limit */
   AXIS_STATUS_FAULT = 99,    /*!< Stepper fault or homing timeout               */
   AXIS_STATUS_INVALID = 255, /*!< Returned by axis_get_status() if axis is NULL */
 } axis_status_enum;
@@ -104,17 +100,9 @@ typedef enum {
  * Any field set to 0 receives the documented default.
  */
 typedef struct {
-  /** Period of the supervisor encoder-sample tick. Default: AXIS_DEFAULT_SUPERVISOR_PERIOD_MS.
+  /** Period of the supervisor state-processing tick. Default: AXIS_DEFAULT_SUPERVISOR_PERIOD_MS.
    *  Only honoured for the first axis registered; all subsequent axes share that period. */
   uint32_t supervisor_period_ms;
-
-  /** How long the encoder must read zero-delta before declaring the endstop reached
-   *  during homing. Default: AXIS_DEFAULT_WINDOW_MS. */
-  uint32_t stationary_window_ms;
-
-  /** How long the encoder must read zero-delta while the motor is commanded running
-   *  before declaring a stall. Default: AXIS_DEFAULT_WINDOW_MS. */
-  uint32_t stall_window_ms;
 
   /** Integer encoder-counts-per-microstep ratio used by the step ISR. Default: 5/2. */
   uint32_t encoder_counts_numerator;
@@ -191,7 +179,7 @@ int32_t axis_get_encoder_count(const axis_t *axis);
  *         Does NOT require the axis to have been homed first — AXIS_STATUS_NOT_HOMED
  *         only reflects that the encoder position reference is not yet zeroed;
  *         it does not block motion.
- *         The supervisor's stall detection runs automatically during the move
+ *         The step ISR's following-error detection runs automatically during the move
  *         for axes in both AXIS_STATUS_OK and AXIS_STATUS_NOT_HOMED states.
  *
  * @param  axis       Handle returned by axis_init(). Must not be NULL.
@@ -214,9 +202,9 @@ uint8_t axis_is_busy(const axis_t *axis);
 
 /**
  * @brief  Start a non-blocking homing sequence.
- *         Drives in config.home_direction until the encoder is stationary for
- *         config.stationary_window_ms, then backs off by config.backoff_steps,
- *         then zeros the encoder. Transitions axis status to AXIS_STATUS_HOMING.
+ *         Drives in config.home_direction until encoder lag reaches
+ *         config.max_sync_error_counts, then backs off by config.backoff_steps
+ *         and zeros the encoder. Transitions axis status to AXIS_STATUS_HOMING.
  *
  *         Use axis_get_status() to poll for AXIS_STATUS_OK (success) or
  *         AXIS_STATUS_FAULT (timeout / stepper fault).
@@ -258,8 +246,8 @@ void axis_fault_reset(axis_t *axis);
 
 /**
  * @brief  Immediately stop any in-progress move on the axis.
- *         Clears stall/stationary counters. If the axis was homing, transitions
- *         to AXIS_STATUS_NOT_HOMED (homing is aborted cleanly, not a fault).
+ *         If the axis was homing, transitions to AXIS_STATUS_NOT_HOMED
+ *         (homing is aborted cleanly, not a fault).
  *         For AXIS_STATUS_OK and AXIS_STATUS_NOT_HOMED the status is unchanged —
  *         a voluntary stop is not a fault condition.
  *

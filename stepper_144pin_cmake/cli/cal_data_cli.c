@@ -41,8 +41,7 @@ static const char* s_param_names[CAL_DATA_CLI_NUM_PARAMS] = {
     [CAL_DATA_CLI_PARAM_INVALID] = "invalid",
     [CAL_DATA_CLI_PUSHER_RPM] = "pusher_rpm",
     [CAL_DATA_CLI_LIFTER_RPM] = "lifter_rpm",
-    [CAL_DATA_CLI_HOME_STALL_TIME_MS] = "home_stall_time_ms",
-    [CAL_DATA_CLI_STALL_WINDOW_MS] = "stall_window_ms",
+    [CAL_DATA_CLI_MAX_SYNC_ERROR_COUNTS] = "max_sync_error_counts",
     [CAL_DATA_CLI_HOME_RPM] = "home_rpm",
     [CAL_DATA_CLI_HOME_BACKOFF_STEPS] = "home_backoff_steps",
     [CAL_DATA_CLI_HOME_MAX_STEPS] = "home_max_steps",
@@ -157,12 +156,8 @@ static uint32_t* param_value_ptr(cal_data_cli_param_enum param) {
         value = &params->lifter_rpm;
         break;
 
-      case CAL_DATA_CLI_HOME_STALL_TIME_MS:
-        value = &params->home_stall_time_ms;
-        break;
-
-      case CAL_DATA_CLI_STALL_WINDOW_MS:
-        value = &params->stall_window_ms;
+      case CAL_DATA_CLI_MAX_SYNC_ERROR_COUNTS:
+        value = &params->max_sync_error_counts;
         break;
 
       case CAL_DATA_CLI_HOME_RPM:

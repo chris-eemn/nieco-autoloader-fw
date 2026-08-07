@@ -33,7 +33,7 @@
 /* Internal homing sub-states, only meaningful when status == AXIS_STATUS_HOMING. */
 typedef enum {
   HOMING_IDLE   = 0, /* Not homing                                          */
-  HOMING_SEEK,       /* Driving toward endstop, waiting for stationary enc  */
+  HOMING_SEEK,       /* Driving toward endstop, waiting for ISR lag event   */
   HOMING_BACKOFF,    /* Backing off from endstop                            */
 } homing_state_enum;
 
@@ -48,15 +48,6 @@ struct axis_s {
 
   /* Homing */
   homing_state_enum homing_substate;
-  uint32_t          enc_stationary_count; /* Consecutive zero-delta ticks during SEEK   */
-  uint32_t          stationary_samples;   /* Required ticks to declare stationary        */
-
-  /* Stall detection */
-  uint32_t stall_count;   /* Consecutive zero-delta ticks while running  */
-  uint32_t stall_samples; /* Required ticks to declare stall             */
-
-  /* Shared between homing and stall — encoder sample at previous supervisor tick */
-  int32_t last_enc_count;
 };
 
 /*******************************************************************************
@@ -80,8 +71,7 @@ static uint32_t     s_supervisor_period_ms = 0U;
 static void axis_fault_isr_cb(stepper_t* motor);
 static void start_homing_backoff(axis_t* axis);
 static uint8_t handle_sync_event(axis_t* axis);
-static void handle_homing_tick(axis_t* axis, int32_t delta);
-static void handle_stall_tick(axis_t* axis, int32_t delta);
+static void handle_homing_tick(axis_t* axis);
 static void supervisor_tick(axis_t* axis);
 static void axis_supervisor_task(void* pv);
 
@@ -110,12 +100,6 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
   if (axis->config.supervisor_period_ms == 0U) {
     axis->config.supervisor_period_ms = AXIS_DEFAULT_SUPERVISOR_PERIOD_MS;
   }
-  if (axis->config.stationary_window_ms == 0U) {
-    axis->config.stationary_window_ms = AXIS_DEFAULT_WINDOW_MS;
-  }
-  if (axis->config.stall_window_ms == 0U) {
-    axis->config.stall_window_ms = AXIS_DEFAULT_WINDOW_MS;
-  }
   if (axis->config.encoder_counts_numerator == 0U) {
     axis->config.encoder_counts_numerator = AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR;
   }
@@ -137,27 +121,10 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
         (unsigned)s_axis_count, axis->config.supervisor_period_ms, s_supervisor_period_ms);
   }
 
-  uint32_t period = (s_supervisor_period_ms > 0U) ? s_supervisor_period_ms : 1U;
-
-  /* Convert ms windows to sample counts (ceiling division so a 50ms window
-   * at a 50ms period requires exactly 1 consecutive zero-delta sample). */
-  axis->stationary_samples = (axis->config.stationary_window_ms + period - 1U) / period;
-  if (axis->stationary_samples == 0U) {
-    axis->stationary_samples = 1U;
-  }
-
-  axis->stall_samples = (axis->config.stall_window_ms + period - 1U) / period;
-  if (axis->stall_samples == 0U) {
-    axis->stall_samples = 1U;
-  }
-
   axis->status = AXIS_STATUS_NOT_HOMED;
   axis->fault_from_isr = 0U;
   axis->fault_reset_pending = 0U;
   axis->homing_substate = HOMING_IDLE;
-  axis->enc_stationary_count = 0U;
-  axis->stall_count = 0U;
-  axis->last_enc_count = encoder_get_count(encoder);
 
   stepper_sync_config_t sync_config = {
       .encoder_counts_numerator = axis->config.encoder_counts_numerator,
@@ -183,8 +150,9 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
     configASSERT(ret == pdPASS);
   }
 
-  app_console_print("[AXIS] Instance %u init OK. period=%lums stat=%lu stall=%lu samples.\r\n", (unsigned)(s_axis_count - 1U),
-                    axis->config.supervisor_period_ms, axis->stationary_samples, axis->stall_samples);
+  app_console_print("[AXIS] Instance %u init OK. period=%lums encoder=%lu/%lu counts/ustep max_error=%lu counts.\r\n",
+                    (unsigned)(s_axis_count - 1U), axis->config.supervisor_period_ms, axis->config.encoder_counts_numerator,
+                    axis->config.encoder_counts_denominator, axis->config.max_sync_error_counts);
 
   return axis;
 }
@@ -227,8 +195,6 @@ stepper_status_enum axis_move(axis_t *axis, uint32_t steps, uint32_t rpm, uint8_
     return ret;
   }
 
-  axis->stall_count = 0U;
-
   return STEPPER_OK;
 }
 
@@ -265,10 +231,8 @@ stepper_status_enum axis_home(axis_t *axis) {
     return ret;
   }
 
-  axis->enc_stationary_count = 0U;
-  axis->stall_count          = 0U;
-  axis->homing_substate      = HOMING_SEEK;
-  axis->status               = AXIS_STATUS_HOMING;
+  axis->homing_substate = HOMING_SEEK;
+  axis->status          = AXIS_STATUS_HOMING;
 
   app_console_print("[AXIS] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", axis->config.home_direction,
                     axis->config.home_rpm, axis->config.home_max_steps);
@@ -281,11 +245,9 @@ void axis_clear_fault(axis_t *axis) {
     return;
   }
 
-  axis->stall_count          = 0U;
-  axis->enc_stationary_count = 0U;
-  axis->homing_substate      = HOMING_IDLE;
-  axis->fault_from_isr       = 0U;
-  axis->status               = AXIS_STATUS_NOT_HOMED;
+  axis->homing_substate = HOMING_IDLE;
+  axis->fault_from_isr  = 0U;
+  axis->status          = AXIS_STATUS_NOT_HOMED;
   (void)stepper_sync_take_event(axis->motor, NULL);
 }
 
@@ -303,8 +265,6 @@ void axis_stop(axis_t *axis) {
   }
 
   stepper_stop(axis->motor);
-  axis->stall_count          = 0U;
-  axis->enc_stationary_count = 0U;
 
   if (axis->status == AXIS_STATUS_HOMING) {
     axis->homing_substate = HOMING_IDLE;
@@ -341,8 +301,6 @@ static void start_homing_backoff(axis_t* axis) {
 
   if (ret == STEPPER_OK) {
     axis->homing_substate = HOMING_BACKOFF;
-    axis->enc_stationary_count = 0U;
-    axis->stall_count = 0U;
     app_console_print("[AXIS] Starting homing back-off (%lu usteps).\r\n", axis->config.backoff_steps);
   }
   else {
@@ -379,7 +337,6 @@ static uint8_t handle_sync_event(axis_t* axis) {
     }
     else if ((axis->status == AXIS_STATUS_OK) || (axis->status == AXIS_STATUS_NOT_HOMED)) {
       axis->status = AXIS_STATUS_STALLED;
-      axis->stall_count = 0U;
       app_console_print("[AXIS] Stall detected: encoder lagged by %lu counts. Motor stopped.\r\n", deviation_counts);
     }
     else {
@@ -396,29 +353,13 @@ static uint8_t handle_sync_event(axis_t* axis) {
 /**
  * @brief Handle one supervisor tick for an axis that is currently homing.
  *
- * @param axis   Axis instance in AXIS_STATUS_HOMING.
- * @param delta  Signed encoder delta since the previous supervisor tick.
+ * @param axis Axis instance in AXIS_STATUS_HOMING.
  */
-static void handle_homing_tick(axis_t* axis, int32_t delta) {
+static void handle_homing_tick(axis_t* axis) {
   switch (axis->homing_substate) {
     case HOMING_SEEK: {
-      if (delta == 0) {
-        axis->enc_stationary_count++;
-      }
-      else {
-        axis->enc_stationary_count = 0U;
-      }
-
-      if (axis->enc_stationary_count >= axis->stationary_samples) {
-        /* Endstop detected — stop seek and start back-off. */
-        stepper_stop(axis->motor);
-
-        app_console_print("[AXIS] Endstop found: encoder stationary.\r\n");
-        start_homing_backoff(axis);
-      }
-      else if (stepper_is_busy(axis->motor) == 0U) {
-        /* Motor finished its max-steps move without detecting a stationary encoder
-         * — homing timeout (mechanical failure or encoder disconnected). */
+      if (stepper_is_busy(axis->motor) == 0U) {
+        /* The seek used all home_max_steps without an ISR following-error event. */
         app_console_print("[AXIS] Homing timeout — endstop not reached.\r\n");
         axis->status = AXIS_STATUS_FAULT;
         axis->homing_substate = HOMING_IDLE;
@@ -427,29 +368,8 @@ static void handle_homing_tick(axis_t* axis, int32_t delta) {
     }
 
     case HOMING_BACKOFF: {
-      /* Back-off is still open-loop step generation — without this check, a jam
-       * during back-off would go undetected: the stepper completes its commanded
-       * steps on schedule regardless of whether the mechanism actually moved, and
-       * homing would report success with a zeroed encoder at the wrong position. */
-      if (delta == 0) {
-        axis->stall_count++;
-      }
-      else {
-        axis->stall_count = 0U;
-      }
-
-      if (axis->stall_count >= axis->stall_samples) {
-        stepper_stop(axis->motor);
-        axis->status          = AXIS_STATUS_FAULT;
-        axis->homing_substate = HOMING_IDLE;
-        axis->stall_count     = 0U;
-        app_console_print("[AXIS] Homing back-off stalled — encoder did not move.\r\n");
-        break;
-      }
-
       if (stepper_is_busy(axis->motor) == 0U) {
         encoder_zero(axis->encoder);
-        axis->last_enc_count  = 0;
         axis->homing_substate = HOMING_IDLE;
         axis->status          = AXIS_STATUS_OK;
         app_console_print("[AXIS] Homing complete. Encoder zeroed.\r\n");
@@ -459,39 +379,6 @@ static void handle_homing_tick(axis_t* axis, int32_t delta) {
 
     default:
       break;
-  }
-}
-
-/**
- * @brief Handle one supervisor tick for stall detection.
- *
- * Called when the stepper reports busy and axis status is OK or NOT_HOMED.
- *
- * @param axis   Axis instance.
- * @param delta  Signed encoder delta since the previous supervisor tick.
- */
-static void handle_stall_tick(axis_t *axis, int32_t delta) {
-  /* The stall check is intentionally all-or-nothing: delta must be exactly
-   * zero for the full stall window. A proportional step-count vs encoder-count
-   * ratio check is explicitly out of scope for this revision — the structure
-   * accommodates adding it here without reworking the supervisor loop. */
-  if (delta == 0) {
-    axis->stall_count++;
-    if (axis->stall_count % 10 == 0U) {
-      app_console_print("[AXIS] Warning: potential stall detected . "
-            "Stall count = %lu/%lu, Encoder ticks = %ld\r\n",
-            axis->stall_count, axis->stall_samples, (long)encoder_get_count(axis->encoder));
-    }
-  }
-  else {
-    axis->stall_count = 0U;
-  }
-
-  if (axis->stall_count >= axis->stall_samples) {
-    stepper_stop(axis->motor);
-    axis->status      = AXIS_STATUS_STALLED;
-    axis->stall_count = 0U;
-    app_console_print("[AXIS] Stall detected. Motor stopped.\r\n");
   }
 }
 
@@ -532,29 +419,8 @@ static void supervisor_tick(axis_t *axis) {
     return;
   }
 
-  /* Sample encoder and compute signed delta since last tick. */
-  int32_t curr_count = encoder_get_count(axis->encoder);
-  int32_t delta = curr_count - axis->last_enc_count;
-  axis->last_enc_count = curr_count;
-
-  switch (axis->status) {
-    case AXIS_STATUS_HOMING:
-      handle_homing_tick(axis, delta);
-      break;
-
-    case AXIS_STATUS_NOT_HOMED:
-    case AXIS_STATUS_OK:
-      if (stepper_is_busy(axis->motor) != 0U) {
-        handle_stall_tick(axis, delta);
-      }
-      else {
-        axis->stall_count = 0U;
-      }
-      break;
-
-    default:
-      /* STALLED, FAULT — nothing to supervise until cleared. */
-      break;
+  if (axis->status == AXIS_STATUS_HOMING) {
+    handle_homing_tick(axis);
   }
 }
 

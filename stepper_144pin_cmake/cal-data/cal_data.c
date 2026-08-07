@@ -63,19 +63,18 @@ _Static_assert(CAL_DATA_ALLOCATED_SIZE <= W25Q_CAL_DATA_SIZE,
  * Module Variable Definitions
  *******************************************************************************/
 /** Factory defaults, applied when flash holds nothing usable. Mirrors the values currently
- * hard-coded in main.c (k_m1_axis_cfg) and stepper_ctrl.h so that provisioning a blank chip
+ * configured in stepper_system.c and stepper_ctrl.h so that provisioning a blank chip
  * reproduces today's behaviour rather than changing it. */
 static const cal_data_params_t default_params = {
-  .pusher_rpm           = 30U,
-  .lifter_rpm           = 30U,
-  .home_stall_time_ms   = 50U,
-  .stall_window_ms      = 2000U,
-  .home_rpm             = 10U,
-  .home_backoff_steps   = 800U,
-  .home_max_steps       = 50000U,
-  .supervisor_period_ms = 25U,
-  .default_move_rpm     = 5U,
-  .default_move_steps   = 800U,
+  .pusher_rpm            = 30U,
+  .lifter_rpm            = 30U,
+  .max_sync_error_counts = 10U,
+  .home_rpm              = 10U,
+  .home_backoff_steps    = 800U,
+  .home_max_steps        = 50000U,
+  .supervisor_period_ms  = 25U,
+  .default_move_rpm      = 5U,
+  .default_move_steps    = 800U,
 };
 
 /** Live RAM copy handed out by cal_data_get(). */

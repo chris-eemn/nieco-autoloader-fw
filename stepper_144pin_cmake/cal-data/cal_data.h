@@ -42,7 +42,7 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (1U)
+#define CAL_DATA_VERSION (2U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -57,12 +57,8 @@
 typedef struct {
   uint32_t pusher_rpm;           /**< Pusher motor speed, RPM. */
   uint32_t lifter_rpm;           /**< Lifter motor speed, RPM. */
-  uint32_t home_stall_time_ms;   /**< How long the encoder must read zero-delta during homing
-                                  *   before the endstop is considered reached. Maps to
-                                  *   axis_config_t.stationary_window_ms. */
-  uint32_t stall_window_ms;      /**< How long the encoder must read zero-delta while the motor
-                                  *   is commanded to run before declaring a stall. Maps to
-                                  *   axis_config_t.stall_window_ms. */
+  uint32_t max_sync_error_counts; /**< Maximum encoder following error. Maps to
+                                   *   axis_config_t.max_sync_error_counts. */
   uint32_t home_rpm;             /**< Speed of the homing seek and back-off moves, RPM. */
   uint32_t home_backoff_steps;   /**< Back-off distance in microsteps after the endstop is hit. */
   uint32_t home_max_steps;       /**< Homing seek limit in microsteps before a timeout fault. */

@@ -39,7 +39,6 @@
  * encoder resolution will replace these values after mechanical integration. */
 #define STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR (5U)
 #define STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR (2U)
-#define STEPPER_SYSTEM_MAX_SYNC_ERROR_COUNTS (25U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -100,11 +99,9 @@ static const stepper_gpio_config_t s_motor_pins[STEPPER_SYSTEM_MOTOR_COUNT] = {
 
 static const axis_config_t s_axis_config = {
     .supervisor_period_ms = 25U,
-    .stationary_window_ms = 50U,
-    .stall_window_ms = 2000U,
     .encoder_counts_numerator = STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR,
     .encoder_counts_denominator = STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR,
-    .max_sync_error_counts = STEPPER_SYSTEM_MAX_SYNC_ERROR_COUNTS,
+    .max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS,
     .backoff_steps = 800U,
     .home_direction = STEPPER_DIR_CW,
     .home_rpm = 10U,
