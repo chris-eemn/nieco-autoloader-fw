@@ -31,7 +31,7 @@
  * Module Macros
  *******************************************************************************/
 
-#define STEPPER_SYSTEM_MOTOR_COUNT (2U)
+#define STEPPER_SYSTEM_MOTOR_COUNT (4U)
 
 #define IO_EXPANDER_M0 (0x01U)
 #define IO_EXPANDER_M1 (0x02U)
@@ -105,7 +105,6 @@ static const axis_config_t s_axis_config = {
     .encoder_counts_denominator = STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR,
     .max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS,
     .backoff_steps = 200U,
-    .home_direction = STEPPER_DIR_CW,
     .home_rpm = 10U,
     .home_max_steps = 50000U,
 };
@@ -174,16 +173,13 @@ void stepper_system_update_configs(void) {
         axis_config.backoff_steps = 200U;
       }
       if (axis_config.home_max_steps == 0U) {
-        axis_config.home_max_steps = 50000U;
+        axis_config.home_max_steps = 5000U;
       }
       if (axis_config.encoder_counts_numerator == 0U) {
         axis_config.encoder_counts_numerator = STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR;
       }
       if (axis_config.encoder_counts_denominator == 0U) {
         axis_config.encoder_counts_denominator = STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR;
-      }
-      if ((axis_config.home_direction != STEPPER_DIR_CW) && (axis_config.home_direction != STEPPER_DIR_CCW)) {
-        axis_config.home_direction = STEPPER_DIR_CW;
       }
       if (axis_config.settle_delay_ms == 0U) {
         axis_config.settle_delay_ms = STEPPER_SYSTEM_HOMING_SETTLING_DELAY_DEFAULT_MS;
