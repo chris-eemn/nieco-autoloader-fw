@@ -20,10 +20,8 @@
  * supervisor_period_ms field. Homing and stall windows (in ms) are converted to
  * sample counts at axis_init() time using the period that was established.
  *
- * NOTE: Do not call stepper_wait_done() directly on an axis's motor while using
- * axis_home() — use axis_get_status() to poll for completion instead. The
- * supervisor drives all state transitions; mixing the raw stepper blocking API
- * with axis supervision leads to undefined behaviour.
+ * Use axis_get_status() and axis_is_busy() to observe non-blocking motion. The
+ * supervisor drives all homing and fault state transitions.
  *
  * Typical call sequence:
  *   stepper_t  *motor = stepper_init(&pins);

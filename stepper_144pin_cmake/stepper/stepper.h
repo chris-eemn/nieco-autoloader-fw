@@ -22,7 +22,7 @@
  *
  *   // Per move:
  *   stepper_move_start(m1, steps, rpm, STEPPER_DIR_CW);
- *   stepper_wait_done(m1, STEPPER_TIMEOUT_FOREVER);
+ *   while (stepper_is_busy(m1) != 0U) { vTaskDelay(1); }
  */
 
 #ifndef STEPPER_H_
@@ -55,9 +55,6 @@
 /** Derived: total microsteps per revolution */
 #define STEPPER_USTEPS_PER_REV (STEPPER_FULL_STEPS_PER_REV * STEPPER_MICROSTEPS)
 
-/** Pass to stepper_wait_done() to block indefinitely */
-#define STEPPER_TIMEOUT_FOREVER UINT32_MAX
-
 #define STEPPER_DIR_CW 1U
 #define STEPPER_DIR_CCW 0U
 
@@ -69,7 +66,6 @@ typedef enum {
   STEPPER_OK = 0,
   STEPPER_FAULT = 1,
   STEPPER_BUSY = 2,
-  STEPPER_TIMEOUT = 3,
   STEPPER_FULL = 4,    /* Motor pool exhausted */
   STEPPER_INVALID = 5, /* NULL handle or config pointer */
 } stepper_status_enum;
@@ -193,7 +189,7 @@ stepper_sync_event_enum stepper_sync_take_event(stepper_t* motor, uint32_t* devi
 
 /**
  * @brief  Start a move and return immediately (non-blocking).
- *         Use stepper_is_busy() to poll, or stepper_wait_done() to block.
+ *         Use stepper_is_busy() to poll for completion.
  *
  * @param  motor      Handle returned by stepper_init(). Must not be NULL.
  * @param  steps      Number of microsteps to move.
@@ -205,20 +201,6 @@ stepper_sync_event_enum stepper_sync_take_event(stepper_t* motor, uint32_t* devi
  *         STEPPER_INVALID if motor is NULL.
  */
 stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_t rpm, uint8_t direction);
-
-/**
- * @brief  Block the calling task until the current move completes.
- *         Must be called from a FreeRTOS task context.
- *
- * @param  motor       Handle returned by stepper_init(). Must not be NULL.
- * @param  timeout_ms  Maximum wait time in milliseconds.
- *                     Pass STEPPER_TIMEOUT_FOREVER to wait indefinitely.
- * @return STEPPER_OK      on normal completion,
- *         STEPPER_FAULT   if the move was stopped by a latched fault,
- *         STEPPER_TIMEOUT if the wait expired,
- *         STEPPER_INVALID if motor is NULL.
- */
-stepper_status_enum stepper_wait_done(stepper_t *motor, uint32_t timeout_ms);
 
 /**
  * @brief  Check whether a move is currently in progress.

@@ -17,7 +17,6 @@
 #include "app_console.h"
 
 #include "FreeRTOS.h"
-#include "semphr.h"
 #include "task.h"
 
 /*******************************************************************************
@@ -45,7 +44,6 @@ struct stepper_s {
   volatile uint8_t running;        /* 1 = move in progress                     */
   volatile uint8_t step_pin_state; /* Current state of STEP pin                */
   volatile uint8_t fault_latched;  /* 1 if a fault has been detected and latched */
-  SemaphoreHandle_t done_sem;      /* Signalled by ISR when move done          */
   stepper_done_cb_t done_cb;       /* Optional ISR-context done callback       */
   stepper_fault_cb_t fault_cb;     /* Optional ISR-context fault callback      */
 
@@ -77,7 +75,7 @@ static uint8_t s_motor_count = 0U;
 static void stepper_isr_cb(hal_tim_handle_t* htim);
 static void stepper_fault_exti_cb(hal_exti_handle_t* hexti, hal_exti_trigger_t trigger);
 static uint8_t stepper_sync_update_from_isr(stepper_t* motor);
-static void stepper_stop_from_isr(stepper_t* motor, BaseType_t* higher_priority_task_woken);
+static void stepper_stop_from_isr(stepper_t* motor);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -126,9 +124,6 @@ stepper_t* stepper_init(const stepper_gpio_config_t* pins) {
   m->sync_event = STEPPER_SYNC_EVENT_NONE;
   m->sync_enabled = 0U;
   m->sync_lead_reported = 0U;
-
-  m->done_sem = xSemaphoreCreateBinary();
-  configASSERT(m->done_sem != NULL);
 
   stepper_disable(m);
   stepper_wake(m);
@@ -208,9 +203,6 @@ stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_
     return STEPPER_FAULT;
   }
 
-  /* Drain any stale completion signal from a previous move */
-  (void)xSemaphoreTake(motor->done_sem, 0);
-
   /* Set direction before enabling — CW = high, CCW = low on DRV8424 */
   HAL_GPIO_WritePin(motor->pins.dir.port, motor->pins.dir.pin, (direction == STEPPER_DIR_CW) ? HAL_GPIO_PIN_SET : HAL_GPIO_PIN_RESET);
 
@@ -236,24 +228,6 @@ stepper_status_enum stepper_move_start(stepper_t *motor, uint32_t steps, uint32_
   return STEPPER_OK;
 }
 
-stepper_status_enum stepper_wait_done(stepper_t* motor, uint32_t timeout_ms) {
-  if (motor == NULL) {
-    return STEPPER_INVALID;
-  }
-
-  if (motor->running == 0U) {
-    return (motor->fault_latched != 0U) ? STEPPER_FAULT : STEPPER_OK;
-  }
-
-  TickType_t ticks = (timeout_ms == STEPPER_TIMEOUT_FOREVER) ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms);
-
-  if (xSemaphoreTake(motor->done_sem, ticks) != pdTRUE) {
-    return STEPPER_TIMEOUT;
-  }
-
-  return (motor->fault_latched != 0U) ? STEPPER_FAULT : STEPPER_OK;
-}
-
 uint8_t stepper_is_busy(stepper_t *motor) {
   if (motor == NULL) {
     return 0U;
@@ -276,10 +250,6 @@ void stepper_stop(stepper_t *motor) {
   motor->running = 0U;
   HAL_GPIO_WritePin(motor->pins.step.port, motor->pins.step.pin, STEP_INACTIVE);
   stepper_disable(motor);
-
-  /* Unblock any task waiting in stepper_wait_done(). Binary semaphore —
-   * stepper_move_start() drains any stale token before starting the next move. */
-  (void)xSemaphoreGive(motor->done_sem);
 
   app_console_print("[STEPPER] Stopped at step %lu\r\n", motor->steps_done);
 }
@@ -353,12 +323,10 @@ void stepper_clear_fault(stepper_t *motor) {
  * Runs at STEPPER_TIMER_TICK_HZ. Iterates all registered motors and advances
  * each active move by one tick. Generates STEP pulses by toggling the STEP pin
  * at the rate defined per motor by tick_period. On completion: disables driver
- * outputs, fires the optional done callback, then signals the done semaphore.
+ * outputs and fires the optional done callback.
  */
 static void stepper_isr_cb(hal_tim_handle_t *htim) {
   (void)htim;
-
-  BaseType_t x_higher_priority_task_woken = pdFALSE;
 
   for (uint8_t i = 0U; i < s_motor_count; i++) {
     stepper_t *m = &s_motors[i];
@@ -387,7 +355,7 @@ static void stepper_isr_cb(hal_tim_handle_t *htim) {
       m->steps_done++;
 
       if (stepper_sync_update_from_isr(m) != 0U) {
-        stepper_stop_from_isr(m, &x_higher_priority_task_woken);
+        stepper_stop_from_isr(m);
       }
       else if (m->steps_done >= m->target_steps) {
         m->running = 0U;
@@ -396,13 +364,9 @@ static void stepper_isr_cb(hal_tim_handle_t *htim) {
         if (m->done_cb != NULL) {
           m->done_cb(m);
         }
-
-        xSemaphoreGiveFromISR(m->done_sem, &x_higher_priority_task_woken);
       }
     }
   }
-
-  portYIELD_FROM_ISR(x_higher_priority_task_woken);
 }
 
 /**
@@ -455,14 +419,11 @@ static uint8_t stepper_sync_update_from_isr(stepper_t* motor) {
 /**
  * @brief Stop and disable one motor from the shared step ISR.
  * @param motor Motor to stop.
- * @param higher_priority_task_woken FreeRTOS yield
- * flag updated by the semaphore give.
  */
-static void stepper_stop_from_isr(stepper_t* motor, BaseType_t* higher_priority_task_woken) {
+static void stepper_stop_from_isr(stepper_t* motor) {
   motor->running = 0U;
   HAL_GPIO_WritePin(motor->pins.step.port, motor->pins.step.pin, STEP_INACTIVE);
   HAL_GPIO_WritePin(motor->pins.en.port, motor->pins.en.pin, EN_INACTIVE);
-  (void)xSemaphoreGiveFromISR(motor->done_sem, higher_priority_task_woken);
 }
 
 /**
@@ -482,18 +443,13 @@ static void stepper_fault_exti_cb(hal_exti_handle_t* hexti, hal_exti_trigger_t t
 
   m->fault_latched = 1U;
 
-  BaseType_t x_higher_priority_task_woken = pdFALSE;
-
   if (m->running != 0U) {
     m->running = 0U;
     HAL_GPIO_WritePin(m->pins.step.port, m->pins.step.pin, STEP_INACTIVE);
     HAL_GPIO_WritePin(m->pins.en.port, m->pins.en.pin, EN_INACTIVE);
-    xSemaphoreGiveFromISR(m->done_sem, &x_higher_priority_task_woken);
   }
 
   if (m->fault_cb != NULL) {
     m->fault_cb(m);
   }
-
-  portYIELD_FROM_ISR(x_higher_priority_task_woken);
 }
