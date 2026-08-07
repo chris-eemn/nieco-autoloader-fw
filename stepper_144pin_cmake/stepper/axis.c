@@ -115,6 +115,7 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
   axis->fault_from_isr = 0U;
   axis->fault_reset_pending = 0U;
   axis->homing_substate = HOMING_IDLE;
+  axis->home_direction = STEPPER_DIR_CW;
   axis->active_op = AXIS_OP_NONE;
   axis->stop_pending = 0U;
   axis->event_cb = NULL;
@@ -259,8 +260,14 @@ uint8_t axis_is_busy(const axis_t* axis) {
   return stepper_is_busy(axis->motor);
 }
 
-stepper_status_enum axis_home(axis_t* axis) {
+stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
   if (axis == NULL) {
+    return STEPPER_INVALID;
+  }
+
+  /* The back-off move is derived by inverting this direction, so an out-of-range
+   * value is rejected here rather than silently taken as CCW by the driver. */
+  if ((direction != STEPPER_DIR_CW) && (direction != STEPPER_DIR_CCW)) {
     return STEPPER_INVALID;
   }
 
@@ -276,7 +283,7 @@ stepper_status_enum axis_home(axis_t* axis) {
     return STEPPER_FAULT;
   }
 
-  stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.home_max_steps, axis->config.home_rpm, axis->config.home_direction);
+  stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.home_max_steps, axis->config.home_rpm, direction);
 
   if (ret != STEPPER_OK) {
     return ret;
@@ -284,11 +291,11 @@ stepper_status_enum axis_home(axis_t* axis) {
 
   axis->stop_pending = 0U;
   axis->active_op = AXIS_OP_HOME;
+  axis->home_direction = direction;
   axis->homing_substate = HOMING_SEEK;
   axis->status = AXIS_STATUS_HOMING;
 
-  app_console_print("[AXIS] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", axis->config.home_direction, axis->config.home_rpm,
-                    axis->config.home_max_steps);
+  app_console_print("[AXIS] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", direction, axis->config.home_rpm, axis->config.home_max_steps);
 
   return STEPPER_OK;
 }
@@ -412,7 +419,7 @@ static void axis_emit_failure(axis_t* axis) {
  * @param axis Axis currently in HOMING_SEEK.
  */
 static void start_homing_backoff(axis_t* axis) {
-  uint8_t backoff_dir = (axis->config.home_direction == STEPPER_DIR_CW) ? STEPPER_DIR_CCW : STEPPER_DIR_CW;
+  uint8_t backoff_dir = (axis->home_direction == STEPPER_DIR_CW) ? STEPPER_DIR_CCW : STEPPER_DIR_CW;
   stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.backoff_steps, axis->config.home_rpm, backoff_dir);
 
   if (ret == STEPPER_OK) {

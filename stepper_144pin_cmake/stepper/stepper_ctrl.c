@@ -54,12 +54,12 @@ axis_t* stepper_ctrl_get_axis(uint8_t motor_num) {
   return s_axes[motor_num - 1U];
 }
 
-stepper_status_enum stepper_ctrl_home(uint8_t motor_num) {
+stepper_status_enum stepper_ctrl_home(uint8_t motor_num, uint8_t direction) {
   axis_t* axis = stepper_ctrl_get_axis(motor_num);
   stepper_status_enum status = STEPPER_INVALID;
 
   if (axis != NULL) {
-    status = axis_home(axis);
+    status = axis_home(axis, direction);
   }
 
   return status;

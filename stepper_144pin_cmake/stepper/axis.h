@@ -30,7 +30,6 @@
  *   encoder_t  *enc   = encoder_init(htim);
  *
  *   axis_config_t cfg = {
- *     .home_direction       = STEPPER_DIR_CW,
  *     .home_rpm             = 10,
  *     .home_max_steps       = 50000,
  *     .backoff_steps        = 800,
@@ -39,7 +38,7 @@
  *   axis_t *ax = axis_init(motor, enc, m1_fault_exti_gethandle(), &cfg);
  *   axis_register_event_cb(ax, on_axis_event, (void *)AXIS_ID_LIFT);
  *
- *   axis_home(ax);
+ *   axis_home(ax, STEPPER_DIR_CW);
  *   while (axis_get_status(ax) == AXIS_STATUS_HOMING) { vTaskDelay(10); }
  */
 
@@ -180,9 +179,6 @@ typedef struct {
   /** Back-off distance in microsteps after endstop is detected (no default — must be set). */
   uint32_t backoff_steps;
 
-  /** Direction to drive during homing seek. STEPPER_DIR_CW or STEPPER_DIR_CCW. */
-  uint8_t home_direction;
-
   /** Speed for both the homing seek and back-off moves, in RPM (must be > 0). */
   uint32_t home_rpm;
 
@@ -211,6 +207,8 @@ struct axis_s {
 
   /* Homing */
   homing_state_enum homing_substate;
+  uint8_t home_direction; /**< Seek direction of the active homing sequence, captured from axis_home().
+                           *!< The back-off move drives opposite to it.                                */
 
   uint32_t settle_delay_ms;    /**< Time to wait after hitting the endstop before starting the back-off move. */
   uint32_t settle_end_time_ms; /**< Absolute time when the settle delay ends. Written by the supervisor task. */
@@ -319,22 +317,26 @@ uint8_t axis_is_busy(const axis_t* axis);
 
 /**
  * @brief  Start a non-blocking homing sequence.
- *         Drives in config.home_direction until encoder lag reaches
+ *         Drives in the requested direction until encoder lag reaches
  *         config.max_sync_error_counts, then backs off by config.backoff_steps
- *         and zeros the encoder. Transitions axis status to AXIS_STATUS_HOMING.
+ *         in the opposite direction and zeros the encoder. Transitions axis
+ *         status to AXIS_STATUS_HOMING.
  *
  *         Use axis_get_status() to poll for AXIS_STATUS_OK (success) or
  *         AXIS_STATUS_FAULT (timeout / stepper fault). Alternatively, on
  *         STEPPER_OK exactly one AXIS_EVENT_HOME_* event is delivered to the
  *         registered callback when the sequence ends.
  *
- * @param  axis  Handle returned by axis_init(). Must not be NULL.
+ * @param  axis       Handle returned by axis_init(). Must not be NULL.
+ * @param  direction  Seek direction: STEPPER_DIR_CW or STEPPER_DIR_CCW.
+ *                    The back-off move drives the other way.
  * @return STEPPER_OK      if homing was started,
  *         STEPPER_BUSY    if homing or a move is already in progress,
  *         STEPPER_FAULT   if a fault is latched (clear it first),
- *         STEPPER_INVALID if axis is NULL.
+ *         STEPPER_INVALID if axis is NULL or direction is not a valid
+ *                         STEPPER_DIR_* value.
  */
-stepper_status_enum axis_home(axis_t* axis);
+stepper_status_enum axis_home(axis_t* axis, uint8_t direction);
 
 /**
  * @brief  Clear a latched AXIS_STATUS_STALLED or AXIS_STATUS_FAULT and return

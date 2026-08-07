@@ -213,7 +213,7 @@ static void stepper_cli_home(int32_t motor_num) {
     return;
   }
 
-  stepper_status_enum status = stepper_ctrl_home((uint8_t)motor_num);
+  stepper_status_enum status = stepper_ctrl_home((uint8_t)motor_num, STEPPER_DIR_CW);
   if (status == STEPPER_OK) {
     app_console_print("[STEPPER] Motor %ld: homing started.\r\n", motor_num);
   }
