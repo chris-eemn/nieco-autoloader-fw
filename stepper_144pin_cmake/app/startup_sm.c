@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 
+#include "app_console.h"
 #include "app_sm_port.h"
 
 /*******************************************************************************
@@ -52,6 +53,7 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
   switch (sm->startup) {
     case STARTUP_WAIT_DOOR:
       if (event->id == APP_EV_DOOR_CLOSED) {
+        app_console_print("[Startup SM] Door closed\r\n");
         sm->startup = STARTUP_LOCK_DOOR;
         app_sm_port_lock_door();
         app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK);
@@ -60,6 +62,7 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case STARTUP_LOCK_DOOR:
       if (event->id == APP_EV_LOCK_CONFIRMED) {
+        app_console_print("[Startup SM] Door locked\r\n");
         app_sm_port_cancel_timeout();
         sm->startup = STARTUP_HOME_PUSHERS;
         app_sm_port_home_pushers();
