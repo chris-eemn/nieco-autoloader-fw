@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #include "autoloader_sm.h"
+#include "cartridge.h"
 
 /*******************************************************************************
  * Module Macros
@@ -37,8 +38,6 @@ typedef enum {
   APP_SM_TIMEOUT_DOOR,
 } app_sm_timeout_id_enum;
 
-typedef enum { PUSHER = 0U, LIFTER = 1U } actuator_type_t;
-typedef enum { CARTRIDGE_1 = 0U, CARTRIDGE_2 = 1U, CARTRIDGE_3 = 2U, CARTRIDGE_4 = 3U } cartridge_id_t;
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
@@ -62,8 +61,9 @@ void app_sm_port_home_pusher(cartridge_id_t slot);
 /**
  * @brief Command one lift axis to home.
  * @param slot Zero-based cartridge slot.
+ * @param direction Homing direction for the lift axis.
  */
-void app_sm_port_home_lift(cartridge_id_t slot);
+void app_sm_port_home_lift(cartridge_id_t slot, cartridge_direction_t direction);
 
 /** @brief Begin cartridge stack measurement. */
 void app_sm_port_count_cartridges(void);
@@ -72,31 +72,31 @@ void app_sm_port_count_cartridges(void);
  * @brief Extend the pusher for one cartridge.
  * @param slot Zero-based cartridge slot.
  */
-void app_sm_port_push_extend(uint8_t slot);
+void app_sm_port_push_extend(cartridge_id_t slot);
 
 /**
  * @brief Retract the pusher for one cartridge.
  * @param slot Zero-based cartridge slot.
  */
-void app_sm_port_push_retract(uint8_t slot);
+void app_sm_port_push_retract(cartridge_id_t slot);
 
 /**
  * @brief Move one lift upward until stall is detected.
  * @param slot Zero-based cartridge slot.
  */
-void app_sm_port_lift_seek(uint8_t slot);
+void app_sm_port_lift_seek(cartridge_id_t slot);
 
 /**
  * @brief Back one lift away from the top plate.
  * @param slot Zero-based cartridge slot.
  */
-void app_sm_port_lift_backoff(uint8_t slot);
+void app_sm_port_lift_backoff(cartridge_id_t slot);
 
 /**
  * @brief Commit successful dispense accounting.
  * @param slot Zero-based cartridge slot.
  */
-void app_sm_port_commit_dispense(uint8_t slot);
+void app_sm_port_commit_dispense(cartridge_id_t slot);
 
 /** @brief Halt every axis immediately. */
 void app_sm_port_halt_all_motion(void);

@@ -16,6 +16,7 @@
 #include "app_sm_port.h"
 #include "app_console.h"
 #include "app_task.h"
+#include "cartridge.h"
 #include "FreeRTOS.h"
 #include "stepper.h"
 #include "stepper_ctrl.h"
@@ -47,7 +48,6 @@ static timeout_slot_t timeout_slots[MAX_PENDING_TIMER_EVENTS];
  *******************************************************************************/
 static void timer_cb(TimerHandle_t timer);
 static bool cancel_slot(timeout_slot_t* slot, bool match_id, app_sm_timeout_id_enum timeout);
-static uint8_t get_axis_num_from_slot(cartridge_id_t slot, actuator_type_t type);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -61,38 +61,46 @@ void app_sm_port_unlock_door(void) {
 }
 
 void app_sm_port_home_pusher(cartridge_id_t slot) {
-  axis_home(stepper_ctrl_get_axis(get_axis_num_from_slot(slot, PUSHER)), STEPPER_DIR_CW);
+  axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)), STEPPER_DIR_CW);
 }
 
-void app_sm_port_home_lift(cartridge_id_t slot) {
-  axis_home(stepper_ctrl_get_axis(get_axis_num_from_slot(slot, LIFTER)), STEPPER_DIR_CCW);
+void app_sm_port_home_lift(cartridge_id_t slot, cartridge_direction_t direction) {
+  if (direction == DIR_LIFTER_DOWN) {
+    axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)), STEPPER_DIR_CW);
+  }
+  else if (direction == DIR_LIFTER_UP) {
+    axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)), STEPPER_DIR_CCW);
+  }
+  else {
+    app_console_print("[app_sm_port] Invalid direction for lift homing\r\n");
+  }
 }
 
 void app_sm_port_count_cartridges(void) {
   /* TODO: Characterize the fitted cartridges and post APP_EV_COUNT_DONE on completion. */
 }
 
-void app_sm_port_push_extend(uint8_t slot) {
+void app_sm_port_push_extend(cartridge_id_t slot) {
   (void)slot;
   /* TODO: Map the slot to its pusher axis. */
 }
 
-void app_sm_port_push_retract(uint8_t slot) {
+void app_sm_port_push_retract(cartridge_id_t slot) {
   (void)slot;
   /* TODO: Map the slot to its pusher axis. */
 }
 
-void app_sm_port_lift_seek(uint8_t slot) {
+void app_sm_port_lift_seek(cartridge_id_t slot) {
   (void)slot;
   /* TODO: Map the slot to its lift axis and post APP_EV_STALL_DETECTED on expected stall. */
 }
 
-void app_sm_port_lift_backoff(uint8_t slot) {
+void app_sm_port_lift_backoff(cartridge_id_t slot) {
   (void)slot;
   /* TODO: Map the slot to its lift axis. */
 }
 
-void app_sm_port_commit_dispense(uint8_t slot) {
+void app_sm_port_commit_dispense(cartridge_id_t slot) {
   (void)slot;
   /* TODO: Update remaining and pending counts after confirmed mechanical completion. */
 }
@@ -234,25 +242,4 @@ static bool cancel_slot(timeout_slot_t* slot, bool match_id, app_sm_timeout_id_e
   }
 
   return cancel;
-}
-
-static uint8_t get_axis_num_from_slot(cartridge_id_t slot, actuator_type_t type) {
-  uint8_t axis_num = 0U;
-  /*
-    CARTRIDGE SLOT 0 -> PUSHER AXIS 1, LIFTER AXIS 2
-    CARTRIDGE SLOT 1 -> PUSHER AXIS 3, LIFTER AXIS 4
-    CARTRIDGE SLOT 2 -> PUSHER AXIS 5, LIFTER AXIS 6
-    CARTRIDGE SLOT 3 -> PUSHER AXIS 7, LIFTER AXIS 8
-  */
-
-  if (slot < APP_SLOT_COUNT) {
-    if (type == PUSHER) {
-      axis_num = (uint8_t)((slot * 2U) + 1U);
-    }
-    else if (type == LIFTER) {
-      axis_num = (uint8_t)((slot * 2U) + 2U);
-    }
-  }
-
-  return axis_num;
 }

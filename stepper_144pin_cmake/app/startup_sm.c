@@ -92,8 +92,8 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
           sm->startup.state = STARTUP_HOME_LIFTS_DOWN;
           app_sm_port_cancel_timeout();
           for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
-            app_sm_port_home_lift(i);
-            app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
+            app_sm_port_home_lift(i, DIR_LIFTER_DOWN);
+            app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
           }
         }
       }
@@ -105,11 +105,26 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case STARTUP_HOME_LIFTS_DOWN:
       if (event->id == APP_EV_MOTION_DONE) {
-        app_console_print("[Startup SM] Lifts homed down\r\n");
-        app_sm_port_cancel_timeout();
-        sm->startup.state = STARTUP_COUNT_CARTRIDGES;
-        app_sm_port_count_cartridges();
-        app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
+        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num, LIFTER);
+        sm->cartridge[cartridge].lifter_homed_down = true;
+
+        bool all_lifts_homed_down = true;
+        for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+          if (sm->cartridge[i].lifter_homed_down == false) {
+            all_lifts_homed_down = false;
+            break;
+          }
+        }
+
+        if (all_lifts_homed_down) {
+          app_console_print("[Startup SM] Lifts homed down\r\n");
+          sm->startup.state = STARTUP_HOME_LIFTS_UP;
+          app_sm_port_cancel_timeout();
+          for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+            app_sm_port_home_lift(i, DIR_LIFTER_UP);
+            app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
+          }
+        }
       }
       else if (event->id == APP_EV_TIMEOUT) {
         sm->startup.state = STARTUP_FAILED;
@@ -118,11 +133,23 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case STARTUP_HOME_LIFTS_UP:
       if (event->id == APP_EV_MOTION_DONE) {
-        app_console_print("[Startup SM] Lifts homed up\r\n");
-        app_sm_port_cancel_timeout();
-        sm->startup.state = STARTUP_COUNT_CARTRIDGES;
-        app_sm_port_count_cartridges();
-        app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
+        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num, LIFTER);
+        sm->cartridge[cartridge].lifter_homed_up = true;
+
+        bool all_lifts_homed_up = true;
+        for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+          if (sm->cartridge[i].lifter_homed_up == false) {
+            all_lifts_homed_up = false;
+            break;
+          }
+        }
+
+        if (all_lifts_homed_up) {
+          app_console_print("[Startup SM] Lifts homed up\r\n");
+          sm->startup.state = STARTUP_COUNT_CARTRIDGES;
+          app_sm_port_cancel_timeout();
+          app_sm_port_count_cartridges();
+        }
       }
       else if (event->id == APP_EV_TIMEOUT) {
         sm->startup.state = STARTUP_FAILED;
