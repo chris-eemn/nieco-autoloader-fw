@@ -67,7 +67,7 @@ void reload_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         app_sm_port_cancel_timeout();
         sm->reload = RELOAD_HOME_LIFTS;
         for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
-          app_sm_port_home_lift(slot);
+          app_sm_port_home_lift(slot, DIR_LIFTER_UP);
         }
         app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
       }
