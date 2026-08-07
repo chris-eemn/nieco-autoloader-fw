@@ -208,6 +208,28 @@ extern "C" {
 #define M1_NSLP_ACTIVE_STATE                            HAL_GPIO_PIN_SET
 #define M1_NSLP_INACTIVE_STATE                          HAL_GPIO_PIN_RESET
 
+/* Primary aliases for GPIO PB14 pin */
+#define PB14_PORT                                       HAL_GPIOB
+#define PB14_PIN                                        HAL_GPIO_PIN_14
+
+/* Secondary aliases for GPIO PB14 pin */
+#define CARTRIDGE_SENSOR_2_PORT                         HAL_GPIOB
+#define CARTRIDGE_SENSOR_2_PIN                          HAL_GPIO_PIN_14
+
+#define CART1_SIZE_B_PORT                               HAL_GPIOB
+#define CART1_SIZE_B_PIN                                HAL_GPIO_PIN_14
+
+/* Primary aliases for GPIO PB15 pin */
+#define PB15_PORT                                       HAL_GPIOB
+#define PB15_PIN                                        HAL_GPIO_PIN_15
+
+/* Secondary aliases for GPIO PB15 pin */
+#define CARTRIDGE_SENSOR_1_PORT                         HAL_GPIOB
+#define CARTRIDGE_SENSOR_1_PIN                          HAL_GPIO_PIN_15
+
+#define CART1_SIZE_A_PORT                               HAL_GPIOB
+#define CART1_SIZE_A_PIN                                HAL_GPIO_PIN_15
+
 /* Primary aliases for GPIO PC7 pin */
 #define PC7_PORT                                        HAL_GPIOC
 #define PC7_PIN                                         HAL_GPIO_PIN_7
@@ -328,6 +350,37 @@ extern "C" {
 #define M3_DIR_ACTIVE_STATE                             HAL_GPIO_PIN_SET
 #define M3_DIR_INACTIVE_STATE                           HAL_GPIO_PIN_RESET
 
+/* Primary aliases for GPIO PD3 pin */
+#define PD3_PORT                                        HAL_GPIOD
+#define PD3_PIN                                         HAL_GPIO_PIN_3
+#define PD3_INIT_STATE                                  HAL_GPIO_PIN_RESET
+#define PD3_ACTIVE_STATE                                HAL_GPIO_PIN_SET
+#define PD3_INACTIVE_STATE                              HAL_GPIO_PIN_RESET
+
+/* Secondary aliases for GPIO PD3 pin */
+#define CART1_EMPTY_LED_PORT                            HAL_GPIOD
+#define CART1_EMPTY_LED_PIN                             HAL_GPIO_PIN_3
+#define CART1_EMPTY_LED_INIT_STATE                      HAL_GPIO_PIN_RESET
+#define CART1_EMPTY_LED_ACTIVE_STATE                    HAL_GPIO_PIN_SET
+#define CART1_EMPTY_LED_INACTIVE_STATE                  HAL_GPIO_PIN_RESET
+
+#define CART1_EMPTY_LED_PORT                            HAL_GPIOD
+#define CART1_EMPTY_LED_PIN                             HAL_GPIO_PIN_3
+#define CART1_EMPTY_LED_INIT_STATE                      HAL_GPIO_PIN_RESET
+#define CART1_EMPTY_LED_ACTIVE_STATE                    HAL_GPIO_PIN_SET
+#define CART1_EMPTY_LED_INACTIVE_STATE                  HAL_GPIO_PIN_RESET
+
+/* Primary aliases for GPIO PD4 pin */
+#define PD4_PORT                                        HAL_GPIOD
+#define PD4_PIN                                         HAL_GPIO_PIN_4
+
+/* Secondary aliases for GPIO PD4 pin */
+#define SHUTDOWN_SW_PORT                                HAL_GPIOD
+#define SHUTDOWN_SW_PIN                                 HAL_GPIO_PIN_4
+
+#define SHUTDOWN_SW_PORT                                HAL_GPIOD
+#define SHUTDOWN_SW_PIN                                 HAL_GPIO_PIN_4
+
 /* Primary aliases for GPIO PD5 pin */
 #define PD5_PORT                                        HAL_GPIOD
 #define PD5_PIN                                         HAL_GPIO_PIN_5
@@ -362,6 +415,39 @@ extern "C" {
 /* EXTI aliases */
 #define M1_FAULT_EXTI_EXTI_LINE                         HAL_EXTI_LINE_6
 #define M1_FAULT_EXTI_EXTI_TRIGGER                      HAL_EXTI_TRIGGER_FALLING
+
+/* Primary aliases for GPIO PE14 pin */
+#define PE14_PORT                                       HAL_GPIOE
+#define PE14_PIN                                        HAL_GPIO_PIN_14
+
+/* Secondary aliases for GPIO PE14 pin */
+#define RELOAD_SW_PORT                                  HAL_GPIOE
+#define RELOAD_SW_PIN                                   HAL_GPIO_PIN_14
+
+#define RELOAD_SW_PORT                                  HAL_GPIOE
+#define RELOAD_SW_PIN                                   HAL_GPIO_PIN_14
+
+/* Primary aliases for GPIO PF12 pin */
+#define PF12_PORT                                       HAL_GPIOF
+#define PF12_PIN                                        HAL_GPIO_PIN_12
+
+/* Secondary aliases for GPIO PF12 pin */
+#define DOOR_LOCK_DETECT_SW_PORT                        HAL_GPIOF
+#define DOOR_LOCK_DETECT_SW_PIN                         HAL_GPIO_PIN_12
+
+#define DOOR_LOCK_DETECT_SW_PORT                        HAL_GPIOF
+#define DOOR_LOCK_DETECT_SW_PIN                         HAL_GPIO_PIN_12
+
+/* Primary aliases for GPIO PF13 pin */
+#define PF13_PORT                                       HAL_GPIOF
+#define PF13_PIN                                        HAL_GPIO_PIN_13
+
+/* Secondary aliases for GPIO PF13 pin */
+#define DOOR_SW_PORT                                    HAL_GPIOF
+#define DOOR_SW_PIN                                     HAL_GPIO_PIN_13
+
+#define DOOR_SW_PORT                                    HAL_GPIOF
+#define DOOR_SW_PIN                                     HAL_GPIO_PIN_13
 
 /* Primary aliases for GPIO PF14 pin */
 #define PF14_PORT                                       HAL_GPIOF

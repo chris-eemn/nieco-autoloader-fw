@@ -1,7 +1,7 @@
 {
   "disclaimer": "Do not modify this file as it is used by STM32CubeMX2 to determine what and how to update your project with new configuration",
   "version": "1.0.0",
-  "timestamp": "2026-07-28T20:58:23.169Z",
+  "timestamp": "2026-08-07T15:11:58.602Z",
   "files": [
     {
       "fileGroup": "project_file",
@@ -231,7 +231,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "b23b39209c013e8de7945826e1b0272a7b3cb55097e6ec8653b7f23998e19af1"
+        "digest": "d16fe09822bfb0f73e08c21bffbb89099d89659bc3f38adce1ceae8c886252d4"
       },
       "file": "generated/hal/mx_gpio_default.c"
     },
@@ -239,7 +239,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "0e9b3cf38357042e0f6bb7bbe138f58f41cd7bc88e7e8883e8d05735d3902e55"
+        "digest": "6e2e79136f359a4f8020bfd0665891643347f0caa07700320ad7b34484ae1343"
       },
       "file": "generated/hal/mx_gpio_default.h"
     },

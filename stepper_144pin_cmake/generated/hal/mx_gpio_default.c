@@ -43,6 +43,8 @@ system_status_t mx_gpio_default_init(void)
 
   HAL_RCC_GPIOD_EnableClock();
 
+  HAL_RCC_GPIOE_EnableClock();
+
   HAL_RCC_GPIOF_EnableClock();
 
   HAL_RCC_GPIOH_EnableClock();
@@ -125,6 +127,19 @@ system_status_t mx_gpio_default_init(void)
 
   /*
     GPIO pin labels :
+    PB14  ---------> PB14, CARTRIDGE_SENSOR_2, CART1_SIZE_B
+    PB15  ---------> PB15, CARTRIDGE_SENSOR_1, CART1_SIZE_A
+    */
+  /* Configure PB14, PB15 GPIO pins in input mode */
+  gpio_config.mode            = HAL_GPIO_MODE_INPUT;
+  gpio_config.pull            = HAL_GPIO_PULL_UP;
+  if (HAL_GPIO_Init(HAL_GPIOB, PB14_PIN | PB15_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /*
+    GPIO pin labels :
     PC7   ---------> PC7, M2_EN, M2_EN
     PC8   ---------> PC8, M2_DIR, M2_DIR
     PC9   ---------> PC9, M2_STEP, M2_STEP
@@ -145,27 +160,29 @@ system_status_t mx_gpio_default_init(void)
   /*
     GPIO pin labels :
     PD0   ---------> PD0, M3_DIR, M3_DIR
+    PD3   ---------> PD3, CART1_EMPTY_LED, CART1_EMPTY_LED
     PD5   ---------> PD5, M1_STEP, M1_STEP
     */
-  /* Configure PD0, PD5 GPIO pins in output mode */
+  /* Configure PD0, PD3, PD5 GPIO pins in output mode */
   gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
   gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.pull            = HAL_GPIO_PULL_NO;
   gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.init_state      = HAL_GPIO_PIN_RESET;
-  if (HAL_GPIO_Init(HAL_GPIOD, PD0_PIN | PD5_PIN, &gpio_config) != HAL_OK)
+  if (HAL_GPIO_Init(HAL_GPIOD, PD0_PIN | PD3_PIN | PD5_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
   /*
     GPIO pin labels :
+    PD4   ---------> PD4, SHUTDOWN_SW, SHUTDOWN_SW
     PD6   ---------> PD6, M1_NFAULT, M1_NFAULT
     */
-  /* Configure PD6 GPIO pin in input mode */
+  /* Configure PD4, PD6 GPIO pins in input mode */
   gpio_config.mode            = HAL_GPIO_MODE_INPUT;
   gpio_config.pull            = HAL_GPIO_PULL_UP;
-  if (HAL_GPIO_Init(PD6_PORT, PD6_PIN, &gpio_config) != HAL_OK)
+  if (HAL_GPIO_Init(HAL_GPIOD, PD4_PIN | PD6_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -187,12 +204,26 @@ system_status_t mx_gpio_default_init(void)
 
   /*
     GPIO pin labels :
-    PF14  ---------> PF14, M2_NFAULT, M2_NFAULT
+    PE14  ---------> PE14, RELOAD_SW, RELOAD_SW
     */
-  /* Configure PF14 GPIO pin in input mode */
+  /* Configure PE14 GPIO pin in input mode */
   gpio_config.mode            = HAL_GPIO_MODE_INPUT;
   gpio_config.pull            = HAL_GPIO_PULL_UP;
-  if (HAL_GPIO_Init(PF14_PORT, PF14_PIN, &gpio_config) != HAL_OK)
+  if (HAL_GPIO_Init(PE14_PORT, PE14_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /*
+    GPIO pin labels :
+    PF12  ---------> PF12, DOOR_LOCK_DETECT_SW, DOOR_LOCK_DETECT_SW
+    PF13  ---------> PF13, DOOR_SW, DOOR_SW
+    PF14  ---------> PF14, M2_NFAULT, M2_NFAULT
+    */
+  /* Configure PF12, PF13, PF14 GPIO pins in input mode */
+  gpio_config.mode            = HAL_GPIO_MODE_INPUT;
+  gpio_config.pull            = HAL_GPIO_PULL_UP;
+  if (HAL_GPIO_Init(HAL_GPIOF, PF12_PIN | PF13_PIN | PF14_PIN, &gpio_config) != HAL_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -296,16 +327,19 @@ system_status_t mx_gpio_default_deinit(void)
   HAL_GPIO_DeInit(HAL_GPIOA, PA0_PIN | PA4_PIN | PA10_PIN);
 
   /* De-initialize pins of GPIOB port */
-  HAL_GPIO_DeInit(HAL_GPIOB, PB0_PIN | PB1_PIN | PB5_PIN | PB8_PIN | PB9_PIN | PB12_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOB, PB0_PIN | PB1_PIN | PB5_PIN | PB8_PIN | PB9_PIN | PB12_PIN | PB14_PIN | PB15_PIN);
 
   /* De-initialize pins of GPIOC port */
   HAL_GPIO_DeInit(HAL_GPIOC, PC7_PIN | PC8_PIN | PC9_PIN | PC10_PIN | PC11_PIN);
 
   /* De-initialize pins of GPIOD port */
-  HAL_GPIO_DeInit(HAL_GPIOD, PD0_PIN | PD5_PIN | PD6_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOD, PD0_PIN | PD3_PIN | PD4_PIN | PD5_PIN | PD6_PIN);
+
+  /* De-initialize pins of GPIOE port */
+  HAL_GPIO_DeInit(PE14_PORT, PE14_PIN);
 
   /* De-initialize pins of GPIOF port */
-  HAL_GPIO_DeInit(HAL_GPIOF, PF14_PIN | PF15_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOF, PF12_PIN | PF13_PIN | PF14_PIN | PF15_PIN);
 
   /* De-initialize pins of GPIOH port */
   HAL_GPIO_DeInit(HAL_GPIOH, PH4_PIN | PH5_PIN);
