@@ -34,6 +34,7 @@
 typedef enum {
   HOMING_IDLE   = 0, /* Not homing                                          */
   HOMING_SEEK,       /* Driving toward endstop, waiting for ISR lag event   */
+  HOMING_SETTLE,       /* Settling after endstop hit, before backoff           */
   HOMING_BACKOFF,    /* Backing off from endstop                            */
 } homing_state_enum;
 
@@ -48,6 +49,9 @@ struct axis_s {
 
   /* Homing */
   homing_state_enum homing_substate;
+
+  uint32_t settle_delay_ms; /**< Time to wait after hitting the endstop before starting the back-off move. */
+  uint32_t settle_end_time_ms; /**< Absolute time when the settle delay ends. Written by the supervisor task. */
 };
 
 /*******************************************************************************
@@ -70,6 +74,7 @@ static uint32_t     s_supervisor_period_ms = 0U;
 
 static void axis_fault_isr_cb(stepper_t* motor);
 static void start_homing_backoff(axis_t* axis);
+static void start_homing_settle(axis_t* axis);
 static uint8_t handle_sync_event(axis_t* axis);
 static void handle_homing_tick(axis_t* axis);
 static void supervisor_tick(axis_t* axis);
@@ -340,6 +345,16 @@ static void start_homing_backoff(axis_t* axis) {
 }
 
 /**
+ * @brief Start the settle period after the homing back-off move.
+ * @param axis Axis currently in HOMING_SETTLE.
+ */
+static void start_homing_settle(axis_t* axis) {
+  axis->settle_end_time_ms = xTaskGetTickCount() + pdMS_TO_TICKS(axis->config.settle_delay_ms);
+  axis->homing_substate = HOMING_SETTLE;
+  app_console_print("[AXIS] Settling after endstop hit for %lu ms.\r\n", axis->config.settle_delay_ms);
+}
+
+/**
  * @brief Consume and interpret one following-error event raised by the step ISR.
  * @param axis Axis whose motor generated the event.
  * @return 1 when a lag event changed axis state and completed this supervisor tick; otherwise 0.
@@ -357,7 +372,7 @@ static uint8_t handle_sync_event(axis_t* axis) {
 
     if ((axis->status == AXIS_STATUS_HOMING) && (axis->homing_substate == HOMING_SEEK)) {
       app_console_print("[AXIS] Endstop found: encoder lagged by %lu counts.\r\n", deviation_counts);
-      start_homing_backoff(axis);
+      start_homing_settle(axis);
     }
     else if ((axis->status == AXIS_STATUS_HOMING) && (axis->homing_substate == HOMING_BACKOFF)) {
       axis->status = AXIS_STATUS_FAULT;
@@ -395,6 +410,19 @@ static void handle_homing_tick(axis_t* axis) {
       }
       break;
     }
+    
+    case HOMING_SETTLE: {
+      /* Wait for the seek deceleration to finish before timing the settle. */
+      if (stepper_is_busy(axis->motor) != 0U) {
+        break;
+      }
+      if ((int32_t)(xTaskGetTickCount() - axis->settle_end_time_ms) >= 0) {
+        axis->settle_end_time_ms = 0U;
+        start_homing_backoff(axis);
+        axis->homing_substate = HOMING_BACKOFF;
+      }
+      break;
+  }
 
     case HOMING_BACKOFF: {
       if (stepper_is_busy(axis->motor) == 0U) {

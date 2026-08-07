@@ -1,19 +1,19 @@
 /**
-  ******************************************************************************
-  * file           : main.c
-  * brief          : Main program body
-  *                  main() initializes the system and creates the app tasks.
-  ******************************************************************************
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * file           : main.c
+ * brief          : Main program body
+ *                  main() initializes the system and creates the app tasks.
+ ******************************************************************************
+ *
+ * Copyright (c) 2026 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -32,7 +32,8 @@
 int main(void) {
   if (mx_system_init() != SYSTEM_OK) {
     app_console_print("[ERROR] System init failed.\r\n");
-    while (1);
+    while (1)
+      ;
   }
 
   /* CubeMX has no NVIC-priority control for USB_DRD_FS -- mx_usb_drd_fs_host_init() (called from
@@ -57,11 +58,13 @@ int main(void) {
   usb_loader_start();
 
   if (app_task_start() == false) {
-    while (1);
+    while (1)
+      ;
   }
 
   if (app_bringup_task_start() == false) {
-    while (1);
+    while (1)
+      ;
   }
 
   vTaskStartScheduler();
@@ -71,5 +74,6 @@ int main(void) {
 
 void HardFault_Handler(void) {
   app_console_print("[ERROR] HardFault occurred.\r\n");
-  while (1);
+  while (1)
+    ;
 }

@@ -80,6 +80,19 @@ void stepper_ctrl_set_axis(uint8_t motor_num, axis_t *axis);
 axis_t *stepper_ctrl_get_axis(uint8_t motor_num);
 
 /**
+ * @brief Start a non-blocking homing operation on a registered motor axis.
+ *
+ *        The axis uses its configured home direction, speed, maximum travel,
+ *        and back-off distance. Use axis_get_status() to observe completion.
+ *
+ * @param motor_num 1-based motor number (1..STEPPER_CTRL_MAX_MOTORS).
+ * @return STEPPER_OK if homing started, STEPPER_BUSY if the axis is already
+ *         moving, STEPPER_FAULT if a fault is latched, or STEPPER_INVALID if
+ *         motor_num is out of range or no axis is registered in that slot.
+ */
+stepper_status_enum stepper_ctrl_home(uint8_t motor_num);
+
+/**
  * @brief Set the target RPM used for the next move.
  * @param rpm Revolutions per minute (must be > 0).
  */

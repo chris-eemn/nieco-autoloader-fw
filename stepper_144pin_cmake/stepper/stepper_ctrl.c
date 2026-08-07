@@ -54,6 +54,17 @@ axis_t *stepper_ctrl_get_axis(uint8_t motor_num) {
   return s_axes[motor_num - 1U];
 }
 
+stepper_status_enum stepper_ctrl_home(uint8_t motor_num) {
+  axis_t *axis = stepper_ctrl_get_axis(motor_num);
+  stepper_status_enum status = STEPPER_INVALID;
+
+  if (axis != NULL) {
+    status = axis_home(axis);
+  }
+
+  return status;
+}
+
 void stepper_ctrl_set_rpm(uint32_t rpm) {
   s_rpm = rpm;
 }

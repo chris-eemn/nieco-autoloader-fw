@@ -7,6 +7,7 @@
  *   test set auto  0          -- stop immediately (also aborts manual moves on all motors)
  *   test set cw    <motor>    -- run one CW move on <motor> (1..STEPPER_CTRL_MAX_MOTORS), then idle
  *   test set ccw   <motor>    -- run one CCW move on <motor> (1..STEPPER_CTRL_MAX_MOTORS), then idle
+ *   test set home  <motor>    -- home <motor> (1..STEPPER_CTRL_MAX_MOTORS)
  *   test set rpm   <value>    -- set move speed in RPM (shared by all motors)
  *   test set step  <value>    -- set microstep count per leg (shared by all motors)
  *   test set clear <ignored>  -- full fault reset for all motors (axis latch + DRV8424 sleep/wake)
@@ -14,15 +15,15 @@
  *   test get <param>          -- print the current value
  *   test list                 -- list all parameters
  *
- * cw/ccw on different motor numbers may be issued back-to-back — each
+ * cw/ccw on different motor numbers may be issued back-to-back - each
  * addresses an independent axis/stepper instance, and the shared step-timer ISR
  * (see stepper.c) advances every running motor on every tick, so e.g.
  * "test set cw 1" followed immediately by "test set cw 2" runs both motors
  * concurrently rather than queuing one behind the other. "test set clear"
  * resets faults on every motor at once, regardless of the value argument.
  *
- * @version 0.3
- * @date 2026-07-02
+ * @version 0.4
+ * @date 2026-08-07
  *
  * @copyright Copyright (c) 2026 Embedded Design Solutions, LLC.  All Rights Reserved.
  */
@@ -45,6 +46,7 @@ static const char *s_param_names[STEPPER_CLI_NUM_PARAMS] = {
   [STEPPER_CLI_AUTO]  = "auto",
   [STEPPER_CLI_CW]    = "cw",
   [STEPPER_CLI_CCW]   = "ccw",
+  [STEPPER_CLI_HOME]  = "home",
   [STEPPER_CLI_RPM]   = "rpm",
   [STEPPER_CLI_STEP]  = "step",
   [STEPPER_CLI_CLEAR] = "clear",
@@ -57,6 +59,7 @@ static const char *s_param_names[STEPPER_CLI_NUM_PARAMS] = {
 
 static stepper_cli_param_enum lookup_param(const char *name);
 static axis_t *stepper_cli_lookup_axis(int32_t motor_num);
+static void stepper_cli_home(int32_t motor_num);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -113,6 +116,10 @@ void stepper_cli_set_handler(char *param, int32_t val) {
       break;
     }
 
+    case STEPPER_CLI_HOME:
+      stepper_cli_home(val);
+      break;
+
     case STEPPER_CLI_RPM:
       if (val <= 0) {
         app_console_print("[STEPPER] RPM must be > 0.\r\n");
@@ -141,7 +148,7 @@ void stepper_cli_set_handler(char *param, int32_t val) {
         }
       }
       app_console_print(
-          "[STEPPER] All motors: fault reset requested — supervisor will complete in ~2 ticks.\r\n");
+          "[STEPPER] All motors: fault reset requested - supervisor will complete in ~2 ticks.\r\n");
       break;
     }
 
@@ -199,6 +206,8 @@ void stepper_cli_list_handler(void) {
                     STEPPER_CTRL_MAX_MOTORS);
   app_console_print("  ccw   <motor>  run one CCW move on <motor> (1-%u) then idle\r\n",
                     STEPPER_CTRL_MAX_MOTORS);
+  app_console_print("  home  <motor>  home <motor> (1-%u)\r\n",
+                    STEPPER_CTRL_MAX_MOTORS);
   app_console_print("  rpm   <value>  move speed in RPM, shared by all motors (default %u)\r\n",
                     STEPPER_CTRL_DEFAULT_RPM);
   app_console_print("  step  <value>  microsteps per leg, shared by all motors (default %u)\r\n",
@@ -210,6 +219,26 @@ void stepper_cli_list_handler(void) {
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
+
+/**
+ * @brief Validate a motor number and start its non-blocking homing sequence.
+ * @param motor_num 1-based motor number, as parsed from the CLI value argument.
+ */
+static void stepper_cli_home(int32_t motor_num) {
+  axis_t *ax = stepper_cli_lookup_axis(motor_num);
+  if (ax == NULL) {
+    return;
+  }
+
+  stepper_status_enum status = stepper_ctrl_home((uint8_t)motor_num);
+  if (status == STEPPER_OK) {
+    app_console_print("[STEPPER] Motor %ld: homing started.\r\n", motor_num);
+  }
+  else {
+    app_console_print("[STEPPER] Motor %ld: homing start failed: %d (axis=%d)\r\n",
+                      motor_num, (int)status, (int)axis_get_status(ax));
+  }
+}
 
 /**
  * @brief Resolve a CLI-supplied motor number to its bound axis handle,
