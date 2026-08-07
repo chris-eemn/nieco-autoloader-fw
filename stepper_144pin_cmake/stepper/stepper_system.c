@@ -31,7 +31,7 @@
  * Module Macros
  *******************************************************************************/
 
-#define STEPPER_SYSTEM_MOTOR_COUNT (4U)
+#define STEPPER_SYSTEM_MOTOR_COUNT (2U)
 
 #define IO_EXPANDER_M0 (0x01U)
 #define IO_EXPANDER_M1 (0x02U)
@@ -194,6 +194,13 @@ void stepper_system_update_configs(void) {
   }
 }
 
+void stepper_system_register_axis_event_cb(axis_event_cb_t cb, void* ctx) {
+  for (size_t i = 0U; i < STEPPER_SYSTEM_MOTOR_COUNT; i++) {
+    if (s_axes[i] != NULL) {
+      axis_register_event_cb(s_axes[i], cb, ctx);
+    }
+  }
+}
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/

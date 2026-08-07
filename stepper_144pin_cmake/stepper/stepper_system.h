@@ -15,6 +15,7 @@
  * Includes
  *******************************************************************************/
 
+#include "axis.h"
 #include <stdbool.h>
 
 /*******************************************************************************
@@ -54,5 +55,18 @@ bool stepper_system_init(void);
  *        (stepper_system_init()).
  */
 void stepper_system_update_configs(void);
+
+/**
+ * @brief Register a callback invoked when any axis reaches a terminal state.
+ *
+ *        Replaces any previous registration; only one callback per axis.
+ *        Safe to call while an operation is in progress — the new callback
+ *        receives that operation's completion event.
+ *
+ * @param cb  Callback invoked from the supervisor task, or NULL.
+ * @param ctx Opaque pointer passed back to the callback unmodified. Useful
+ *            for carrying a caller-side axis identifier or queue handle.
+ */
+void stepper_system_register_axis_event_cb(axis_event_cb_t cb, void* ctx);
 
 #endif /* STEPPER_SYSTEM_H_ */

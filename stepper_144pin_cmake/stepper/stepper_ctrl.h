@@ -62,7 +62,7 @@ void stepper_ctrl_init(void);
 /**
  * @brief Bind an axis handle to a motor slot on this control instance.
  *        Call after axis_init() returns a valid handle, before any move commands.
- *        Stop requests go through axis_stop() so the axis supervisor stays consistent.
+ *        Stop requests go through axis_ttop() so the axis supervisor stays consistent.
  * @param motor_num 1-based motor number (1..STEPPER_CTRL_MAX_MOTORS). Out-of-range
  *                  values are ignored.
  * @param axis      Handle returned by axis_init(). Must not be NULL.
@@ -132,7 +132,7 @@ uint8_t stepper_ctrl_recv_cmd(stepper_cmd_enum* cmd_out, uint32_t timeout_ms);
 
 /**
  * @brief Request an immediate stop. Safe to call from any task context.
- *        Sets the stop flag and halts every bound axis via axis_stop().
+ *        Sets the stop flag and halts every bound axis via axis_ttop().
  */
 void stepper_ctrl_request_stop(void);
 
