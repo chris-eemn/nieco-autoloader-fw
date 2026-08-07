@@ -15,7 +15,7 @@
  * Includes
  *******************************************************************************/
 
-#include <stdbool.h>
+#include "cartridge.h"
 #include <stdint.h>
 
 /*******************************************************************************
@@ -70,6 +70,7 @@ typedef enum {
   STARTUP_LOCK_DOOR,
   STARTUP_HOME_PUSHERS,
   STARTUP_HOME_LIFTS_DOWN,
+  STARTUP_HOME_LIFTS_DELAY,
   STARTUP_HOME_LIFTS_UP,
   STARTUP_COUNT_CARTRIDGES,
   STARTUP_COMPLETE,
@@ -98,18 +99,9 @@ typedef enum {
 } reload_state_enum;
 
 typedef struct {
-  uint8_t num;
-  uint8_t type;
-  uint16_t remaining;
-  uint16_t pending;
-  bool faulted;
-  bool pusher_homed;
-  bool lifter_homed_down;
-  bool lifter_homed_up;
-} cartridge_t;
-
-typedef struct {
   startup_state_enum state;
+  uint32_t lift_homing_end_time_ms;
+  uint32_t lift_homing_timeout_ms;
 } startup_sm_t;
 
 typedef struct {

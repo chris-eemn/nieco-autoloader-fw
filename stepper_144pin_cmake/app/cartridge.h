@@ -15,7 +15,8 @@
 /*******************************************************************************
  * Includes
  *******************************************************************************/
-
+#include <stdbool.h>
+#include <stdint.h>
 /*******************************************************************************
  * Module Macros
  *******************************************************************************/
@@ -32,6 +33,17 @@ typedef enum {
   DIR_LIFTER_UP = 3U,
   DIR_COUNT = 4U,
 } cartridge_direction_t;
+
+typedef struct {
+  uint8_t num;
+  uint8_t type;
+  uint16_t remaining;
+  uint16_t pending;
+  bool faulted;
+  bool pusher_homed;
+  bool lifter_homed_down;
+  bool lifter_homed_up;
+} cartridge_t;
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
