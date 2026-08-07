@@ -30,30 +30,6 @@
  * Module Typedefs
  *******************************************************************************/
 
-/* Internal homing sub-states, only meaningful when status == AXIS_STATUS_HOMING. */
-typedef enum {
-  HOMING_IDLE = 0, /* Not homing                                          */
-  HOMING_SEEK,     /* Driving toward endstop, waiting for ISR lag event   */
-  HOMING_SETTLE,   /* Settling after endstop hit, before backoff           */
-  HOMING_BACKOFF,  /* Backing off from endstop                            */
-} homing_state_enum;
-
-struct axis_s {
-  stepper_t* motor;
-  encoder_t* encoder;
-  axis_config_t config;
-
-  volatile axis_status_enum status;
-  volatile uint8_t fault_from_isr;      /* Set by fault ISR callback; observed by supervisor */
-  volatile uint8_t fault_reset_pending; /* 1=sleep requested, 2=sleeping (wake next tick)   */
-
-  /* Homing */
-  homing_state_enum homing_substate;
-
-  uint32_t settle_delay_ms;    /**< Time to wait after hitting the endstop before starting the back-off move. */
-  uint32_t settle_end_time_ms; /**< Absolute time when the settle delay ends. Written by the supervisor task. */
-};
-
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
@@ -61,18 +37,26 @@ struct axis_s {
 static axis_t s_axes[AXIS_MAX_INSTANCES];
 static uint8_t s_axis_count = 0U;
 
+/* Indexed by axis_event_enum. Both the pointers and the strings are const so
+ * the whole table stays in flash. Keep in step with axis_event_enum. */
+static const char* const s_event_names[] = {
+    [AXIS_EVENT_MOVE_DONE] = "MOVE_DONE",   [AXIS_EVENT_MOVE_STOPPED] = "MOVE_STOPPED", [AXIS_EVENT_MOVE_FAILED] = "MOVE_FAILED",
+    [AXIS_EVENT_HOME_DONE] = "HOME_DONE",   [AXIS_EVENT_HOME_ABORTED] = "HOME_ABORTED", [AXIS_EVENT_HOME_FAILED] = "HOME_FAILED",
+};
+
 /* Supervisor task: created once by the first axis_init(), shared by all axes.
  * Using a dedicated low-priority task (rather than a FreeRTOS software timer or
  * a sub-rate ISR callback) keeps the supervisor logic cleanly separate from the
  * step-pulse ISR and avoids stack constraints of the timer daemon task. */
 static TaskHandle_t s_supervisor_handle = NULL;
 static uint32_t s_supervisor_period_ms = 0U;
-
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
 static void axis_fault_isr_cb(stepper_t* motor);
+static void axis_emit(axis_t* axis, axis_event_enum event);
+static void axis_emit_failure(axis_t* axis);
 static void start_homing_backoff(axis_t* axis);
 static void start_homing_settle(axis_t* axis);
 static uint8_t handle_sync_event(axis_t* axis);
@@ -96,6 +80,7 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
 
   axis_t* axis = &s_axes[s_axis_count];
   s_axis_count++;
+  axis->num = s_axis_count; /* Axis number 1-8 */
 
   axis->motor = motor;
   axis->encoder = encoder;
@@ -130,6 +115,10 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
   axis->fault_from_isr = 0U;
   axis->fault_reset_pending = 0U;
   axis->homing_substate = HOMING_IDLE;
+  axis->active_op = AXIS_OP_NONE;
+  axis->stop_pending = 0U;
+  axis->event_cb = NULL;
+  axis->event_ctx = NULL;
 
   stepper_sync_config_t sync_config = {
       .encoder_counts_numerator = axis->config.encoder_counts_numerator,
@@ -191,6 +180,30 @@ void axis_update_config(axis_t* axis, const axis_config_t* config) {
   (void)stepper_sync_configure(axis->motor, axis->encoder, &sync_config);
 }
 
+void axis_register_event_cb(axis_t* axis, axis_event_cb_t cb, void* ctx) {
+  if (axis == NULL) {
+    return;
+  }
+
+  /* The callback and its context must be swapped as a unit: a supervisor tick
+   * landing between the two stores would otherwise pair one registration's
+   * callback with the other's context. */
+  taskENTER_CRITICAL();
+  axis->event_cb = cb;
+  axis->event_ctx = ctx;
+  taskEXIT_CRITICAL();
+}
+
+const char* axis_event_name(axis_event_enum event) {
+  /* The NULL test covers a gap left in the designated initialisers if a new
+   * event is added to the enum without a matching name. */
+  if (((uint32_t)event >= (sizeof(s_event_names) / sizeof(s_event_names[0]))) || (s_event_names[event] == NULL)) {
+    return "UNKNOWN";
+  }
+
+  return s_event_names[event];
+}
+
 axis_status_enum axis_get_status(const axis_t* axis) {
   if (axis == NULL) {
     return AXIS_STATUS_INVALID;
@@ -229,6 +242,12 @@ stepper_status_enum axis_move(axis_t* axis, uint32_t steps, uint32_t rpm, uint8_
     return ret;
   }
 
+  /* Claimed only after the motor is confirmed running. Claiming it earlier would
+   * let a supervisor tick observe an active move on an idle motor and report a
+   * completion that never happened. */
+  axis->stop_pending = 0U;
+  axis->active_op = AXIS_OP_MOVE;
+
   return STEPPER_OK;
 }
 
@@ -263,6 +282,8 @@ stepper_status_enum axis_home(axis_t* axis) {
     return ret;
   }
 
+  axis->stop_pending = 0U;
+  axis->active_op = AXIS_OP_HOME;
   axis->homing_substate = HOMING_SEEK;
   axis->status = AXIS_STATUS_HOMING;
 
@@ -280,6 +301,13 @@ void axis_clear_fault(axis_t* axis) {
   axis->homing_substate = HOMING_IDLE;
   axis->fault_from_isr = 0U;
   axis->status = AXIS_STATUS_NOT_HOMED;
+
+  /* Any operation interrupted by the fault has already reported its failure;
+   * dropping the claim here keeps the recovery itself from emitting a second
+   * event for the same operation. */
+  axis->active_op = AXIS_OP_NONE;
+  axis->stop_pending = 0U;
+
   (void)stepper_sync_take_event(axis->motor, NULL);
 }
 
@@ -301,6 +329,12 @@ void axis_stop(axis_t* axis) {
   if (axis->status == AXIS_STATUS_HOMING) {
     axis->homing_substate = HOMING_IDLE;
     axis->status = AXIS_STATUS_NOT_HOMED;
+  }
+
+  /* The motor is already stopped; the event is left to the supervisor so that
+   * callbacks never run in the context of whichever task called stop. */
+  if (axis->active_op != AXIS_OP_NONE) {
+    axis->stop_pending = 1U;
   }
 }
 
@@ -324,6 +358,56 @@ static void axis_fault_isr_cb(stepper_t* motor) {
 }
 
 /**
+ * @brief Release the active operation and deliver its terminal event.
+ *
+ * Called only from the supervisor task. The claim is released before the
+ * callback runs so that a callback which starts the next move on this axis
+ * sees an idle axis rather than one still owing an event.
+ *
+ * @param axis  Axis whose operation reached a terminal state.
+ * @param event Outcome to report.
+ */
+static void axis_emit(axis_t* axis, axis_event_enum event) {
+  axis_event_cb_t cb;
+  void* ctx;
+
+  axis->active_op = AXIS_OP_NONE;
+  axis->stop_pending = 0U;
+
+  /* Snapshot the pair together so a concurrent axis_register_event_cb() cannot
+   * split it across this call. */
+  taskENTER_CRITICAL();
+  cb = axis->event_cb;
+  ctx = axis->event_ctx;
+  taskEXIT_CRITICAL();
+
+  if (cb != NULL) {
+    cb(axis, event, ctx);
+  }
+}
+
+/**
+ * @brief Report the failure of whichever operation is active.
+ *
+ * Emits nothing when the axis is idle, so a fault detected between operations
+ * updates status without inventing a completion event for a move or homing
+ * sequence that was never started.
+ *
+ * @param axis Axis whose active operation has failed.
+ */
+static void axis_emit_failure(axis_t* axis) {
+  if (axis->active_op == AXIS_OP_HOME) {
+    axis_emit(axis, AXIS_EVENT_HOME_FAILED);
+  }
+  else if (axis->active_op == AXIS_OP_MOVE) {
+    axis_emit(axis, AXIS_EVENT_MOVE_FAILED);
+  }
+  else {
+    /* Idle: the fault changes status only. */
+  }
+}
+
+/**
  * @brief Start the configured backoff move after homing seek finds the endstop.
  * @param axis Axis currently in HOMING_SEEK.
  */
@@ -339,6 +423,7 @@ static void start_homing_backoff(axis_t* axis) {
     app_console_print("[AXIS] Back-off start failed: %d\r\n", (int)ret);
     axis->status = AXIS_STATUS_FAULT;
     axis->homing_substate = HOMING_IDLE;
+    axis_emit(axis, AXIS_EVENT_HOME_FAILED);
   }
 }
 
@@ -376,10 +461,12 @@ static uint8_t handle_sync_event(axis_t* axis) {
       axis->status = AXIS_STATUS_FAULT;
       axis->homing_substate = HOMING_IDLE;
       app_console_print("[AXIS] Homing back-off stalled: encoder lagged by %lu counts.\r\n", deviation_counts);
+      axis_emit(axis, AXIS_EVENT_HOME_FAILED);
     }
     else if ((axis->status == AXIS_STATUS_OK) || (axis->status == AXIS_STATUS_NOT_HOMED)) {
       axis->status = AXIS_STATUS_STALLED;
       app_console_print("[AXIS] Stall detected: encoder lagged by %lu counts. Motor stopped.\r\n", deviation_counts);
+      axis_emit_failure(axis);
     }
     else {
       /* The ISR has already stopped the motor; no state transition is needed. */
@@ -405,6 +492,7 @@ static void handle_homing_tick(axis_t* axis) {
         app_console_print("[AXIS] Homing timeout — endstop not reached.\r\n");
         axis->status = AXIS_STATUS_FAULT;
         axis->homing_substate = HOMING_IDLE;
+        axis_emit(axis, AXIS_EVENT_HOME_FAILED);
       }
       break;
     }
@@ -428,6 +516,7 @@ static void handle_homing_tick(axis_t* axis) {
         axis->homing_substate = HOMING_IDLE;
         axis->status = AXIS_STATUS_OK;
         app_console_print("[AXIS] Homing complete. Encoder zeroed.\r\n");
+        axis_emit(axis, AXIS_EVENT_HOME_DONE);
       }
       break;
     }
@@ -461,12 +550,30 @@ static void supervisor_tick(axis_t* axis) {
     return;
   }
 
-  /* Fault from ISR takes priority over all other state. */
+  /* Fault from ISR takes priority over all other state. A stop requested in the
+   * same window is reported as the fault instead, since the axis did not stop
+   * for the reason the caller asked it to. */
   if (axis->fault_from_isr != 0U) {
     axis->fault_from_isr = 0U;
     axis->status = AXIS_STATUS_FAULT;
     axis->homing_substate = HOMING_IDLE;
     app_console_print("[AXIS] Stepper fault: axis halted.\r\n");
+    axis_emit_failure(axis);
+    return;
+  }
+
+  if (axis->stop_pending != 0U) {
+    if (axis->active_op == AXIS_OP_HOME) {
+      axis_emit(axis, AXIS_EVENT_HOME_ABORTED);
+    }
+    else if (axis->active_op == AXIS_OP_MOVE) {
+      axis_emit(axis, AXIS_EVENT_MOVE_STOPPED);
+    }
+    else {
+      /* The operation ended on its own before the stop was serviced; its own
+       * event was already delivered. */
+      axis->stop_pending = 0U;
+    }
     return;
   }
 
@@ -476,6 +583,12 @@ static void supervisor_tick(axis_t* axis) {
 
   if (axis->status == AXIS_STATUS_HOMING) {
     handle_homing_tick(axis);
+  }
+  else if ((axis->active_op == AXIS_OP_MOVE) && (stepper_is_busy(axis->motor) == 0U)) {
+    axis_emit(axis, AXIS_EVENT_MOVE_DONE);
+  }
+  else {
+    /* Idle, or a move still in progress. */
   }
 }
 

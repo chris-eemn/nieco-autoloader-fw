@@ -20,8 +20,10 @@
  * supervisor_period_ms field. Stall and homing-endstop detection occur directly
  * in the step ISR using max_sync_error_counts.
  *
- * Use axis_get_status() and axis_is_busy() to observe non-blocking motion. The
- * supervisor drives all homing and fault state transitions.
+ * Use axis_get_status() and axis_is_busy() to observe non-blocking motion, or
+ * register a callback with axis_register_event_cb() to be told when a move or
+ * homing sequence reaches a terminal state. The supervisor drives all homing
+ * and fault state transitions, and delivers every event.
  *
  * Typical call sequence:
  *   stepper_t  *motor = stepper_init(&pins);
@@ -35,6 +37,7 @@
  *     .max_sync_error_counts = 10,
  *   };
  *   axis_t *ax = axis_init(motor, enc, m1_fault_exti_gethandle(), &cfg);
+ *   axis_register_event_cb(ax, on_axis_event, (void *)AXIS_ID_LIFT);
  *
  *   axis_home(ax);
  *   while (axis_get_status(ax) == AXIS_STATUS_HOMING) { vTaskDelay(10); }
@@ -96,6 +99,69 @@ typedef enum {
 } axis_status_enum;
 
 /**
+ * Axis instance handle.
+ *
+ * Declared ahead of its body to break the cycle between the struct and the
+ * event callback: the callback signature takes an axis_t*, and the struct
+ * stores an axis_event_cb_t. A pointer to an incomplete type is all the
+ * callback typedef needs, so the tag alone is enough here. The body follows
+ * once axis_event_cb_t exists.
+ */
+typedef struct axis_s axis_t;
+
+/* Internal homing sub-states, only meaningful when status == AXIS_STATUS_HOMING. */
+typedef enum {
+  HOMING_IDLE = 0, /* Not homing                                          */
+  HOMING_SEEK,     /* Driving toward endstop, waiting for ISR lag event   */
+  HOMING_SETTLE,   /* Settling after endstop hit, before backoff           */
+  HOMING_BACKOFF,  /* Backing off from endstop                            */
+} homing_state_enum;
+
+/* Operation currently owed a completion event. Distinguishes a user move from
+ * the internal seek and back-off moves that homing issues, so that homing
+ * reports one AXIS_EVENT_HOME_* rather than an event per stepper move. */
+typedef enum {
+  AXIS_OP_NONE = 0, /* Idle; no event outstanding */
+  AXIS_OP_MOVE,     /* axis_move() in progress    */
+  AXIS_OP_HOME,     /* axis_home() in progress    */
+} axis_op_enum;
+
+/**
+ * Terminal outcome of an axis_move() or axis_home() operation.
+ *
+ * One event is delivered per accepted operation: a call that returns STEPPER_OK
+ * is followed by one of these, and a call that returns any other status produces
+ * none. Faults detected while the axis is idle change axis_get_status() but
+ * generate no event.
+ *
+ * Events are delivered on the supervisor tick following the operation's end, so
+ * a caller that polls axis_is_busy() and immediately starts the next operation
+ * can replace a pending event before it is delivered. Drive the axis from the
+ * events or from polling, not from both at once.
+ */
+typedef enum {
+  AXIS_EVENT_MOVE_DONE = 0, /*!< Commanded steps completed                      */
+  AXIS_EVENT_MOVE_STOPPED,  /*!< Move ended early by axis_stop()                */
+  AXIS_EVENT_MOVE_FAILED,   /*!< Stall or stepper fault ended the move          */
+  AXIS_EVENT_HOME_DONE,     /*!< Back-off finished and the encoder was zeroed   */
+  AXIS_EVENT_HOME_ABORTED,  /*!< Homing ended early by axis_stop()              */
+  AXIS_EVENT_HOME_FAILED,   /*!< Seek timeout, back-off stall, or stepper fault */
+} axis_event_enum;
+/**
+ * Callback invoked when an axis operation reaches a terminal state.
+ *
+ * Always called from the shared supervisor task, never from ISR context, so
+ * blocking FreeRTOS APIs are legal here. It nonetheless runs on the
+ * supervisor's stack and delays every other axis's tick, so it must return
+ * promptly — post to a queue and return rather than doing work inline.
+ *
+ * @param axis  Axis that completed the operation.
+ * @param event Outcome of the operation.
+ * @param ctx   Opaque pointer supplied to axis_register_event_cb().
+ */
+typedef void (*axis_event_cb_t)(axis_t* axis, axis_event_enum event, void* ctx);
+
+/**
  * Per-axis configuration supplied at axis_init() time.
  * Any field set to 0 receives the documented default.
  */
@@ -127,8 +193,28 @@ typedef struct {
   uint32_t settle_delay_ms; /**< Time to wait after hitting the endstop before starting the back-off move. */
 } axis_config_t;
 
-/** Opaque axis handle. Allocated from an internal static pool by axis_init(). */
-typedef struct axis_s axis_t;
+struct axis_s {
+  uint8_t num; /**< Axis number 1-8 */
+  stepper_t* motor;
+  encoder_t* encoder;
+  axis_config_t config;
+
+  volatile axis_status_enum status;
+  volatile uint8_t fault_from_isr;      /* Set by fault ISR callback; observed by supervisor */
+  volatile uint8_t fault_reset_pending; /* 1=sleep requested, 2=sleeping (wake next tick)   */
+
+  /* Completion reporting */
+  volatile axis_op_enum active_op; /* Operation awaiting a terminal event              */
+  volatile uint8_t stop_pending;   /* Set by axis_stop(); observed by supervisor       */
+  axis_event_cb_t event_cb;        /* Registered completion callback, or NULL          */
+  void* event_ctx;                 /* Opaque context passed back to event_cb           */
+
+  /* Homing */
+  homing_state_enum homing_substate;
+
+  uint32_t settle_delay_ms;    /**< Time to wait after hitting the endstop before starting the back-off move. */
+  uint32_t settle_end_time_ms; /**< Absolute time when the settle delay ends. Written by the supervisor task. */
+};
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -169,6 +255,32 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
 axis_status_enum axis_get_status(const axis_t* axis);
 
 /**
+ * @brief  Register the callback invoked when a move or homing sequence reaches
+ *         a terminal state. Pass NULL to clear a previously registered callback.
+ *         Replaces any previous registration; only one callback per axis.
+ *
+ *         Safe to call while an operation is in progress — the new callback
+ *         receives that operation's completion event.
+ *
+ * @param  axis  Handle returned by axis_init(). Must not be NULL.
+ * @param  cb    Callback invoked from the supervisor task, or NULL.
+ * @param  ctx   Opaque pointer passed back to the callback unmodified. Useful
+ *               for carrying a caller-side axis identifier or queue handle.
+ */
+void axis_register_event_cb(axis_t* axis, axis_event_cb_t cb, void* ctx);
+
+/**
+ * @brief  Return a printable name for an event code, for logging.
+ *         The table lives in axis.c, so including this header does not place a
+ *         copy of it in every translation unit.
+ *
+ * @param  event  Event code received by an axis_event_cb_t.
+ * @return Static string such as "MOVE_DONE", or "UNKNOWN" if event is out of
+ *         range. Never NULL, and safe to pass straight to a %s format.
+ */
+const char* axis_event_name(axis_event_enum event);
+
+/**
  * @brief  Return the current encoder count for the axis.
  *
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
@@ -183,6 +295,9 @@ int32_t axis_get_encoder_count(const axis_t* axis);
  *         it does not block motion.
  *         The step ISR's following-error detection runs automatically during the move
  *         for axes in both AXIS_STATUS_OK and AXIS_STATUS_NOT_HOMED states.
+ *
+ *         On STEPPER_OK, exactly one AXIS_EVENT_MOVE_* event is delivered to the
+ *         registered callback when the move ends.
  *
  * @param  axis       Handle returned by axis_init(). Must not be NULL.
  * @param  steps      Number of microsteps to move.
@@ -209,7 +324,9 @@ uint8_t axis_is_busy(const axis_t* axis);
  *         and zeros the encoder. Transitions axis status to AXIS_STATUS_HOMING.
  *
  *         Use axis_get_status() to poll for AXIS_STATUS_OK (success) or
- *         AXIS_STATUS_FAULT (timeout / stepper fault).
+ *         AXIS_STATUS_FAULT (timeout / stepper fault). Alternatively, on
+ *         STEPPER_OK exactly one AXIS_EVENT_HOME_* event is delivered to the
+ *         registered callback when the sequence ends.
  *
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  * @return STEPPER_OK      if homing was started,
@@ -252,6 +369,11 @@ void axis_fault_reset(axis_t* axis);
  *         (homing is aborted cleanly, not a fault).
  *         For AXIS_STATUS_OK and AXIS_STATUS_NOT_HOMED the status is unchanged —
  *         a voluntary stop is not a fault condition.
+ *
+ *         The motor stops synchronously, but the resulting AXIS_EVENT_MOVE_STOPPED
+ *         or AXIS_EVENT_HOME_ABORTED event is deferred to the next supervisor tick
+ *         so that all events originate from the supervisor task. Stopping an idle
+ *         axis produces no event.
  *
  * @param  axis  Handle returned by axis_init(). Must not be NULL.
  */
