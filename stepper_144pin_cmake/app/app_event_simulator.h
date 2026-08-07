@@ -36,6 +36,5 @@
  *Function Prototypes
  *******************************************************************************/
 
-void app_sim_timer_callback(TimerHandle_t timer);
 bool app_simulate_event(uint32_t delay_ms, app_event_id_enum event_id);
 #endif /* APP_EVENT_SIMULATOR_H_ */
