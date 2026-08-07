@@ -171,11 +171,6 @@ void app_sm_port_cancel_timeout(void) {
   }
 }
 
-/**
- * @brief Cancel one pending timeout by ID.
- * @param timeout Timeout ID to cancel.
- * @return true if a pending timeout was cancelled, false if it had already fired.
- */
 bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout) {
   bool cancelled = false;
 
