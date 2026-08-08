@@ -21,74 +21,35 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "autoloader_sm.h"
+#include "autoloader_types.h"
+#include "cartridge.h"
+#include "dispense_sm.h"
+#include "patty_types.h"
 
 /*******************************************************************************
  * Module Macros
  *******************************************************************************/
 
-#define PATTY_HANDLER_SLOT_COUNT (4U)
+#define PATTY_HANDLER_SLOT_COUNT (APP_SLOT_COUNT)
 #define PATTY_HANDLER_NO_SLOT (0xFFU)
 
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
-
-typedef enum { PATTY_REQUEST_SOURCE_QUEUE = 0, PATTY_REQUEST_SOURCE_MANUAL } patty_request_source_enum;
-
-typedef enum {
-  PATTY_HANDLER_RESULT_OK = 0,
-  PATTY_HANDLER_RESULT_NO_ACTION,
-  PATTY_HANDLER_RESULT_INVALID_ARGUMENT,
-  PATTY_HANDLER_RESULT_NOT_READY,
-  PATTY_HANDLER_RESULT_NOT_ENOUGH_PRODUCT,
-  PATTY_HANDLER_RESULT_MOTION_REJECTED
-} patty_handler_result_enum;
-
-typedef enum {
-  CART_DISPENSE_IDLE = 0,
-  CART_DISPENSE_PUSH_EXTEND,
-  CART_DISPENSE_PUSH_RETRACT,
-  CART_DISPENSE_LIFT_SEEK,
-  CART_DISPENSE_LIFT_BACKOFF,
-  CART_DISPENSE_COMPLETE,
-  CART_DISPENSE_FAILED
-} cart_dispense_state_enum;
-
-typedef enum {
-  CART_DISPENSE_EVENT_PUSH_EXTENDED = 0,
-  CART_DISPENSE_EVENT_PUSH_RETRACTED,
-  CART_DISPENSE_EVENT_LIFT_STALLED,
-  CART_DISPENSE_EVENT_LIFT_BACKOFF_COMPLETE,
-  CART_DISPENSE_EVENT_TIMEOUT,
-  CART_DISPENSE_EVENT_MOTION_FAULT
-} cart_dispense_event_id_enum;
-
 typedef struct {
-  cart_dispense_event_id_enum id;
-  uint8_t slot;
-  uint16_t fault_code;
-  uint32_t measured_lift_travel_counts;
-} cart_dispense_event_t;
-
-/*
- * TODO: Add a command-generation value to cart_dispense_event_t and
- * cart_dispense_sm_t if the production Motion layer can deliver delayed or
- * duplicate events for the same slot.
- */
-
-typedef struct {
-  cart_dispense_state_enum state;
-  uint8_t slot;
-  uint16_t fault_code;
-  uint32_t measured_lift_travel_counts;
-  bool product_may_have_dispensed;
-} cart_dispense_sm_t;
-
+  cartridge_t* cartridge;
+  //   patty_handler_port_t port;
+  dispense_sm_t dispense_sm[PATTY_HANDLER_SLOT_COUNT];
+  bool door_closed;
+  bool door_locked;
+  bool dispensing_enabled;
+  bool lto_pause_active;
+} patty_handler_t;
+#if 0
 typedef bool (*patty_handler_motion_fn_t)(uint8_t slot);
-typedef bool (*patty_handler_timeout_arm_fn_t)(uint8_t slot, cart_dispense_state_enum state);
+typedef bool (*patty_handler_timeout_arm_fn_t)(uint8_t slot, dispense_state_enum state);
 typedef void (*patty_handler_timeout_cancel_fn_t)(uint8_t slot);
-typedef void (*patty_handler_publish_fn_t)(uint8_t slot, const cartridge_t* cartridge, const cart_dispense_sm_t* dispense_sm);
+typedef void (*patty_handler_publish_fn_t)(uint8_t slot, const cartridge_t* cartridge, const dispense_sm_t* dispense_sm);
 
 typedef struct {
   patty_handler_motion_fn_t push_extend;
@@ -100,16 +61,7 @@ typedef struct {
   patty_handler_timeout_cancel_fn_t cancel_timeout;
   patty_handler_publish_fn_t publish_status;
 } patty_handler_port_t;
-
-typedef struct {
-  cartridge_t* cartridge;
-  patty_handler_port_t port;
-  cart_dispense_sm_t dispense_sm[PATTY_HANDLER_SLOT_COUNT];
-  bool door_closed;
-  bool door_locked;
-  bool dispensing_enabled;
-  bool lto_pause_active;
-} patty_handler_t;
+#endif
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -130,7 +82,7 @@ typedef struct {
  * @return PATTY_HANDLER_RESULT_OK on success; otherwise
  * PATTY_HANDLER_RESULT_INVALID_ARGUMENT.
  */
-patty_handler_result_enum patty_handler_init(patty_handler_t* handler, cartridge_t* cartridge, const patty_handler_port_t* port);
+patty_handler_result_enum patty_handler_init(patty_handler_t* handler, cartridge_t* cartridge);
 
 /**
  * @brief Updates the safety conditions that permit a new dispense cycle to
@@ -198,36 +150,6 @@ patty_handler_result_enum patty_handler_process(patty_handler_t* handler);
  * @param event Motion completion, stall, timeout, or fault event.
  * @return Current handling result.
  */
-patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const cart_dispense_event_t* event);
-
-/**
- * @brief Initializes one cartridge dispense state-machine context.
- *
- * @param dispense_sm State-machine context to initialize.
- * @param slot Zero-based cartridge slot.
- */
-void cart_dispense_sm_init(cart_dispense_sm_t* dispense_sm, uint8_t slot);
-
-/**
- * @brief Starts one nonblocking mechanical dispense cycle for a cartridge.
- *
- * @param dispense_sm State-machine context for the selected cartridge.
- * @param port Application motion and timer callbacks.
- * @return PATTY_HANDLER_RESULT_OK when started or an error result when
- * rejected.
- */
-patty_handler_result_enum cart_dispense_sm_start(cart_dispense_sm_t* dispense_sm, const patty_handler_port_t* port);
-
-/**
- * @brief Handles one event for an individual cartridge dispense cycle.
- *
- * @param dispense_sm State-machine context for the selected cartridge.
- * @param event Slot-specific event to handle.
- * @param port Application motion and timer callbacks.
- * @return PATTY_HANDLER_RESULT_OK while handled, PATTY_HANDLER_RESULT_NO_ACTION
- * for an unrelated event, or an error result if the state machine fails.
- */
-patty_handler_result_enum cart_dispense_sm_dispatch(cart_dispense_sm_t* dispense_sm, const cart_dispense_event_t* event,
-                                                    const patty_handler_port_t* port);
+patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const dispense_event_t* event);
 
 #endif /* PATTY_HANDLER_H_ */

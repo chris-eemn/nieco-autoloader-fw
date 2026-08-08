@@ -25,6 +25,8 @@
  * Module Typedefs
  *******************************************************************************/
 typedef enum { PUSHER = 0U, LIFTER = 1U } cartridge_actuator_type_t;
+
+// product types that can be dispensed from the autoloader. Whoppers, Jr. patties, and LTOs are the only supported types.
 typedef enum { CARTRIDGE_TYPE_EMPTY, CARTRIDGE_TYPE_WHOPPER, CARTRIDGE_TYPE_JR, CARTRIDGE_TYPE_LTO } cartridge_type_t;
 
 typedef enum {

@@ -37,7 +37,6 @@
  * Function Prototypes
  *******************************************************************************/
 
-static bool patty_handler_port_is_valid(const patty_handler_port_t* port);
 static bool patty_handler_is_ready(const patty_handler_t* handler);
 static bool patty_handler_slot_is_lto_paused(const patty_handler_t* handler, uint8_t slot_index);
 static bool patty_handler_slot_matches(const patty_handler_t* handler, uint8_t slot_index, uint8_t product_type);
@@ -51,20 +50,19 @@ static patty_handler_result_enum patty_handler_commit_dispense(patty_handler_t* 
  * Public Function Definitions
  *******************************************************************************/
 
-patty_handler_result_enum patty_handler_init(patty_handler_t* handler, cartridge_t* cartridge, const patty_handler_port_t* port) {
+patty_handler_result_enum patty_handler_init(patty_handler_t* handler, cartridge_t* cartridge) {
   patty_handler_result_enum result = PATTY_HANDLER_RESULT_INVALID_ARGUMENT;
   uint8_t slot_index;
 
-  if ((handler != NULL) && (cartridge != NULL) && (patty_handler_port_is_valid(port) == true)) {
+  if ((handler != NULL) && (cartridge != NULL)) {
     handler->cartridge = cartridge;
-    handler->port = *port;
     handler->door_closed = false;
     handler->door_locked = false;
     handler->dispensing_enabled = false;
     handler->lto_pause_active = false;
 
     for (slot_index = 0U; slot_index < PATTY_HANDLER_SLOT_COUNT; slot_index++) {
-      cart_dispense_sm_init(&handler->dispense_sm[slot_index], slot_index);
+      dispense_sm_init(&handler->dispense_sm[slot_index], slot_index);
     }
 
     result = PATTY_HANDLER_RESULT_OK;
@@ -161,12 +159,12 @@ patty_handler_result_enum patty_handler_process(patty_handler_t* handler) {
       for (slot_index = 0U; slot_index < PATTY_HANDLER_SLOT_COUNT; slot_index++) {
         if (handler->cartridge[slot_index].pending > handler->cartridge[slot_index].remaining) {
           handler->cartridge[slot_index].faulted = true;
-          handler->dispense_sm[slot_index].state = CART_DISPENSE_FAILED;
+          handler->dispense_sm[slot_index].state = DISPENSE_FAILED;
           handler->dispense_sm[slot_index].fault_code = PATTY_HANDLER_FAULT_INVENTORY;
           patty_handler_publish_slot(handler, slot_index);
         }
         else if (patty_handler_slot_can_start(handler, slot_index) == true) {
-          start_result = cart_dispense_sm_start(&handler->dispense_sm[slot_index], &handler->port);
+          start_result = dispense_sm_start(&handler->dispense_sm[slot_index]);
 
           if (start_result == PATTY_HANDLER_RESULT_OK) {
             cycle_started = true;
@@ -202,19 +200,19 @@ patty_handler_result_enum patty_handler_process(patty_handler_t* handler) {
   return result;
 }
 
-patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const cart_dispense_event_t* event) {
+patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const dispense_event_t* event) {
   patty_handler_result_enum result = PATTY_HANDLER_RESULT_INVALID_ARGUMENT;
   patty_handler_result_enum process_result;
   uint8_t slot_index;
 
   if ((handler != NULL) && (handler->cartridge != NULL) && (event != NULL) && (event->slot_index < PATTY_HANDLER_SLOT_COUNT)) {
     slot_index = event->slot_index;
-    result = dispense_sm_dispatch(&handler->dispense_sm[slot_index], event, &handler->port);
+    result = dispense_sm_dispatch(&handler->dispense_sm[slot_index]);
 
-    if (handler->dispense_sm[slot_index].state == CART_DISPENSE_COMPLETE) {
+    if (handler->dispense_sm[slot_index].state == DISPENSE_COMPLETE) {
       result = patty_handler_commit_dispense(handler, slot_index);
     }
-    else if (handler->dispense_sm[slot_index].state == CART_DISPENSE_FAILED) {
+    else if (handler->dispense_sm[slot_index].state == DISPENSE_FAILED) {
       handler->cartridge[slot_index].faulted = true;
       patty_handler_publish_slot(handler, slot_index);
       result = PATTY_HANDLER_RESULT_MOTION_REJECTED;
@@ -237,24 +235,6 @@ patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler,
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
-
-/**
- * @brief Checks that every callback required by the starter implementation is
- * installed.
- *
- * @param port Application callback table.
- * @return True when the callback table is valid.
- */
-static bool patty_handler_port_is_valid(const patty_handler_port_t* port) {
-  bool is_valid = false;
-
-  if (port != NULL) {
-    is_valid = ((port->push_extend != NULL) && (port->push_retract != NULL) && (port->lift_seek != NULL) && (port->lift_backoff != NULL) &&
-                (port->halt_motion != NULL) && (port->arm_timeout != NULL) && (port->cancel_timeout != NULL) && (port->publish_status != NULL));
-  }
-
-  return is_valid;
-}
 
 /**
  * @brief Checks the parent safety conditions required to start or admit
@@ -371,9 +351,9 @@ static uint8_t patty_handler_select_allocation_slot(const patty_handler_t* handl
  */
 static bool patty_handler_slot_can_start(const patty_handler_t* handler, uint8_t slot_index) {
   const cartridge_t* cartridge = &handler->cartridge[slot_index];
-  const cart_dispense_sm_t* dispense_sm = &handler->dispense_sm[slot_index];
+  const dispense_sm_t* dispense_sm = &handler->dispense_sm[slot_index];
 
-  return ((dispense_sm->state == CART_DISPENSE_IDLE) && (cartridge->faulted == false) && (cartridge->pending > 0U) && (cartridge->remaining > 0U) &&
+  return ((dispense_sm->state == DISPENSE_IDLE) && (cartridge->faulted == false) && (cartridge->pending > 0U) && (cartridge->remaining > 0U) &&
           (patty_handler_slot_is_lto_paused(handler, slot_index) == false));
 }
 
@@ -384,7 +364,8 @@ static bool patty_handler_slot_can_start(const patty_handler_t* handler, uint8_t
  * @param slot_index cartrigdes are numbered 1-4, but this indexes into an array that starts at 0
  */
 static void patty_handler_publish_slot(const patty_handler_t* handler, uint8_t slot_index) {
-  handler->port.publish_status(slot_index, &handler->cartridge[slot_index], &handler->dispense_sm[slot_index]);
+  (void)handler;
+  (void)slot_index;
 }
 
 /**
@@ -399,7 +380,7 @@ static void patty_handler_publish_slot(const patty_handler_t* handler, uint8_t s
 static patty_handler_result_enum patty_handler_commit_dispense(patty_handler_t* handler, uint8_t slot_index) {
   patty_handler_result_enum result = PATTY_HANDLER_RESULT_MOTION_REJECTED;
   cartridge_t* cartridge = &handler->cartridge[slot_index];
-  cart_dispense_sm_t* dispense_sm = &handler->dispense_sm[slot_index];
+  dispense_sm_t* dispense_sm = &handler->dispense_sm[slot_index];
 
   if ((cartridge->remaining > 0U) && (cartridge->pending > 0U)) {
     cartridge->remaining--;
@@ -411,7 +392,7 @@ static patty_handler_result_enum patty_handler_commit_dispense(patty_handler_t* 
      * TODO: Save counts to nonvolatile storage if the final persistence policy
      * requires it.
      */
-    dispense_sm->state = CART_DISPENSE_IDLE;
+    dispense_sm->state = DISPENSE_IDLE;
     dispense_sm->fault_code = 0U;
     dispense_sm->product_may_have_dispensed = false;
     patty_handler_publish_slot(handler, slot_index);
@@ -419,7 +400,7 @@ static patty_handler_result_enum patty_handler_commit_dispense(patty_handler_t* 
   }
   else {
     cartridge->faulted = true;
-    dispense_sm->state = CART_DISPENSE_FAILED;
+    dispense_sm->state = DISPENSE_FAILED;
     dispense_sm->fault_code = PATTY_HANDLER_FAULT_INVENTORY;
     patty_handler_publish_slot(handler, slot_index);
   }
