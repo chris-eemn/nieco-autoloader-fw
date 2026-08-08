@@ -152,5 +152,13 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
     axis_clear_fault(axis);
     app_event.id = APP_EV_MOTION_DONE;
   }
+  else if (event == AXIS_EVENT_IDLE_FAULT) {
+    // todo: figure out why axis faults why idle.
+    // todo: clear fault just so we dont lock up
+    axis_clear_fault(axis); /* Clear the fault to allow further motion without immediately re-faulting the axis. */
+  }
+  else {
+    app_console_print("[Axis Event] Unhandled axis event %s\r\n", axis_event_name(event));
+  }
   (void)app_task_post(&app_event);
 }
