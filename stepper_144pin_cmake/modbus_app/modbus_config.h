@@ -33,7 +33,9 @@
 typedef enum {
   /* ID registers */
   REG_SLAVE_FW_VERSION = 1,
-  REG_SLAVE_SERIAL_NUMBER,  // 2
+  REG_SLAVE_SERIAL_NUMBER,      // 2
+  REG_PATTY1_ADD_TO_QUEUE = 3,  // 3
+  REG_PATTY2_ADD_TO_QUEUE = 4,  // 4
 
   REG_SLAVE_UI_ENTER_SELF_TEST_MODE = 500,  // Used to tell UI to go into self test mode on boot
   REG_SLAVE_UI_SELF_TEST_RESULTS = 501,     // used to indicate self test results. Bit0: 1 if self test mode was entered, else 0
