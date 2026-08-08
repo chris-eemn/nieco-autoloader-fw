@@ -113,13 +113,7 @@ void app_sm_port_save_state(void) {
   /* TODO: Queue the required nonvolatile records through the existing W25Q stack. */
 }
 
-/**
- * @brief Arm a timeout that posts APP_EV_TIMEOUT after a delay.
- * @param timeout Timeout ID carried in the event value field.
- * @param delay_ms Delay in milliseconds before the event is posted.
- * @note Up to MAX_PENDING_TIMER_EVENTS timeouts may be armed at once.
- */
-void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) {
+bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) {
   TickType_t period = pdMS_TO_TICKS(delay_ms);
   bool armed = false;
 
@@ -160,6 +154,8 @@ void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) 
   if (armed == false) {
     app_console_print("[app_sm_port] Failed to arm timeout timer\r\n");
   }
+
+  return armed;
 }
 
 /**

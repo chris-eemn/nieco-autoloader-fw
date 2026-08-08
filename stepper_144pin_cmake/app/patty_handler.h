@@ -126,7 +126,7 @@ void patty_handler_set_lto_pause(patty_handler_t* handler, bool active);
  * starting separate makes it easy to route both operations through one Control
  * task without blocking the Modbus callback.
  */
-patty_handler_result_enum patty_handler_add_request(patty_handler_t* handler, uint8_t product_type, uint16_t requested_count,
+patty_handler_result_enum patty_handler_add_request(patty_handler_t* handler, cartridge_type_t product_type, uint16_t requested_count,
                                                     patty_request_source_enum source);
 
 /**
@@ -150,6 +150,36 @@ patty_handler_result_enum patty_handler_process(patty_handler_t* handler);
  * @param event Motion completion, stall, timeout, or fault event.
  * @return Current handling result.
  */
-patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const dispense_event_t* event);
+patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const app_event_t* event);
 
+/**
+ * @brief Enables/disables allowing dispesnes.
+ *
+ * This function will prevent setting enabled=true if the door is open or unlocked.
+ *
+ * @param handler Initialized handler instance.
+ * @param enabled True to allow new dispense starts; false to block new starts.
+ * @return True when the enabled state is applied; otherwise false.
+ */
+bool patty_handler_set_dispensing_enabled(patty_handler_t* handler, bool enabled);
+
+/**
+ * @brief Reports whether any cartridge dispense state machine is currently
+ * active.
+ *
+ * @param handler Initialized handler instance.
+ * @return True when at least one slot is in an active (non-idle) dispense
+ * state; otherwise false.
+ */
+bool patty_handler_has_active_dispenses(const patty_handler_t* handler);
+
+/**
+ * @brief Reports whether the handler has remaining work to perform.
+ *
+ * Work includes pending requests and/or active dispense cycles.
+ *
+ * @param handler Initialized handler instance.
+ * @return True when any slot has pending or active work; otherwise false.
+ */
+bool patty_handler_has_work(const patty_handler_t* handler);
 #endif /* PATTY_HANDLER_H_ */

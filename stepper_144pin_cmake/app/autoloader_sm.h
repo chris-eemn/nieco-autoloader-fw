@@ -29,13 +29,6 @@
  *******************************************************************************/
 
 typedef struct {
-  app_event_id_enum id;
-  uint8_t slot;
-  uint16_t value;
-  uint8_t axis_num;
-} app_event_t;
-
-typedef struct {
   startup_state_enum state;
   uint32_t lift_homing_end_time_ms;
   uint32_t lift_homing_timeout_ms;

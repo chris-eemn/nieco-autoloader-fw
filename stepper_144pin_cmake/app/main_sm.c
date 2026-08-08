@@ -19,6 +19,7 @@
 
 #include "app_console.h"
 #include "app_sm_port.h"
+#include "patty_handler.h"
 
 /*******************************************************************************
  * Module Macros
@@ -38,6 +39,7 @@
 
 static void app_sm_enter_state(app_sm_t* sm, app_state_enum next);
 static void app_sm_enter_sequence_fault(app_sm_t* sm);
+static void handle_patty_request(app_sm_t* sm, const app_event_t* event);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -51,6 +53,10 @@ void app_sm_init(app_sm_t* sm) {
     for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
       sm->cartridge[slot].num = slot + 1;
     }
+    patty_handler_init(&sm->patty_handler, sm->cartridge);
+
+    // TODO; not safe but allows us to fake the door/lock for now
+    patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
     app_sm_port_publish_state(sm);
   }
 }
@@ -91,9 +97,11 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case APP_READY:
       app_console_print("[Main SM] Ready for dispense or reload\r\n");
-      if ((event->id == APP_EV_DISPENSE_REQUEST) && (event->slot < APP_SLOT_COUNT)) {
-        sm->active_slot = event->slot;
-        app_sm_enter_state(sm, APP_DISPENSE);
+
+      if (event->id == APP_EV_DISPENSE_REQUEST) {
+        app_console_print("[Main SM] Dispense request received: product_type=%s, count=%d\r\n", cartridge_type_to_string(event->product_type),
+                          event->value);
+        handle_patty_request(sm, event);
       }
       else if (event->id == APP_EV_RELOAD_REQUEST) {
         app_sm_enter_state(sm, APP_RELOAD);
@@ -101,23 +109,28 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_DISPENSE:
-      if (event->id == APP_EV_RELOAD_REQUEST) {
+      if (event->id == APP_EV_DISPENSE_REQUEST) {
+        /* New requests can be accepted while other cartridges are running. */
+        handle_patty_request(sm, event);
+      }
+      else if (event->id == APP_EV_RELOAD_REQUEST) {
         sm->reload_pending = true;
+
+        /*
+         * Prevent the handler from starting another queued cycle.
+         * Already-active cartridge cycles are allowed to finish.
+         */
+        patty_handler_set_dispensing_enabled(&sm->patty_handler, false);
       }
       else {
-        dispense_sm_dispatch(sm, event);
+        patty_handler_dispatch_event(&sm->patty_handler, event);
       }
 
-      if (sm->dispense == DISPENSE_COMPLETE) {
-        if (sm->reload_pending == true) {
-          app_sm_enter_state(sm, APP_RELOAD);
-        }
-        else {
-          app_sm_enter_state(sm, APP_READY);
-        }
+      if ((sm->reload_pending == true) && (patty_handler_has_active_dispenses(&sm->patty_handler) == false)) {
+        app_sm_enter_state(sm, APP_RELOAD);
       }
-      else if (sm->dispense == DISPENSE_FAILED) {
-        app_sm_enter_sequence_fault(sm);
+      else if (patty_handler_has_work(&sm->patty_handler) == false) {
+        app_sm_enter_state(sm, APP_READY);
       }
       break;
 
@@ -170,7 +183,7 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
         break;
 
       case APP_DISPENSE:
-        dispense_sm_start(sm, sm->active_slot);
+        // handled by patty_handler
         break;
 
       case APP_RELOAD:
@@ -207,5 +220,33 @@ static void app_sm_enter_sequence_fault(app_sm_t* sm) {
       sm->fault_code = APP_FAULT_CODE_SEQUENCE_ERROR;
     }
     app_sm_enter_state(sm, APP_FAULT);
+  }
+}
+
+/**
+ * @brief Submits a patty request and starts all eligible cartridges.
+ *
+ * @param sm Application state-machine context.
+ * @param event Patty request event.
+ */
+static void handle_patty_request(app_sm_t* sm, const app_event_t* event) {
+  patty_handler_result_enum request_result;
+  patty_handler_result_enum process_result;
+
+  request_result = patty_handler_add_request(&sm->patty_handler, event->product_type, event->value, PATTY_REQUEST_SOURCE_QUEUE);
+
+  if (request_result == PATTY_HANDLER_RESULT_OK) {
+    process_result = patty_handler_process(&sm->patty_handler);
+
+    if (process_result == PATTY_HANDLER_RESULT_MOTION_REJECTED) {
+      /* One or more cartridges rejected their initial motion command.
+       * The handler has already faulted those individual cartridges.
+       */
+    }
+
+    app_sm_enter_state(sm, APP_DISPENSE);
+  }
+  else {
+    /* TODO: Publish the appropriate rejected-request result to Modbus. */
   }
 }

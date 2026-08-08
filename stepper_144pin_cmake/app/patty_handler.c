@@ -85,7 +85,7 @@ void patty_handler_set_lto_pause(patty_handler_t* handler, bool active) {
   }
 }
 
-patty_handler_result_enum patty_handler_add_request(patty_handler_t* handler, uint8_t product_type, uint16_t requested_count,
+patty_handler_result_enum patty_handler_add_request(patty_handler_t* handler, cartridge_type_t product_type, uint16_t requested_count,
                                                     patty_request_source_enum source) {
   patty_handler_result_enum result = PATTY_HANDLER_RESULT_INVALID_ARGUMENT;
   uint32_t total_available;
@@ -200,25 +200,24 @@ patty_handler_result_enum patty_handler_process(patty_handler_t* handler) {
   return result;
 }
 
-patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const dispense_event_t* event) {
+patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const app_event_t* event) {
   patty_handler_result_enum result = PATTY_HANDLER_RESULT_INVALID_ARGUMENT;
   patty_handler_result_enum process_result;
-  uint8_t slot_index;
+  uint8_t slot_zero_based = event->slot - 1U;  // convert to zero-based index
 
-  if ((handler != NULL) && (handler->cartridge != NULL) && (event != NULL) && (event->slot_index < PATTY_HANDLER_SLOT_COUNT)) {
-    slot_index = event->slot_index;
-    result = dispense_sm_dispatch(&handler->dispense_sm[slot_index]);
+  if ((handler != NULL) && (handler->cartridge != NULL) && (event != NULL) && (slot_zero_based < PATTY_HANDLER_SLOT_COUNT)) {
+    result = dispense_sm_dispatch(&handler->dispense_sm[slot_zero_based], event);
 
-    if (handler->dispense_sm[slot_index].state == DISPENSE_COMPLETE) {
-      result = patty_handler_commit_dispense(handler, slot_index);
+    if (handler->dispense_sm[slot_zero_based].state == DISPENSE_COMPLETE) {
+      result = patty_handler_commit_dispense(handler, slot_zero_based);
     }
-    else if (handler->dispense_sm[slot_index].state == DISPENSE_FAILED) {
-      handler->cartridge[slot_index].faulted = true;
-      patty_handler_publish_slot(handler, slot_index);
+    else if (handler->dispense_sm[slot_zero_based].state == DISPENSE_FAILED) {
+      handler->cartridge[slot_zero_based].faulted = true;
+      patty_handler_publish_slot(handler, slot_zero_based);
       result = PATTY_HANDLER_RESULT_MOTION_REJECTED;
     }
     else {
-      patty_handler_publish_slot(handler, slot_index);
+      patty_handler_publish_slot(handler, slot_zero_based);
     }
 
     /* A failed slot_index does not prevent another slot_index from starting or continuing.
@@ -230,6 +229,50 @@ patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler,
   }
 
   return result;
+}
+
+bool patty_handler_set_dispensing_enabled(patty_handler_t* handler, bool enabled) {
+  if (handler != NULL) {
+    if (handler->door_closed == true && handler->door_locked == true) {
+      handler->dispensing_enabled = enabled;
+    }
+    else {
+      handler->dispensing_enabled = false;
+    }
+  }
+  return handler->dispensing_enabled;
+}
+
+bool patty_handler_has_active_dispenses(const patty_handler_t* handler) {
+  bool has_active_dispenses = false;
+  uint8_t slot_index;
+
+  if (handler != NULL) {
+    for (slot_index = 0U; slot_index < PATTY_HANDLER_SLOT_COUNT; slot_index++) {
+      if ((handler->dispense_sm[slot_index].state >= DISPENSE_PUSH_EXTEND) && (handler->dispense_sm[slot_index].state <= DISPENSE_LIFT_BACKOFF)) {
+        has_active_dispenses = true;
+        break;
+      }
+    }
+  }
+
+  return has_active_dispenses;
+}
+
+bool patty_handler_has_work(const patty_handler_t* handler) {
+  bool has_work = false;
+  uint8_t slot_index;
+
+  if (handler != NULL) {
+    for (slot_index = 0U; slot_index < PATTY_HANDLER_SLOT_COUNT; slot_index++) {
+      if ((handler->cartridge[slot_index].pending > 0U) && (handler->dispense_sm[slot_index].state == DISPENSE_IDLE)) {
+        has_work = true;
+        break;
+      }
+    }
+  }
+
+  return has_work;
 }
 
 /*******************************************************************************

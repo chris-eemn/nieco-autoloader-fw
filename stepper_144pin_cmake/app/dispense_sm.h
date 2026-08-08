@@ -45,12 +45,14 @@ typedef enum {
   DISPENSE_EVENT_MOTION_FAULT
 } dispense_event_id_enum;
 
+#if 0
 typedef struct {
   dispense_event_id_enum id;
-  uint8_t slot;
+  uint8_t slot_index;  // slots are 1-4, but this indexes into an array that starts at 0
   uint16_t fault_code;
   uint32_t measured_lift_travel_counts;
 } dispense_event_t;
+#endif
 
 /*
  * TODO: Add a command-generation value to dispense_event_t and
@@ -60,9 +62,10 @@ typedef struct {
 
 typedef struct {
   dispense_state_enum state;
-  uint8_t slot;
+  uint8_t slot_index;  // slots are 1-4, but this indexes into an array that starts at 0
   uint16_t fault_code;
   uint32_t measured_lift_travel_counts;
+  app_sm_timeout_id_enum timeout_id;
   bool product_may_have_dispensed;
 } dispense_sm_t;
 /*******************************************************************************
@@ -76,7 +79,7 @@ typedef struct {
  * @brief Initializes one cartridge dispense state-machine context.
  *
  * @param dispense_sm State-machine context to initialize.
- * @param slot Zero-based cartridge slot.
+ * @param slot Zero-based cartridge slot. slots are numbered 1-4, but this indexes into an array that starts at 0
  */
 void dispense_sm_init(dispense_sm_t* dispense_sm, uint8_t slot);
 
@@ -97,6 +100,6 @@ patty_handler_result_enum dispense_sm_start(dispense_sm_t* dispense_sm);
  * @return PATTY_HANDLER_RESULT_OK while handled, PATTY_HANDLER_RESULT_NO_ACTION
  * for an unrelated event, or an error result if the state machine fails.
  */
-patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const dispense_event_t* event);
+patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const app_event_t* event);
 
 #endif /* DISPENSE_SM_H_ */

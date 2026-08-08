@@ -44,6 +44,14 @@ typedef enum {
   APP_EV_FAULT_CLEARED,
   APP_EV_SHUTDOWN_REQUEST,
   APP_EV_TIMEOUT,
+#if 0
+  APP_DISP_EVENT_PUSH_EXTENDED = 0,
+  APP_DISP_EVENT_PUSH_RETRACTED,
+  APP_DISP_EVENT_LIFT_STALLED,
+  APP_DISP_EVENT_LIFT_BACKOFF_COMPLETE,
+  APP_DISP_EVENT_TIMEOUT,
+  APP_DISP_EVENT_MOTION_FAULT
+#endif
 } app_event_id_enum;
 
 typedef enum {
@@ -90,6 +98,29 @@ typedef enum {
   PATTY_HANDLER_RESULT_NOT_ENOUGH_PRODUCT,
   PATTY_HANDLER_RESULT_MOTION_REJECTED
 } patty_handler_result_enum;
+
+typedef enum {
+  APP_SM_TIMEOUT_NONE = 0,
+  APP_SM_TIMEOUT_LOCK,
+  APP_SM_TIMEOUT_UNLOCK,
+  APP_SM_TIMEOUT_STARTUP_PUSHER_HOME,
+  APP_SM_TIMEOUT_STARTUP_LIFTER_HOME,
+  APP_SM_TIMEOUT_STARTUP_DELAY,
+  APP_SM_TIMEOUT_MOTION,
+  APP_SM_CART1_DISPENSE,
+  APP_SM_CART2_DISPENSE,
+  APP_SM_CART3_DISPENSE,
+  APP_SM_CART4_DISPENSE,
+  APP_SM_TIMEOUT_DOOR,
+} app_sm_timeout_id_enum;
+
+typedef struct {
+  app_event_id_enum id;
+  uint8_t slot;          // this is a cartridge slot number 1-4, cannot be used to index into an array that starts at 0
+  uint8_t product_type;  // cartridge_type_enum
+  uint16_t value;        // AXIS_EVENT_FAULT
+  uint8_t axis_num;      // axis numer 1-8
+} app_event_t;
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
