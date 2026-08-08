@@ -18,6 +18,7 @@
 
 #include "app_console.h"
 #include "app_sm_port.h"
+#include "app_task.h"
 
 /*******************************************************************************
  * Module Macros
@@ -184,7 +185,26 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       }
       break;
 
+    case STARTUP_DETERMINE_TYPE:
+      if (event->id == APP_EV_HOME_DONE) {
+        for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+          cartridge_determine_type(&sm->cartridge[i]);
+          app_console_print("[Startup SM] Cartridge %d type determined: %s\r\n", i + 1U, cartridge_type_to_string(sm->cartridge[i].type));
+        }
+
+        sm->startup.state = STARTUP_COUNT_CARTRIDGES;
+        for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+          app_sm_port_count_cartridges(&sm->cartridge[i]);
+        }
+      }
+      else {
+        app_console_print("[Startup SM] Unexpected event in STARTUP_DETERMINE_TYPE: id=%d, value=%d\r\n", event->id, event->value);
+      }
+
+      break;
+
     case STARTUP_COUNT_CARTRIDGES:
+      app_console_print("[Startup SM] Counting cartridges\r\n");
       if (event->id == APP_EV_COUNT_DONE) {
         app_sm_port_cancel_timeout();
         sm->startup.state = STARTUP_COMPLETE;

@@ -25,7 +25,8 @@
  * Module Typedefs
  *******************************************************************************/
 typedef enum { PUSHER = 0U, LIFTER = 1U } cartridge_actuator_type_t;
-typedef enum { CARTRIDGE_1 = 0U, CARTRIDGE_2 = 1U, CARTRIDGE_3 = 2U, CARTRIDGE_4 = 3U } cartridge_id_t;
+typedef enum { CARTRIDGE_TYPE_EMPTY, CARTRIDGE_TYPE_WHOPPER, CARTRIDGE_TYPE_JR, CARTRIDGE_TYPE_LTO } cartridge_type_t;
+
 typedef enum {
   DIR_PUSHER_IN = 0U,
   DIR_PUSHER_OUT = 1U,
