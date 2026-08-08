@@ -82,19 +82,21 @@ void cartridge_determine_type(cartridge_t* cartridge) {
   uint8_t sensor1_value = 0;
   uint8_t sensor2_value = 0;
 
+  // todo: these pins are hardcoded for now, but should be mapped to the cartridge slot number in the future
+  // these pins are internally pulled HIGH, so expecting catridge to pull low when present
   sensor1_value = HAL_GPIO_ReadPin(CARTRIDGE_SENSOR_1_PORT, CARTRIDGE_SENSOR_1_PIN);
   sensor2_value = HAL_GPIO_ReadPin(CARTRIDGE_SENSOR_2_PORT, CARTRIDGE_SENSOR_2_PIN);
 
-  if ((sensor1_value == 0) && (sensor2_value == 0)) {
+  if ((sensor1_value == 1) && (sensor2_value == 1)) {
     cartridge->type = CARTRIDGE_TYPE_EMPTY;
   }
-  else if ((sensor1_value == 1) && (sensor2_value == 0)) {
+  else if ((sensor1_value == 0) && (sensor2_value == 1)) {
     cartridge->type = CARTRIDGE_TYPE_WHOPPER;
   }
-  else if ((sensor1_value == 0) && (sensor2_value == 1)) {
+  else if ((sensor1_value == 1) && (sensor2_value == 0)) {
     cartridge->type = CARTRIDGE_TYPE_JR;
   }
-  else if ((sensor1_value == 1) && (sensor2_value == 1)) {
+  else if ((sensor1_value == 0) && (sensor2_value == 0)) {
     cartridge->type = CARTRIDGE_TYPE_LTO;
   }
 }
