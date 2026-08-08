@@ -35,21 +35,22 @@
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
-uint8_t cartridge_get_axis_num(cartridge_id_t slot, cartridge_actuator_type_t type) {
+uint8_t cartridge_get_axis_num(cartridge_t* slot, cartridge_actuator_type_t type) {
   uint8_t axis_num = 0U;
   /*
-    CARTRIDGE SLOT 0 -> PUSHER AXIS 1, LIFTER AXIS 2
-    CARTRIDGE SLOT 1 -> PUSHER AXIS 3, LIFTER AXIS 4
-    CARTRIDGE SLOT 2 -> PUSHER AXIS 5, LIFTER AXIS 6
-    CARTRIDGE SLOT 3 -> PUSHER AXIS 7, LIFTER AXIS 8
+    CARTRIDGE SLOT 1 -> PUSHER AXIS 1, LIFTER AXIS 2
+    CARTRIDGE SLOT 2 -> PUSHER AXIS 3, LIFTER AXIS 4
+    CARTRIDGE SLOT 3 -> PUSHER AXIS 5, LIFTER AXIS 6
+    CARTRIDGE SLOT 4 -> PUSHER AXIS 7, LIFTER AXIS 8
   */
 
-  if (slot < APP_SLOT_COUNT) {
+  // slot nums start from 1-4
+  if (slot->num <= APP_SLOT_COUNT) {
     if (type == PUSHER) {
-      axis_num = (uint8_t)((slot * 2U) + 1U);
+      axis_num = (uint8_t)(((slot->num - 1) * 2U) + 1U);
     }
     else if (type == LIFTER) {
-      axis_num = (uint8_t)((slot * 2U) + 2U);
+      axis_num = (uint8_t)(((slot->num - 1) * 2U) + 2U);
     }
   }
 
@@ -62,12 +63,12 @@ uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num, cartridge_actuator_ty
   if ((axis_num > 0U) && (axis_num <= (APP_SLOT_COUNT * 2U))) {
     if (type == PUSHER) {
       if ((axis_num % 2U) == 1U) {
-        slot = (int8_t)((axis_num - 1U) / 2U);
+        slot = (int8_t)(((axis_num - 1U) / 2U) + 1U);
       }
     }
     else if (type == LIFTER) {
       if ((axis_num % 2U) == 0U) {
-        slot = (int8_t)((axis_num - 2U) / 2U);
+        slot = (int8_t)(((axis_num - 2U) / 2U) + 1U);
       }
     }
   }

@@ -54,50 +54,53 @@ void app_sm_port_lock_door(void);
 void app_sm_port_unlock_door(void);
 
 /**
- * @brief Command one pusher axis to home.
- * @param slot Zero-based cartridge slot.
+ * @brief Home the pusher axis for a cartridge slot.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
  */
-void app_sm_port_home_pusher(cartridge_id_t slot);
+void app_sm_port_home_pusher(cartridge_t* slot);
 
 /**
- * @brief Command one lift axis to home.
- * @param slot Zero-based cartridge slot.
- * @param direction Homing direction for the lift axis.
+ * @brief Home the lift axis for a cartridge slot.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
+ * @param direction Lift homing direction.
  */
-void app_sm_port_home_lift(cartridge_id_t slot, cartridge_direction_t direction);
-
-/** @brief Begin cartridge stack measurement. */
-void app_sm_port_count_cartridges(void);
+void app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction);
 
 /**
- * @brief Extend the pusher for one cartridge.
- * @param slot Zero-based cartridge slot.
+ * @brief Begin cartridge stack measurement.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
  */
-void app_sm_port_push_extend(cartridge_id_t slot);
+void app_sm_port_count_cartridges(cartridge_t* slot);
 
 /**
- * @brief Retract the pusher for one cartridge.
- * @param slot Zero-based cartridge slot.
+ * @brief Extend the pusher for a cartridge slot.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
  */
-void app_sm_port_push_retract(cartridge_id_t slot);
+void app_sm_port_push_extend(cartridge_t* slot);
 
 /**
- * @brief Move one lift upward until stall is detected.
- * @param slot Zero-based cartridge slot.
+ * @brief Retract the pusher for a cartridge slot.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
  */
-void app_sm_port_lift_seek(cartridge_id_t slot);
+void app_sm_port_push_retract(cartridge_t* slot);
 
 /**
- * @brief Back one lift away from the top plate.
- * @param slot Zero-based cartridge slot.
+ * @brief Move the lift upward until stall is detected.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
  */
-void app_sm_port_lift_backoff(cartridge_id_t slot);
+void app_sm_port_lift_seek(cartridge_t* slot);
+
+/**
+ * @brief Back the lift away from the top plate.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
+ */
+void app_sm_port_lift_backoff(cartridge_t* slot);
 
 /**
  * @brief Commit successful dispense accounting.
- * @param slot Zero-based cartridge slot.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
  */
-void app_sm_port_commit_dispense(cartridge_id_t slot);
+void app_sm_port_commit_dispense(cartridge_t* slot);
 
 /** @brief Halt every axis immediately. */
 void app_sm_port_halt_all_motion(void);

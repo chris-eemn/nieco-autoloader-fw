@@ -60,11 +60,11 @@ void app_sm_port_unlock_door(void) {
   /* TODO: Release the door-lock output. */
 }
 
-void app_sm_port_home_pusher(cartridge_id_t slot) {
+void app_sm_port_home_pusher(cartridge_t* slot) {
   axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)), STEPPER_DIR_CW);
 }
 
-void app_sm_port_home_lift(cartridge_id_t slot, cartridge_direction_t direction) {
+void app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction) {
   if (direction == DIR_LIFTER_DOWN) {
     axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)), STEPPER_DIR_CW);
   }
@@ -76,31 +76,31 @@ void app_sm_port_home_lift(cartridge_id_t slot, cartridge_direction_t direction)
   }
 }
 
-void app_sm_port_count_cartridges(void) {
-  /* TODO: Characterize the fitted cartridges and post APP_EV_COUNT_DONE on completion. */
+void app_sm_port_count_cartridges(cartridge_t* slot) {
+  axis_get_home_travel_counts(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)));
 }
 
-void app_sm_port_push_extend(cartridge_id_t slot) {
+void app_sm_port_push_extend(cartridge_t* slot) {
   (void)slot;
   /* TODO: Map the slot to its pusher axis. */
 }
 
-void app_sm_port_push_retract(cartridge_id_t slot) {
+void app_sm_port_push_retract(cartridge_t* slot) {
   (void)slot;
   /* TODO: Map the slot to its pusher axis. */
 }
 
-void app_sm_port_lift_seek(cartridge_id_t slot) {
+void app_sm_port_lift_seek(cartridge_t* slot) {
   (void)slot;
   /* TODO: Map the slot to its lift axis and post APP_EV_STALL_DETECTED on expected stall. */
 }
 
-void app_sm_port_lift_backoff(cartridge_id_t slot) {
+void app_sm_port_lift_backoff(cartridge_t* slot) {
   (void)slot;
   /* TODO: Map the slot to its lift axis. */
 }
 
-void app_sm_port_commit_dispense(cartridge_id_t slot) {
+void app_sm_port_commit_dispense(cartridge_t* slot) {
   (void)slot;
   /* TODO: Update remaining and pending counts after confirmed mechanical completion. */
 }

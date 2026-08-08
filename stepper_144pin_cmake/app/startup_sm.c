@@ -67,7 +67,7 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
         sm->startup.state = STARTUP_HOME_PUSHERS;
         for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
-          app_sm_port_home_pusher(i);
+          app_sm_port_home_pusher(&sm->cartridge[i]);
           app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
         }
       }
@@ -96,7 +96,7 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
           sm->startup.state = STARTUP_HOME_LIFTS_DOWN;
           app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
           for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
-            app_sm_port_home_lift(i, DIR_LIFTER_DOWN);
+            app_sm_port_home_lift(&sm->cartridge[i], DIR_LIFTER_DOWN);
             app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
           }
         }
@@ -112,7 +112,8 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case STARTUP_HOME_LIFTS_DOWN:
       if (event->id == APP_EV_MOTION_DONE) {
-        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num, LIFTER);
+        // cartridge nums are labeled 1-4, but the array is indexed at 0
+        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num, LIFTER) - 1;
         sm->cartridge[cartridge].lifter_homed_down = true;
 
         bool all_lifts_homed_down = true;
@@ -143,7 +144,7 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_STARTUP_DELAY)) {
         sm->startup.state = STARTUP_HOME_LIFTS_UP;
         for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
-          app_sm_port_home_lift(i, DIR_LIFTER_UP);
+          app_sm_port_home_lift(&sm->cartridge[i], DIR_LIFTER_UP);
           app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
         }
       }
@@ -154,7 +155,8 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case STARTUP_HOME_LIFTS_UP:
       if (event->id == APP_EV_MOTION_DONE) {
-        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num, LIFTER);
+        // cartridge nums are labeled 1-4, but the array is indexed at 0
+        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num, LIFTER) - 1;
         sm->cartridge[cartridge].lifter_homed_up = true;
 
         bool all_lifts_homed_up = true;
@@ -167,9 +169,14 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
         if (all_lifts_homed_up) {
           app_console_print("[Startup SM] Lifts homed up\r\n");
-          sm->startup.state = STARTUP_COUNT_CARTRIDGES;
+          sm->startup.state = STARTUP_DETERMINE_TYPE;
           app_sm_port_cancel_timeout();
-          app_sm_port_count_cartridges();
+          const app_event_t start_event = {
+              .id = APP_EV_HOME_DONE,
+              .slot = APP_NO_SLOT,
+              .value = 0U,
+          };
+          app_task_post(&start_event);
         }
       }
       else if (event->id == APP_EV_TIMEOUT) {

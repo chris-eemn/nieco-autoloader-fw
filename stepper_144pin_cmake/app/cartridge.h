@@ -35,8 +35,9 @@ typedef enum {
 } cartridge_direction_t;
 
 typedef struct {
-  uint8_t num;
-  uint8_t type;
+  uint8_t num;  // 1-4
+  cartridge_type_t type;
+  uint32_t lifter_home_up_encoder_counts;  // counts before stationary up, used to calculate patty thickness
   uint16_t remaining;
   uint16_t pending;
   bool faulted;
@@ -51,6 +52,37 @@ typedef struct {
 /*******************************************************************************
  *Function Prototypes
  *******************************************************************************/
-uint8_t cartridge_get_axis_num(cartridge_id_t slot, cartridge_actuator_type_t type);
+/**
+ * @brief Gets the axis number for a given cartridge slot and actuator type.
+ *
+ * @param slot Cartridge slot identifier.
+ * @param type Actuator type (pusher or lifter).
+ * @return uint8_t Axis number associated with the specified slot and actuator.
+ */
+uint8_t cartridge_get_axis_num(cartridge_t* slot, cartridge_actuator_type_t type);
+
+/**
+ * @brief Gets the cartridge slot identifier from an axis number and actuator type.
+ *
+ * @param axis_num Axis number to convert.
+ * @param type Actuator type (pusher or lifter).
+ * @return uint8_t Cartridge slot identifier corresponding to the specified axis. Note that this function returns 1-4 for valid slots, and -1 for
+ * invalid axis numbers. but the catridge array is indexed at 0-3.
+ */
 uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num, cartridge_actuator_type_t type);
+
+/**
+ * @brief Determines and updates the cartridge type metadata.
+ *
+ * @param cartridge Pointer to the cartridge structure to evaluate and update.
+ */
+void cartridge_determine_type(cartridge_t* cartridge);
+
+/**
+ * @brief Converts a cartridge type enum value to a human-readable string.
+ *
+ * @param type Cartridge type enum value.
+ * @return const char* Pointer to a null-terminated string representing the cartridge type.
+ */
+const char* cartridge_type_to_string(cartridge_type_t type);
 #endif /* CARTRIDGE_H_ */
