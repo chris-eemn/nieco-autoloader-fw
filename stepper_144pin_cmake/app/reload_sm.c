@@ -45,7 +45,7 @@ void reload_sm_start(app_sm_t* sm) {
       sm->cartridge[slot].pusher_homed = false;
       sm->cartridge[slot].lifter_homed_down = false;
       sm->cartridge[slot].lifter_homed_up = false;
-      app_sm_port_home_pusher(slot);
+      // app_sm_port_home_pusher(slot);
     }
     app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
   }
@@ -67,7 +67,7 @@ void reload_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         app_sm_port_cancel_timeout();
         sm->reload = RELOAD_HOME_LIFTS;
         for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
-          app_sm_port_home_lift(slot, DIR_LIFTER_UP);
+          // app_sm_port_home_lift(slot, DIR_LIFTER_UP);
         }
         app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
       }
@@ -111,7 +111,7 @@ void reload_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       if (event->id == APP_EV_LOCK_CONFIRMED) {
         app_sm_port_cancel_timeout();
         sm->reload = RELOAD_COUNT_CARTRIDGES;
-        app_sm_port_count_cartridges();
+        // app_sm_port_count_cartridges();
         app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
       }
       break;

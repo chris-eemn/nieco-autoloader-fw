@@ -42,7 +42,7 @@ void dispense_sm_start(app_sm_t* sm, uint8_t slot) {
   if (sm != NULL) {
     sm->active_slot = slot;
     sm->dispense = DISPENSE_PUSH_EXTEND;
-    app_sm_port_push_extend(slot);
+    // app_sm_port_push_extend(slot);
     app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
   }
 }
@@ -62,7 +62,7 @@ void dispense_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       if (event->id == APP_EV_MOTION_DONE) {
         app_sm_port_cancel_timeout();
         sm->dispense = DISPENSE_PUSH_RETRACT;
-        app_sm_port_push_retract(sm->active_slot);
+        // app_sm_port_push_retract(sm->active_slot);
         app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
       }
       break;
@@ -71,7 +71,7 @@ void dispense_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       if (event->id == APP_EV_MOTION_DONE) {
         app_sm_port_cancel_timeout();
         sm->dispense = DISPENSE_LIFT_SEEK;
-        app_sm_port_lift_seek(sm->active_slot);
+        // app_sm_port_lift_seek(sm->active_slot);
         app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
       }
       break;
@@ -80,7 +80,7 @@ void dispense_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       if (event->id == APP_EV_STALL_DETECTED) {
         app_sm_port_cancel_timeout();
         sm->dispense = DISPENSE_LIFT_BACKOFF;
-        app_sm_port_lift_backoff(sm->active_slot);
+        // app_sm_port_lift_backoff(sm->active_slot);
         app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
       }
       break;
@@ -88,7 +88,7 @@ void dispense_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     case DISPENSE_LIFT_BACKOFF:
       if (event->id == APP_EV_MOTION_DONE) {
         app_sm_port_cancel_timeout();
-        app_sm_port_commit_dispense(sm->active_slot);
+        // app_sm_port_commit_dispense(sm->active_slot);
         sm->dispense = DISPENSE_COMPLETE;
       }
       break;
