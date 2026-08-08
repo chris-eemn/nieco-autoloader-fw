@@ -210,6 +210,11 @@ struct axis_s {
   uint8_t home_direction; /**< Seek direction of the active homing sequence, captured from axis_home().
                            *!< The back-off move drives opposite to it.                                */
 
+  int32_t home_start_counts;  /**< Encoder count sampled when axis_home() accepted the sequence.       */
+  int32_t home_travel_counts; /**< Net encoder displacement from the start of the seek to the end of
+                               *!< the back-off, latched just before the encoder is zeroed. Reported by
+                               *!< axis_get_home_travel_counts().                                      */
+
   uint32_t settle_delay_ms;    /**< Time to wait after hitting the endstop before starting the back-off move. */
   uint32_t settle_end_time_ms; /**< Absolute time when the settle delay ends. Written by the supervisor task. */
 };
@@ -327,6 +332,9 @@ uint8_t axis_is_busy(const axis_t* axis);
  *         STEPPER_OK exactly one AXIS_EVENT_HOME_* event is delivered to the
  *         registered callback when the sequence ends.
  *
+ *         On success the distance covered is available from
+ *         axis_get_home_travel_counts().
+ *
  * @param  axis       Handle returned by axis_init(). Must not be NULL.
  * @param  direction  Seek direction: STEPPER_DIR_CW or STEPPER_DIR_CCW.
  *                    The back-off move drives the other way.
@@ -337,6 +345,30 @@ uint8_t axis_is_busy(const axis_t* axis);
  *                         STEPPER_DIR_* value.
  */
 stepper_status_enum axis_home(axis_t* axis, uint8_t direction);
+
+/**
+ * @brief  Return how far the axis travelled during the last successful homing
+ *         sequence: the net encoder displacement from the start of the seek to
+ *         the end of the back-off. A seek of 10000 counts followed by a 200
+ *         count back-off reports 9800.
+ *
+ *         Latched immediately before the encoder is zeroed, so it is already
+ *         valid when AXIS_EVENT_HOME_DONE is delivered and can be read from
+ *         inside the event callback.
+ *
+ *         The value is signed and follows the encoder's own sign convention, so
+ *         a seek in the negative-counting direction reports a negative number.
+ *         Take the absolute value for a direction-independent distance.
+ *
+ *         Cleared to 0 by each axis_home() call, so a sequence that ends in
+ *         AXIS_EVENT_HOME_FAILED or AXIS_EVENT_HOME_ABORTED reports 0 rather
+ *         than the previous sequence's distance.
+ *
+ * @param  axis  Handle returned by axis_init(). Must not be NULL.
+ * @return Net encoder counts travelled, or 0 if axis is NULL or the last homing
+ *         sequence did not complete.
+ */
+int32_t axis_get_home_travel_counts(const axis_t* axis);
 
 /**
  * @brief  Clear a latched AXIS_STATUS_STALLED or AXIS_STATUS_FAULT and return

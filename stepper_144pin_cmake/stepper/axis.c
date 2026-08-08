@@ -221,6 +221,14 @@ int32_t axis_get_encoder_count(const axis_t* axis) {
   return encoder_get_count(axis->encoder);
 }
 
+int32_t axis_get_home_travel_counts(const axis_t* axis) {
+  if (axis == NULL) {
+    return 0;
+  }
+
+  return axis->home_travel_counts;
+}
+
 stepper_status_enum axis_move(axis_t* axis, uint32_t steps, uint32_t rpm, uint8_t direction) {
   if (axis == NULL) {
     return STEPPER_INVALID;
@@ -294,6 +302,12 @@ stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
   axis->home_direction = direction;
   axis->homing_substate = HOMING_SEEK;
   axis->status = AXIS_STATUS_HOMING;
+
+  /* Reference for the travel distance reported by axis_get_home_travel_counts().
+   * The result is cleared here so a sequence that faults or aborts reports 0
+   * instead of the distance measured by the previous sequence. */
+  axis->home_start_counts = encoder_get_count(axis->encoder);
+  axis->home_travel_counts = 0;
 
   app_console_print("[AXIS %d] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", axis->num, direction, axis->config.home_rpm,
                     axis->config.home_max_steps);
@@ -520,10 +534,14 @@ static void handle_homing_tick(axis_t* axis) {
 
     case HOMING_BACKOFF: {
       if (stepper_is_busy(axis->motor) == 0U) {
+        /* Latch the seek-plus-backoff distance before zeroing, which discards it.
+         * Ordered ahead of axis_emit() so the callback can read the result. */
+        axis->home_travel_counts = encoder_get_count(axis->encoder) - axis->home_start_counts;
+
         encoder_zero(axis->encoder);
         axis->homing_substate = HOMING_IDLE;
         axis->status = AXIS_STATUS_OK;
-        app_console_print("[AXIS %d] Homing complete. Encoder zeroed.\r\n", axis->num);
+        app_console_print("[AXIS %d] Homing complete. Travelled %ld counts. Encoder zeroed.\r\n", axis->num, axis->home_travel_counts);
         axis_emit(axis, AXIS_EVENT_HOME_DONE);
       }
       break;
