@@ -77,7 +77,7 @@ void app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction) {
 }
 
 void app_sm_port_count_cartridges(cartridge_t* slot) {
-  axis_get_home_travel_counts(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)));
+  slot->lifter_home_up_encoder_counts = axis_get_home_travel_counts(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)));
 }
 
 void app_sm_port_push_extend(cartridge_t* slot) {

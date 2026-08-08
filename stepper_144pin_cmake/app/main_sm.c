@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "app_console.h"
 #include "app_sm_port.h"
 
 /*******************************************************************************
@@ -80,6 +81,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     case APP_STARTUP:
       startup_sm_dispatch(sm, event);
       if (sm->startup.state == STARTUP_COMPLETE) {
+        app_console_print("[Startup SM] Startup complete\r\n");
         app_sm_enter_state(sm, APP_READY);
       }
       else if (sm->startup.state == STARTUP_FAILED) {
@@ -88,6 +90,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_READY:
+      app_console_print("[Main SM] Ready for dispense or reload\r\n");
       if ((event->id == APP_EV_DISPENSE_REQUEST) && (event->slot < APP_SLOT_COUNT)) {
         sm->active_slot = event->slot;
         app_sm_enter_state(sm, APP_DISPENSE);
