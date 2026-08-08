@@ -22,7 +22,7 @@
  * Module Macros
  *******************************************************************************/
 
-#define CONSOLE_TX_QUEUE_DEPTH 32   /* number of messages in flight      */
+#define CONSOLE_TX_QUEUE_DEPTH 16   /* number of messages in flight      */
 #define CONSOLE_TX_MSG_MAX_LEN 128  /* max bytes per formatted message   */
 #define CONSOLE_CLI_MAX_LINE_LEN 80 /* max chars in one CLI input line   */
 #define CONSOLE_CLI_MAX_ARGS 8      /* max tokens per command            */
