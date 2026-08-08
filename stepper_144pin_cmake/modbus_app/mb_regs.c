@@ -38,7 +38,7 @@ static int reg_patty2_add_to_queue_write(uint16_t reg, uint16_t val);
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
-static mb_holding_reg_def_t regs[MB_REG_ARRAY_SIZE] = {
+static mb_holding_reg_def_t regs_defines[] = {
     {.reg_id = REG_PATTY1_ADD_TO_QUEUE,
      .read_callback = reg_patty1_add_to_queue_read,
      .write_callback = reg_patty1_add_to_queue_write,
@@ -126,8 +126,8 @@ void mb_regs_init(void) {
   slave_params.response_delay_us = 5000;
   MB_InitializeModbus(&ui_slave, get_ui_port_fns(), &slave_params);
 
-  for (int i = 0; i < REG_ARRAY_LENGTH; i++) {
-    MB_AddHoldingRegister(&reg_array, &regs[i]);
+  for (int i = 0; i < (sizeof(regs_defines) / sizeof(regs_defines[0])); i++) {
+    MB_AddHoldingRegister(&reg_array, &regs_defines[i]);
   }
 
   MB_AddHoldingRegister(&reg_array, &fw_ver_reg);

@@ -23,7 +23,7 @@
  *******************************************************************************/
 #define MB_BAUD_RATE 57600
 #define MB_RESPONSE_DELAY_US 500
-#define MB_REG_ARRAY_SIZE (16)
+#define MB_REG_ARRAY_SIZE (32)
 #define MB_SLAVE_ADDR (15)
 
 /*******************************************************************************
