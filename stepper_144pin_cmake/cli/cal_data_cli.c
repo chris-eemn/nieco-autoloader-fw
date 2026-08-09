@@ -20,6 +20,9 @@
 #include "app_console.h"
 #include "stepper_system.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -114,6 +117,7 @@ void cal_data_cli_list_handler(void) {
     if (value != NULL) {
       app_console_print("  %2ld %-21s %lu\r\n", (long)i, s_param_names[i], (unsigned long)*value);
     }
+    vTaskDelay(pdMS_TO_TICKS(10U)); /* Yield to the console task so it can flush the output. */
   }
 
   app_console_print("  a 'param set' is written to flash immediately; 'param reset' for defaults\r\n");
