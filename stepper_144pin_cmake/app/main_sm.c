@@ -54,6 +54,20 @@ static const char* const app_event_id_names[] = {
     [APP_EV_SHUTDOWN_REQUEST] = "APP_EV_SHUTDOWN_REQUEST",
     [APP_EV_TIMEOUT] = "APP_EV_TIMEOUT",
 };
+static const char* const app_sm_timeout_id_names[] = {
+    [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
+    [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
+    [APP_SM_TIMEOUT_UNLOCK] = "APP_SM_TIMEOUT_UNLOCK",
+    [APP_SM_TIMEOUT_STARTUP_PUSHER_HOME] = "APP_SM_TIMEOUT_STARTUP_PUSHER_HOME",
+    [APP_SM_TIMEOUT_STARTUP_LIFTER_HOME] = "APP_SM_TIMEOUT_STARTUP_LIFTER_HOME",
+    [APP_SM_TIMEOUT_STARTUP_DELAY] = "APP_SM_TIMEOUT_STARTUP_DELAY",
+    [APP_SM_TIMEOUT_MOTION] = "APP_SM_TIMEOUT_MOTION",
+    [APP_SM_CART1_DISPENSE] = "APP_SM_CART1_DISPENSE",
+    [APP_SM_CART2_DISPENSE] = "APP_SM_CART2_DISPENSE",
+    [APP_SM_CART3_DISPENSE] = "APP_SM_CART3_DISPENSE",
+    [APP_SM_CART4_DISPENSE] = "APP_SM_CART4_DISPENSE",
+    [APP_SM_TIMEOUT_DOOR] = "APP_SM_TIMEOUT_DOOR",
+};
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -88,7 +102,12 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     return;
   }
 
-  app_console_print("[Main SM] Event received: id=%s, slot=%d, value=%d\r\n", app_event_id_to_str(event->id), event->slot, event->value);
+  if (event->id == APP_EV_TIMEOUT) {
+    app_console_print("[Main SM] Timeout event received: timeout_id=%s\r\n", app_sm_timeout_id_to_str((app_sm_timeout_id_enum)event->value));
+  }
+  else {
+    app_console_print("[Main SM] Event received: id=%s, slot=%d, value=%d\r\n", app_event_id_to_str(event->id), event->slot, event->value);
+  }
 
   if (event->id == APP_EV_SHUTDOWN_REQUEST) {
     app_sm_enter_state(sm, APP_SHUTDOWN);
@@ -301,4 +320,12 @@ const char* app_event_id_to_str(app_event_id_enum event_id) {
   }
 
   return app_event_id_names[event_id];
+}
+
+const char* app_sm_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
+  if ((size_t)timeout_id >= (sizeof(app_sm_timeout_id_names) / sizeof(app_sm_timeout_id_names[0]))) {
+    return "APP_SM_TIMEOUT_UNKNOWN";
+  }
+
+  return app_sm_timeout_id_names[timeout_id];
 }
