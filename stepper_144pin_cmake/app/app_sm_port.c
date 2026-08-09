@@ -81,7 +81,7 @@ void app_sm_port_count_cartridges(cartridge_t* slot) {
 }
 
 void app_sm_port_push_extend(cartridge_t* slot) {
-#define FAKE_PUSH_EXTEND_COUNTS (3000U)
+#define FAKE_PUSH_EXTEND_COUNTS (1000U)
 #define FAKE_PUSH_EXTEND_RPM 15
 #define FAKE_PUSH_EXTEND_DIR STEPPER_DIR_CCW
 
@@ -93,7 +93,7 @@ void app_sm_port_push_extend(cartridge_t* slot) {
 }
 
 void app_sm_port_push_retract(cartridge_t* slot) {
-#define FAKE_PUSH_RETRACT_COUNTS (3000U)
+#define FAKE_PUSH_RETRACT_COUNTS (1000U)
 #define FAKE_PUSH_RETRACT_RPM 20
 #define FAKE_PUSH_RETRACT_DIR STEPPER_DIR_CW
   uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
