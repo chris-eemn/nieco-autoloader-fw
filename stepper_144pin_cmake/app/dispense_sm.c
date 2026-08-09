@@ -108,8 +108,7 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
     result = PATTY_HANDLER_RESULT_NO_ACTION;
     uint8_t slot_zero_based = event->slot - 1U;  // convert to zero-based index
 
-    if ((slot_zero_based == dispense_sm->slot_index) && (dispense_sm->state >= DISPENSE_PUSH_EXTEND) &&
-        (dispense_sm->state <= DISPENSE_LIFT_BACKOFF)) {
+    if ((slot_zero_based == dispense_sm->slot_index) && (dispense_sm->state >= DISPENSE_PUSH_EXTEND) && (dispense_sm->state <= DISPENSE_LIFT_SEEK)) {
       uint8_t fault_code = get_dispense_fault_code_from_event(event);
 
       if (fault_code != DISPENSE_FAULT_NONE) {
@@ -137,16 +136,9 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
           case DISPENSE_LIFT_SEEK:
             if (event->id == APP_EV_MOTION_DONE) {
               // todo: implement
-              // app_sm_port_cancel_timeout_id(dispense_sm->slot);
+              // app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
               // dispense_sm->measured_lift_travel_counts = event->measured_lift_travel_counts;
-              result = dispense_start_motion(dispense_sm, DISPENSE_LIFT_BACKOFF);
-            }
-            break;
-
-          case DISPENSE_LIFT_BACKOFF:
-            if (event->id == APP_EV_MOTION_DONE) {
-              // todo: implement
-              // app_sm_port_cancel_timeout_id(dispense_sm->slot);
+              // lift home also will backoff automatically
               dispense_sm->state = DISPENSE_COMPLETE;
               result = PATTY_HANDLER_RESULT_OK;
             }
@@ -205,7 +197,7 @@ static patty_handler_result_enum dispense_start_motion(dispense_sm_t* dispense_s
 
   if (command_started == true) {
     app_console_print("[Dispense SM] Started motion for slot %d, state=%d\r\n", dispense_sm->slot_index + 1U, next_state);
-    timer_started = app_sm_port_arm_timeout(dispense_sm->timeout_id, 5000U);
+    timer_started = app_sm_port_arm_timeout(dispense_sm->timeout_id, 1000U);
     if (timer_started == true) {
       result = PATTY_HANDLER_RESULT_OK;
     }
@@ -269,9 +261,7 @@ static bool start_motion(cartridge_t* cartridge, dispense_state_enum next_state)
     case DISPENSE_LIFT_SEEK:
       // determine axis number from slot number
       app_console_print("[Dispense SM] Starting lift seek for slot %d\r\n", cartridge->num);
-      break;
-    case DISPENSE_LIFT_BACKOFF:
-      // determine axis number from slot number
+      app_sm_port_home_lift(cartridge, DIR_LIFTER_UP);
       break;
     default:
       break;

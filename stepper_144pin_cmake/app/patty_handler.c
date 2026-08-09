@@ -259,7 +259,7 @@ bool patty_handler_has_active_dispenses(const patty_handler_t* handler) {
 
   if (handler != NULL) {
     for (slot_index = 0U; slot_index < PATTY_HANDLER_SLOT_COUNT; slot_index++) {
-      if ((handler->dispense_sm[slot_index].state >= DISPENSE_PUSH_EXTEND) && (handler->dispense_sm[slot_index].state <= DISPENSE_LIFT_BACKOFF)) {
+      if ((handler->dispense_sm[slot_index].state >= DISPENSE_PUSH_EXTEND) && (handler->dispense_sm[slot_index].state <= DISPENSE_LIFT_SEEK)) {
         has_active_dispenses = true;
         break;
       }
