@@ -292,8 +292,14 @@ static uint8_t get_dispense_fault_code_from_event(const app_event_t* event) {
   }
 
   if (fault_code != DISPENSE_FAULT_NONE) {
-    app_console_print("[Dispense SM] Fault detected for slot %d: event id=%d, value=%d, fault_code=%d, axis_event name=%d\r\n", event->slot,
-                      event->id, event->value, fault_code, axis_event_name((axis_event_enum)event->value));
+    if (fault_code == DISPENSE_FAULT_TIMEOUT) {
+      app_console_print("[Dispense SM] Fault detected for slot %d: event id=%d, value=%d, fault_code=%d\r\n", event->slot, event->id, event->value,
+                        fault_code);
+    }
+    else {
+      app_console_print("[Dispense SM] Fault detected for slot %d: event id=%d, value=%d, fault_code=%d, axis_event name=%s\r\n", event->slot,
+                        event->id, event->value, fault_code, axis_event_name((axis_event_enum)event->value));
+    }
   }
 
   return fault_code;
