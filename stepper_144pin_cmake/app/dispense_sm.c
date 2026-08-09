@@ -53,6 +53,7 @@ static patty_handler_result_enum dispense_fail(dispense_sm_t* dispense_sm, uint1
 
 static bool start_motion(cartridge_t* cartridge, dispense_state_enum next_state);
 static void halt_motion(cartridge_t* cartridge);
+static uint32_t get_dispense_timeout_ms_for_state(dispense_state_enum state);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
