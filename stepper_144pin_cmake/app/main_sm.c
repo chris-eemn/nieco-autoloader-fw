@@ -32,7 +32,25 @@
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
-
+static const char* const app_event_id_names[] = {
+    [APP_EV_START] = "APP_EV_START",
+    [APP_EV_DOOR_OPENED] = "APP_EV_DOOR_OPENED",
+    [APP_EV_DOOR_CLOSED] = "APP_EV_DOOR_CLOSED",
+    [APP_EV_LOCK_CONFIRMED] = "APP_EV_LOCK_CONFIRMED",
+    [APP_EV_LOCK_RELEASED] = "APP_EV_LOCK_RELEASED",
+    [APP_EV_MOTION_DONE] = "APP_EV_MOTION_DONE",
+    [APP_EV_HOME_DONE] = "APP_EV_HOME_DONE",
+    [APP_EV_DETERMINE_TYPE_DONE] = "APP_EV_DETERMINE_TYPE_DONE",
+    [APP_EV_STALL_DETECTED] = "APP_EV_STALL_DETECTED",
+    [APP_EV_STARTUP_DONE] = "APP_EV_STARTUP_DONE",
+    [APP_EV_COUNT_DONE] = "APP_EV_COUNT_DONE",
+    [APP_EV_DISPENSE_REQUEST] = "APP_EV_DISPENSE_REQUEST",
+    [APP_EV_RELOAD_REQUEST] = "APP_EV_RELOAD_REQUEST",
+    [APP_EV_FAULT] = "APP_EV_FAULT",
+    [APP_EV_FAULT_CLEARED] = "APP_EV_FAULT_CLEARED",
+    [APP_EV_SHUTDOWN_REQUEST] = "APP_EV_SHUTDOWN_REQUEST",
+    [APP_EV_TIMEOUT] = "APP_EV_TIMEOUT",
+};
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -40,7 +58,7 @@
 static void app_sm_enter_state(app_sm_t* sm, app_state_enum next);
 static void app_sm_enter_sequence_fault(app_sm_t* sm);
 static void handle_patty_request(app_sm_t* sm, const app_event_t* event);
-
+const char* app_event_id_to_str(app_event_id_enum event_id);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -257,4 +275,12 @@ static void handle_patty_request(app_sm_t* sm, const app_event_t* event) {
     /* TODO: Publish the appropriate rejected-request result to Modbus. */
     app_console_print("[Main SM] Dispense request rejected: result=%d\r\n", request_result);
   }
+}
+
+const char* app_event_id_to_str(app_event_id_enum event_id) {
+  if ((size_t)event_id >= (sizeof(app_event_id_names) / sizeof(app_event_id_names[0]))) {
+    return "APP_EV_UNKNOWN";
+  }
+
+  return app_event_id_names[event_id];
 }
