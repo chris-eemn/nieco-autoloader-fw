@@ -22,6 +22,7 @@
 #include "app_sm_port.h"
 #include "axis.h"
 #include "stepper_ctrl.h"
+#include "cartridge.h"  // only need for my simulated type hack
 #include "patty_handler.h"
 
 /*******************************************************************************
@@ -44,7 +45,7 @@ static const char* const app_event_id_names[] = {
     [APP_EV_MOTION_DONE] = "APP_EV_MOTION_DONE",
     [APP_EV_HOME_DONE] = "APP_EV_HOME_DONE",
     [APP_EV_DETERMINE_TYPE_DONE] = "APP_EV_DETERMINE_TYPE_DONE",
-    [APP_EV_STALL_DETECTED] = "APP_EV_STALL_DETECTED",
+    [APP_EV_MOTION_FAILED] = "APP_EV_MOTION_FAILED",
     [APP_EV_STARTUP_DONE] = "APP_EV_STARTUP_DONE",
     [APP_EV_COUNT_DONE] = "APP_EV_COUNT_DONE",
     [APP_EV_DISPENSE_REQUEST] = "APP_EV_DISPENSE_REQUEST",
@@ -54,20 +55,7 @@ static const char* const app_event_id_names[] = {
     [APP_EV_SHUTDOWN_REQUEST] = "APP_EV_SHUTDOWN_REQUEST",
     [APP_EV_TIMEOUT] = "APP_EV_TIMEOUT",
 };
-static const char* const app_sm_timeout_id_names[] = {
-    [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
-    [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
-    [APP_SM_TIMEOUT_UNLOCK] = "APP_SM_TIMEOUT_UNLOCK",
-    [APP_SM_TIMEOUT_STARTUP_PUSHER_HOME] = "APP_SM_TIMEOUT_STARTUP_PUSHER_HOME",
-    [APP_SM_TIMEOUT_STARTUP_LIFTER_HOME] = "APP_SM_TIMEOUT_STARTUP_LIFTER_HOME",
-    [APP_SM_TIMEOUT_STARTUP_DELAY] = "APP_SM_TIMEOUT_STARTUP_DELAY",
-    [APP_SM_TIMEOUT_MOTION] = "APP_SM_TIMEOUT_MOTION",
-    [APP_SM_CART1_DISPENSE] = "APP_SM_CART1_DISPENSE",
-    [APP_SM_CART2_DISPENSE] = "APP_SM_CART2_DISPENSE",
-    [APP_SM_CART3_DISPENSE] = "APP_SM_CART3_DISPENSE",
-    [APP_SM_CART4_DISPENSE] = "APP_SM_CART4_DISPENSE",
-    [APP_SM_TIMEOUT_DOOR] = "APP_SM_TIMEOUT_DOOR",
-};
+
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -76,6 +64,7 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next);
 static void app_sm_enter_sequence_fault(app_sm_t* sm);
 static void handle_patty_request(app_sm_t* sm, const app_event_t* event);
 const char* app_event_id_to_str(app_event_id_enum event_id);
+const char* app_sm_timeout_id_to_str(app_sm_timeout_id_enum timeout_id);
 static void clear_all_axis_faults(void);
 /*******************************************************************************
  * Public Function Definitions
@@ -103,7 +92,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
   }
 
   if (event->id == APP_EV_TIMEOUT) {
-    app_console_print("[Main SM] Timeout event received: timeout_id=%s\r\n", app_sm_timeout_id_to_str((app_sm_timeout_id_enum)event->value));
+    app_console_print("[Main SM] Timeout event received: timeout_id=%s\r\n", app_sm_port_timeout_id_to_str((app_sm_timeout_id_enum)event->value));
   }
   else {
     app_console_print("[Main SM] Event received: id=%s, slot=%d, value=%d\r\n", app_event_id_to_str(event->id), event->slot, event->value);
@@ -114,7 +103,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     return;
   }
 
-  if ((event->id == APP_EV_FAULT) && (sm->state != APP_SHUTDOWN)) {
+  if (((event->id == APP_EV_FAULT) || (event->id == APP_EV_MOTION_FAILED)) && (sm->state != APP_SHUTDOWN)) {
     app_console_print("[Main SM] Fault event received: fault_code=%d\r\n", event->value);
     sm->fault_code = event->value;
     app_sm_enter_state(sm, APP_FAULT);
@@ -126,7 +115,13 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
   switch (sm->state) {
     case APP_INIT:
       if (event->id == APP_EV_START) {
-        app_sm_enter_state(sm, APP_STARTUP);
+        // TODO: put back to startup
+
+        app_console_print("[Startup SM] Simulating cartridge %d type as WHOPPER for testing purposes\r\n", 0 + 1U);
+        sm->cartridge[0].type = CARTRIDGE_TYPE_WHOPPER;
+        app_console_print("[Startup SM] Simulating cartridge %d number of items as 10 for testing purposes\r\n", 0 + 1U);
+        sm->cartridge[0].remaining = 10U;
+        app_sm_enter_state(sm, APP_READY);
       }
       break;
 
@@ -142,7 +137,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_READY:
-      app_console_print("[Main SM] Ready for dispense or reload\r\n");
+      app_console_print("[Main SM] In ready state\r\n");
 
       if (event->id == APP_EV_DISPENSE_REQUEST) {
         app_console_print("[Main SM] Dispense request received: product_type=%s, count=%d\r\n", cartridge_type_to_string(event->product_type),
@@ -155,7 +150,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_DISPENSE:
-      app_console_print("[Main SM] Dispense in progress\r\n");
+      app_console_print("[Main SM] In dispense state\r\n");
       if (event->id == APP_EV_DISPENSE_REQUEST) {
         /* New requests can be accepted while other cartridges are running. */
         handle_patty_request(sm, event);
@@ -200,6 +195,9 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         clear_all_axis_faults();
         patty_handler_init(&sm->patty_handler, sm->cartridge);
         patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
+        for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+          sm->cartridge[slot].faulted = false;
+        }
         app_sm_enter_state(sm, APP_READY);
       }
       break;
@@ -320,12 +318,4 @@ const char* app_event_id_to_str(app_event_id_enum event_id) {
   }
 
   return app_event_id_names[event_id];
-}
-
-const char* app_sm_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
-  if ((size_t)timeout_id >= (sizeof(app_sm_timeout_id_names) / sizeof(app_sm_timeout_id_names[0]))) {
-    return "APP_SM_TIMEOUT_UNKNOWN";
-  }
-
-  return app_sm_timeout_id_names[timeout_id];
 }
