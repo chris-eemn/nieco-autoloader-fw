@@ -32,6 +32,9 @@
 #define DISPENSE_FAULT_HALT_REJECT (5U)
 #define DISPENSE_FAULT_INVALID_STATE (6U)
 
+#define DISPENSE_PUSH_RETRACT_TIMEOUT_MS (3000U)
+#define DISPENSE_LIFT_TIMEOUT_MS (5000U)
+
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -197,7 +200,8 @@ static patty_handler_result_enum dispense_start_motion(dispense_sm_t* dispense_s
 
   if (command_started == true) {
     app_console_print("[Dispense SM] Started motion for slot %d, state=%d\r\n", dispense_sm->slot_index + 1U, next_state);
-    timer_started = app_sm_port_arm_timeout(dispense_sm->timeout_id, 1000U);
+    uint32_t timeout_ms = get_dispense_timeout_ms_for_state(next_state);
+    timer_started = app_sm_port_arm_timeout(dispense_sm->timeout_id, timeout_ms);
     if (timer_started == true) {
       result = PATTY_HANDLER_RESULT_OK;
     }
@@ -292,4 +296,24 @@ static uint8_t get_dispense_fault_code_from_event(const app_event_t* event) {
   }
 
   return fault_code;
+}
+
+static uint32_t get_dispense_timeout_ms_for_state(dispense_state_enum state) {
+  uint32_t timeout_ms = 0U;
+
+  switch (state) {
+    case DISPENSE_PUSH_EXTEND:
+      timeout_ms = DISPENSE_PUSH_RETRACT_TIMEOUT_MS;
+      break;
+    case DISPENSE_PUSH_RETRACT:
+      timeout_ms = DISPENSE_PUSH_RETRACT_TIMEOUT_MS;
+      break;
+    case DISPENSE_LIFT_SEEK:
+      timeout_ms = DISPENSE_LIFT_TIMEOUT_MS;
+      break;
+    default:
+      break;
+  }
+
+  return timeout_ms;
 }
