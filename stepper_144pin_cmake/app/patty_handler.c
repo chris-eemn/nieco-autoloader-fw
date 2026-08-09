@@ -14,6 +14,7 @@
  * Includes
  *******************************************************************************/
 
+#include "app_console.h"
 #include "patty_handler.h"
 
 #include <stddef.h>
@@ -62,7 +63,7 @@ patty_handler_result_enum patty_handler_init(patty_handler_t* handler, cartridge
     handler->lto_pause_active = false;
 
     for (slot_index = 0U; slot_index < PATTY_HANDLER_SLOT_COUNT; slot_index++) {
-      dispense_sm_init(&handler->dispense_sm[slot_index], slot_index);
+      dispense_sm_init(&handler->dispense_sm[slot_index], cartridge);
     }
 
     result = PATTY_HANDLER_RESULT_OK;
@@ -96,19 +97,24 @@ patty_handler_result_enum patty_handler_add_request(patty_handler_t* handler, ca
 
   if ((handler != NULL) && (handler->cartridge != NULL) && ((source == PATTY_REQUEST_SOURCE_QUEUE) || (source == PATTY_REQUEST_SOURCE_MANUAL))) {
     if (requested_count == 0U) {
+      app_console_print("[Patty Handler] Rejecting request for zero patties\r\n");
       result = PATTY_HANDLER_RESULT_NO_ACTION;
     }
     else if (patty_handler_is_ready(handler) == false) {
+      app_console_print("[Patty Handler] Rejecting request because handler is not ready: door_closed=%d, door_locked=%d, dispensing_enabled=%d\r\n",
+                        handler->door_closed, handler->door_locked, handler->dispensing_enabled);
       result = PATTY_HANDLER_RESULT_NOT_READY;
     }
     else {
       total_available = patty_handler_get_total_available(handler, product_type);
 
       if ((uint32_t)requested_count > total_available) {
+        app_console_print("[Patty Handler] Rejecting request for %d patties because only %d are available\r\n", requested_count, total_available);
         result = PATTY_HANDLER_RESULT_NOT_ENOUGH_PRODUCT;
       }
       else {
         result = PATTY_HANDLER_RESULT_OK;
+        app_console_print("[Patty Handler] Accepting request for %d patties of type %d\r\n", requested_count, product_type);
 
         /*
          * The complete request was validated before this loop. The Control task
@@ -120,6 +126,8 @@ patty_handler_result_enum patty_handler_add_request(patty_handler_t* handler, ca
           if (selected_slot == PATTY_HANDLER_NO_SLOT) {
             /* This indicates that another context modified cartridge counts
              * unexpectedly. */
+            app_console_print("[Patty Handler] Unexpectedly failed to allocate patty %d of %d for type %d\r\n", allocation_count + 1U,
+                              requested_count, product_type);
             result = PATTY_HANDLER_RESULT_NOT_ENOUGH_PRODUCT;
             break;
           }
@@ -167,9 +175,11 @@ patty_handler_result_enum patty_handler_process(patty_handler_t* handler) {
           start_result = dispense_sm_start(&handler->dispense_sm[slot_index]);
 
           if (start_result == PATTY_HANDLER_RESULT_OK) {
+            app_console_print("[Patty Handler] Started dispense cycle for slot %d\r\n", slot_index + 1U);
             cycle_started = true;
           }
           else {
+            app_console_print("[Patty Handler] Motion rejected for slot %d\r\n", slot_index + 1U);
             handler->cartridge[slot_index].faulted = true;
             motion_rejected = true;
           }
@@ -265,7 +275,7 @@ bool patty_handler_has_work(const patty_handler_t* handler) {
 
   if (handler != NULL) {
     for (slot_index = 0U; slot_index < PATTY_HANDLER_SLOT_COUNT; slot_index++) {
-      if ((handler->cartridge[slot_index].pending > 0U) && (handler->dispense_sm[slot_index].state == DISPENSE_IDLE)) {
+      if ((handler->cartridge[slot_index].pending > 0U) && (handler->dispense_sm[slot_index].state != DISPENSE_IDLE)) {
         has_work = true;
         break;
       }
@@ -407,6 +417,7 @@ static bool patty_handler_slot_can_start(const patty_handler_t* handler, uint8_t
  * @param slot_index cartrigdes are numbered 1-4, but this indexes into an array that starts at 0
  */
 static void patty_handler_publish_slot(const patty_handler_t* handler, uint8_t slot_index) {
+  // todo: this is meant to be a print statement or update a mb reg that i need to implement
   (void)handler;
   (void)slot_index;
 }

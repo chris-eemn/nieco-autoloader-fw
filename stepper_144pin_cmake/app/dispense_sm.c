@@ -48,20 +48,21 @@ static patty_handler_result_enum dispense_start_motion(dispense_sm_t* dispense_s
 static uint8_t get_dispense_fault_code_from_event(const app_event_t* event);
 static patty_handler_result_enum dispense_fail(dispense_sm_t* dispense_sm, uint16_t fault_code);
 
-static bool start_motion(uint8_t slot, dispense_state_enum next_state);
-static bool halt_motion(uint8_t slot);
+static bool start_motion(cartridge_t* cartridge, dispense_state_enum next_state);
+static bool halt_motion(cartridge_t* cartridge);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
 
-void dispense_sm_init(dispense_sm_t* dispense_sm, uint8_t slot) {
+void dispense_sm_init(dispense_sm_t* dispense_sm, cartridge_t* cartridge) {
   if (dispense_sm != NULL) {
     dispense_sm->state = DISPENSE_IDLE;
-    dispense_sm->slot_index = slot;
+    dispense_sm->cartridge = cartridge;
+    dispense_sm->slot_index = cartridge->num - 1;
     dispense_sm->fault_code = 0U;
     dispense_sm->measured_lift_travel_counts = 0U;
     dispense_sm->product_may_have_dispensed = false;
-    switch (slot) {
+    switch (dispense_sm->slot_index) {
       case 1:
         dispense_sm->timeout_id = APP_SM_CART1_DISPENSE;
         break;
@@ -89,6 +90,7 @@ patty_handler_result_enum dispense_sm_start(dispense_sm_t* dispense_sm) {
       dispense_sm->fault_code = 0U;
       dispense_sm->measured_lift_travel_counts = 0U;
       dispense_sm->product_may_have_dispensed = false;
+      app_console_print("[Dispense SM] Starting dispense for slot %d\r\n", dispense_sm->slot_index + 1U);
       result = dispense_start_motion(dispense_sm, DISPENSE_PUSH_EXTEND);
     }
     else {
@@ -163,6 +165,22 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
   return result;
 }
 
+static const char* const dispense_fault_names[] = {
+    [DISPENSE_FAULT_NONE] = "DISPENSE_FAULT_NONE",
+    [DISPENSE_FAULT_TIMEOUT] = "DISPENSE_FAULT_TIMEOUT",
+    [DISPENSE_FAULT_MOTION] = "DISPENSE_FAULT_MOTION",
+    [DISPENSE_FAULT_COMMAND_REJECT] = "DISPENSE_FAULT_COMMAND_REJECT",
+    [DISPENSE_FAULT_TIMER_REJECT] = "DISPENSE_FAULT_TIMER_REJECT",
+    [DISPENSE_FAULT_HALT_REJECT] = "DISPENSE_FAULT_HALT_REJECT",
+    [DISPENSE_FAULT_INVALID_STATE] = "DISPENSE_FAULT_INVALID_STATE",
+};
+const char* dispense_sm_fault_to_str(uint8_t fault) {
+  if ((size_t)fault >= (sizeof(dispense_fault_names) / sizeof(dispense_fault_names[0]))) {
+    return "DISPENSE_FAULT_UNKNOWN";
+  }
+
+  return dispense_fault_names[fault];
+}
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
@@ -183,9 +201,10 @@ static patty_handler_result_enum dispense_start_motion(dispense_sm_t* dispense_s
   bool timer_started;
 
   dispense_sm->state = next_state;
-  command_started = start_motion(dispense_sm->slot_index, next_state);
+  command_started = start_motion(dispense_sm->cartridge, next_state);
 
   if (command_started == true) {
+    app_console_print("[Dispense SM] Started motion for slot %d, state=%d\r\n", dispense_sm->slot_index + 1U, next_state);
     timer_started = app_sm_port_arm_timeout(dispense_sm->timeout_id, 5000U);
     if (timer_started == true) {
       result = PATTY_HANDLER_RESULT_OK;
@@ -214,7 +233,9 @@ static patty_handler_result_enum dispense_fail(dispense_sm_t* dispense_sm, uint1
   bool motion_halted;
 
   // app_sm_port_cancel_timeout_id(dispense_sm->slot);
-  motion_halted = halt_motion(dispense_sm->slot_index);
+  app_console_print("[Dispense SM] Halting motion for slot %d due to fault code (%d) %s\r\n", dispense_sm->slot_index + 1U, fault_code,
+                    dispense_sm_fault_to_str(fault_code));
+  motion_halted = halt_motion(dispense_sm->cartridge);
 
   if (motion_halted == false) {
     dispense_sm->fault_code = DISPENSE_FAULT_HALT_REJECT;
@@ -224,24 +245,30 @@ static patty_handler_result_enum dispense_fail(dispense_sm_t* dispense_sm, uint1
   }
 
   dispense_sm->state = DISPENSE_FAILED;
+  app_console_print("[Dispense SM] Dispense failed for slot %d, state=%d, fault_code=(%d) %s\r\n", dispense_sm->slot_index + 1U, dispense_sm->state,
+                    dispense_sm->fault_code, dispense_sm_fault_to_str(dispense_sm->fault_code));
 
   return PATTY_HANDLER_RESULT_MOTION_REJECTED;
 }
 
 // todo: placeholder so i can get the project to build
-static bool start_motion(uint8_t slot, dispense_state_enum next_state) {
-  (void)slot;
+static bool start_motion(cartridge_t* cartridge, dispense_state_enum next_state) {
+  (void)cartridge;
   (void)next_state;
+  app_console_print("[Dispense SM] Starting motion for slot %d, state=%d.\r\n", cartridge->num, next_state);
 
   switch (next_state) {
     case DISPENSE_PUSH_EXTEND:
-      // determine axis number from slot number
+      app_console_print("[Dispense SM] Starting push extend for slot %d\r\n", cartridge->num);
+      app_sm_port_push_extend(cartridge);
       break;
     case DISPENSE_PUSH_RETRACT:
-      // determine axis number from slot number
+      app_console_print("[Dispense SM] Starting push retract for slot %d\r\n", cartridge->num);
+      app_sm_port_push_retract(cartridge);
       break;
     case DISPENSE_LIFT_SEEK:
       // determine axis number from slot number
+      app_console_print("[Dispense SM] Starting lift seek for slot %d\r\n", cartridge->num);
       break;
     case DISPENSE_LIFT_BACKOFF:
       // determine axis number from slot number
@@ -254,8 +281,8 @@ static bool start_motion(uint8_t slot, dispense_state_enum next_state) {
 }
 
 // todo: placeholder so i can get the project to build
-static bool halt_motion(uint8_t slot) {
-  (void)slot;
+static bool halt_motion(cartridge_t* cartridge) {
+  (void)cartridge;
 
   return true;
 }

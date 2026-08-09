@@ -38,7 +38,7 @@ typedef enum {
 } cartridge_direction_t;
 
 typedef struct {
-  uint8_t num;  // 1-4
+  uint8_t num;  // 1-4, if you need to index into an array that starts 0 this must be decremented by 1.
   cartridge_type_t type;
   uint32_t lifter_home_up_encoder_counts;  // counts before stationary up, used to calculate patty thickness
   uint16_t remaining;
@@ -68,11 +68,10 @@ uint8_t cartridge_get_axis_num(cartridge_t* slot, cartridge_actuator_type_t type
  * @brief Gets the cartridge slot identifier from an axis number and actuator type.
  *
  * @param axis_num Axis number to convert.
- * @param type Actuator type (pusher or lifter).
  * @return uint8_t Cartridge slot identifier corresponding to the specified axis. Note that this function returns 1-4 for valid slots, and -1 for
  * invalid axis numbers. but the catridge array is indexed at 0-3.
  */
-uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num, cartridge_actuator_type_t type);
+uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num);
 
 /**
  * @brief Determines and updates the cartridge type metadata.

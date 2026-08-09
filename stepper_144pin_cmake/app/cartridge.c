@@ -59,20 +59,11 @@ uint8_t cartridge_get_axis_num(cartridge_t* slot, cartridge_actuator_type_t type
   return axis_num;
 }
 
-uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num, cartridge_actuator_type_t type) {
-  int8_t slot = -1;
+uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num) {
+  uint8_t slot = 0U;
 
   if ((axis_num > 0U) && (axis_num <= (APP_SLOT_COUNT * 2U))) {
-    if (type == PUSHER) {
-      if ((axis_num % 2U) == 1U) {
-        slot = (int8_t)(((axis_num - 1U) / 2U) + 1U);
-      }
-    }
-    else if (type == LIFTER) {
-      if ((axis_num % 2U) == 0U) {
-        slot = (int8_t)(((axis_num - 2U) / 2U) + 1U);
-      }
-    }
+    slot = ((axis_num - 1U) / 2U) + 1U;
   }
 
   return slot;

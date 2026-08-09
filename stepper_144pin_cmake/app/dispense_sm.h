@@ -61,6 +61,7 @@ typedef struct {
  */
 
 typedef struct {
+  cartridge_t* cartridge;
   dispense_state_enum state;
   uint8_t slot_index;  // slots are 1-4, but this indexes into an array that starts at 0
   uint16_t fault_code;
@@ -79,9 +80,9 @@ typedef struct {
  * @brief Initializes one cartridge dispense state-machine context.
  *
  * @param dispense_sm State-machine context to initialize.
- * @param slot Zero-based cartridge slot. slots are numbered 1-4, but this indexes into an array that starts at 0
+ * @param cartridge Pointer to the cartridge structure.
  */
-void dispense_sm_init(dispense_sm_t* dispense_sm, uint8_t slot);
+void dispense_sm_init(dispense_sm_t* dispense_sm, cartridge_t* cartridge);
 
 /**
  * @brief Starts one nonblocking mechanical dispense cycle for a cartridge.
@@ -101,5 +102,7 @@ patty_handler_result_enum dispense_sm_start(dispense_sm_t* dispense_sm);
  * for an unrelated event, or an error result if the state machine fails.
  */
 patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const app_event_t* event);
+
+const char* dispense_sm_fault_to_str(uint8_t fault);
 
 #endif /* DISPENSE_SM_H_ */

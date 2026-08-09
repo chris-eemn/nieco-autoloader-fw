@@ -81,13 +81,26 @@ void app_sm_port_count_cartridges(cartridge_t* slot) {
 }
 
 void app_sm_port_push_extend(cartridge_t* slot) {
-  (void)slot;
-  /* TODO: Map the slot to its pusher axis. */
+#define FAKE_PUSH_EXTEND_COUNTS (3000U)
+#define FAKE_PUSH_EXTEND_RPM 15
+#define FAKE_PUSH_EXTEND_DIR STEPPER_DIR_CCW
+
+  uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
+  stepper_status_enum status = axis_move(stepper_ctrl_get_axis(axis_num), FAKE_PUSH_EXTEND_COUNTS, FAKE_PUSH_EXTEND_RPM, FAKE_PUSH_EXTEND_DIR);
+  if (status != STEPPER_OK) {
+    app_console_print("[app_sm_port] Failed to extend pusher for slot %d: %d\r\n", slot->num, (int)status);
+  }
 }
 
 void app_sm_port_push_retract(cartridge_t* slot) {
-  (void)slot;
-  /* TODO: Map the slot to its pusher axis. */
+#define FAKE_PUSH_RETRACT_COUNTS (3000U)
+#define FAKE_PUSH_RETRACT_RPM 20
+#define FAKE_PUSH_RETRACT_DIR STEPPER_DIR_CW
+  uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
+  stepper_status_enum status = axis_move(stepper_ctrl_get_axis(axis_num), FAKE_PUSH_RETRACT_COUNTS, FAKE_PUSH_RETRACT_RPM, FAKE_PUSH_RETRACT_DIR);
+  if (status != STEPPER_OK) {
+    app_console_print("[app_sm_port] Failed to retract pusher for slot %d: %d\r\n", slot->num, (int)status);
+  }
 }
 
 void app_sm_port_lift_seek(cartridge_t* slot) {

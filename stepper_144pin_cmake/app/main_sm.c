@@ -72,6 +72,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
   }
 
   if ((event->id == APP_EV_FAULT) && (sm->state != APP_SHUTDOWN)) {
+    app_console_print("[Main SM] Fault event received: fault_code=%d\r\n", event->value);
     sm->fault_code = event->value;
     app_sm_enter_state(sm, APP_FAULT);
     return;
@@ -109,6 +110,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_DISPENSE:
+      app_console_print("[Main SM] Dispense in progress\r\n");
       if (event->id == APP_EV_DISPENSE_REQUEST) {
         /* New requests can be accepted while other cartridges are running. */
         handle_patty_request(sm, event);
@@ -145,9 +147,14 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_FAULT:
+      app_console_print("[Main SM] Fault state: fault_code=%d\r\n", sm->fault_code);
+      app_simulate_event(100, APP_EV_FAULT_CLEARED);
       if (event->id == APP_EV_FAULT_CLEARED) {
         sm->fault_code = 0U;
-        app_sm_enter_state(sm, APP_STARTUP);
+        app_console_print("[Main SM] Fault cleared, returning to startup\r\n");
+        // this is a hack so do not have to power cycle machine to dispense again
+        patty_handler_init(&sm->patty_handler, sm->cartridge);
+        app_sm_enter_state(sm, APP_READY);
       }
       break;
 
@@ -248,5 +255,6 @@ static void handle_patty_request(app_sm_t* sm, const app_event_t* event) {
   }
   else {
     /* TODO: Publish the appropriate rejected-request result to Modbus. */
+    app_console_print("[Main SM] Dispense request rejected: result=%d\r\n", request_result);
   }
 }
