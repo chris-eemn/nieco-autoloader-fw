@@ -119,6 +119,11 @@ void app_sm_port_commit_dispense(cartridge_t* slot) {
   /* TODO: Update remaining and pending counts after confirmed mechanical completion. */
 }
 
+void app_sm_port_halt_motion(cartridge_t* slot) {
+  axis_stop(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)));
+  axis_stop(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)));
+}
+
 void app_sm_port_halt_all_motion(void) {
   /* TODO: Stop all axes after the final motor-to-slot map is available. */
 }
