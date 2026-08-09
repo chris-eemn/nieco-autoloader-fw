@@ -123,7 +123,7 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
           case DISPENSE_PUSH_EXTEND:
             if (event->id == APP_EV_MOTION_DONE) {
               // todo: implement
-              app_sm_port_cancel_timeout_id(dispense_sm->slot);
+              app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
               dispense_sm->product_may_have_dispensed = true;
               result = dispense_start_motion(dispense_sm, DISPENSE_PUSH_RETRACT);
             }
@@ -132,7 +132,7 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
           case DISPENSE_PUSH_RETRACT:
             if (event->id == APP_EV_MOTION_DONE) {
               // todo: implement
-              app_sm_port_cancel_timeout_id(dispense_sm->slot);
+              app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
               result = dispense_start_motion(dispense_sm, DISPENSE_LIFT_SEEK);
             }
             break;
