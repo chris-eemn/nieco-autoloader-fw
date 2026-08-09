@@ -91,6 +91,13 @@ void app_sm_port_lift_backoff(cartridge_t* slot);
  */
 void app_sm_port_commit_dispense(cartridge_t* slot);
 
+/**
+ * @brief Halt motion for a specific cartridge slot.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
+ * @return true if the motion was successfully halted; otherwise false.
+ */
+void app_sm_port_halt_motion(cartridge_t* slot);
+
 /** @brief Halt every axis immediately. */
 void app_sm_port_halt_all_motion(void);
 
