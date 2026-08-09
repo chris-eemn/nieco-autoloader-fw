@@ -18,7 +18,10 @@
 #include <string.h>
 
 #include "app_console.h"
+#include "app_event_simulator.h"
 #include "app_sm_port.h"
+#include "axis.h"
+#include "stepper_ctrl.h"
 #include "patty_handler.h"
 
 /*******************************************************************************
@@ -59,6 +62,7 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next);
 static void app_sm_enter_sequence_fault(app_sm_t* sm);
 static void handle_patty_request(app_sm_t* sm, const app_event_t* event);
 const char* app_event_id_to_str(app_event_id_enum event_id);
+static void clear_all_axis_faults(void);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -84,6 +88,8 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     return;
   }
 
+  app_console_print("[Main SM] Event received: id=%s, slot=%d, value=%d\r\n", app_event_id_to_str(event->id), event->slot, event->value);
+
   if (event->id == APP_EV_SHUTDOWN_REQUEST) {
     app_sm_enter_state(sm, APP_SHUTDOWN);
     return;
@@ -93,6 +99,8 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     app_console_print("[Main SM] Fault event received: fault_code=%d\r\n", event->value);
     sm->fault_code = event->value;
     app_sm_enter_state(sm, APP_FAULT);
+    app_console_print("[Main SM] Simulating fault cleared event in 100ms for testing purposes\r\n");
+    app_simulate_event(100, APP_EV_FAULT_CLEARED);
     return;
   }
 
@@ -166,12 +174,13 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case APP_FAULT:
       app_console_print("[Main SM] Fault state: fault_code=%d\r\n", sm->fault_code);
-      app_simulate_event(100, APP_EV_FAULT_CLEARED);
       if (event->id == APP_EV_FAULT_CLEARED) {
         sm->fault_code = 0U;
         app_console_print("[Main SM] Fault cleared, returning to startup\r\n");
         // this is a hack so do not have to power cycle machine to dispense again
+        clear_all_axis_faults();
         patty_handler_init(&sm->patty_handler, sm->cartridge);
+        patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
         app_sm_enter_state(sm, APP_READY);
       }
       break;
@@ -191,6 +200,15 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
+
+static void clear_all_axis_faults(void) {
+  for (uint8_t motor_num = 1U; motor_num <= STEPPER_CTRL_MAX_MOTORS; motor_num++) {
+    axis_t* ax = stepper_ctrl_get_axis(motor_num);
+    if (ax != NULL) {
+      axis_fault_reset(ax);
+    }
+  }
+}
 
 /**
  * @brief Perform the entry actions for a main application state.
