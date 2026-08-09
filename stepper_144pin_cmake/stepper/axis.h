@@ -145,6 +145,7 @@ typedef enum {
   AXIS_EVENT_HOME_DONE,     /*!< Back-off finished and the encoder was zeroed   */
   AXIS_EVENT_HOME_ABORTED,  /*!< Homing ended early by axis_stop()              */
   AXIS_EVENT_HOME_FAILED,   /*!< Seek timeout, back-off stall, or stepper fault */
+  AXIS_EVENT_IDLE_FAULT,    /*!< Stepper fault detected while idle               */
 } axis_event_enum;
 /**
  * Callback invoked when an axis operation reaches a terminal state.

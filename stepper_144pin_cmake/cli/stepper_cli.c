@@ -36,6 +36,7 @@
 #include "stepper_ctrl.h"
 #include "axis.h"
 #include "app_console.h"
+#include "app_task.h"
 #include <string.h>
 
 /*******************************************************************************
@@ -43,8 +44,8 @@
  *******************************************************************************/
 
 static const char* s_param_names[STEPPER_CLI_NUM_PARAMS] = {
-    [STEPPER_CLI_AUTO] = "auto", [STEPPER_CLI_CW] = "cw",     [STEPPER_CLI_CCW] = "ccw",     [STEPPER_CLI_HOME] = "home",
-    [STEPPER_CLI_RPM] = "rpm",   [STEPPER_CLI_STEP] = "step", [STEPPER_CLI_CLEAR] = "clear", [STEPPER_CLI_ENC] = "enc",
+    [STEPPER_CLI_AUTO] = "auto", [STEPPER_CLI_CW] = "cw",       [STEPPER_CLI_CCW] = "ccw", [STEPPER_CLI_HOME] = "home",   [STEPPER_CLI_RPM] = "rpm",
+    [STEPPER_CLI_STEP] = "step", [STEPPER_CLI_CLEAR] = "clear", [STEPPER_CLI_ENC] = "enc", [STEPPER_CLI_QUEUE] = "queue",
 };
 
 /*******************************************************************************
@@ -54,6 +55,7 @@ static const char* s_param_names[STEPPER_CLI_NUM_PARAMS] = {
 static stepper_cli_param_enum lookup_param(const char* name);
 static axis_t* stepper_cli_lookup_axis(int32_t motor_num);
 static void stepper_cli_home(int32_t motor_num);
+static void enqueue_patties(uint16_t n);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -108,6 +110,15 @@ void stepper_cli_set_handler(char* param, int32_t val) {
 
     case STEPPER_CLI_HOME:
       stepper_cli_home(val);
+      break;
+
+    case STEPPER_CLI_QUEUE:
+      if (val <= 0) {
+        app_console_print("[STEPPER] Queue count must be > 0.\r\n");
+      }
+      else {
+        enqueue_patties(val);
+      }
       break;
 
     case STEPPER_CLI_RPM:
@@ -197,6 +208,7 @@ void stepper_cli_list_handler(void) {
   app_console_print("  step  <value>  microsteps per leg, shared by all motors (default %u)\r\n", STEPPER_CTRL_DEFAULT_STEPS);
   app_console_print("  clear <ignored>  full fault reset for all motors (axis latch + DRV8424 sleep/wake)\r\n");
   app_console_print("  enc            current encoder count for every motor\r\n");
+  app_console_print("  queue <n>      enqueue patties\r\n");
 }
 
 /*******************************************************************************
@@ -260,4 +272,13 @@ static stepper_cli_param_enum lookup_param(const char* name) {
   }
 
   return STEPPER_CLI_NUM_PARAMS;
+}
+
+static void enqueue_patties(uint16_t n) {
+  app_event_t event;
+
+  event.id = APP_EV_DISPENSE_REQUEST;
+  event.product_type = CARTRIDGE_TYPE_WHOPPER;
+  event.value = n;
+  app_task_post(&event);
 }

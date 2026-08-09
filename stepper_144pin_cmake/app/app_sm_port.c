@@ -34,20 +34,34 @@
  *******************************************************************************/
 typedef struct {
   TimerHandle_t handle;
-  app_sm_timeout_id_enum timeout;
+  app_sm_timeout_id_enum timeout_id;
   volatile bool armed;
-} timeout_slot_t;
+} timeout_timer_t;
 
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
-static timeout_slot_t timeout_slots[MAX_PENDING_TIMER_EVENTS];
-
+static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
+static const char* const app_sm_timeout_id_names[] = {
+    [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
+    [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
+    [APP_SM_TIMEOUT_UNLOCK] = "APP_SM_TIMEOUT_UNLOCK",
+    [APP_SM_TIMEOUT_STARTUP_PUSHER_HOME] = "APP_SM_TIMEOUT_STARTUP_PUSHER_HOME",
+    [APP_SM_TIMEOUT_STARTUP_LIFTER_HOME] = "APP_SM_TIMEOUT_STARTUP_LIFTER_HOME",
+    [APP_SM_TIMEOUT_STARTUP_DELAY] = "APP_SM_TIMEOUT_STARTUP_DELAY",
+    [APP_SM_TIMEOUT_MOTION] = "APP_SM_TIMEOUT_MOTION",
+    [APP_SM_CART1_DISPENSE] = "APP_SM_CART1_DISPENSE",
+    [APP_SM_CART2_DISPENSE] = "APP_SM_CART2_DISPENSE",
+    [APP_SM_CART3_DISPENSE] = "APP_SM_CART3_DISPENSE",
+    [APP_SM_CART4_DISPENSE] = "APP_SM_CART4_DISPENSE",
+    [APP_SM_TIMEOUT_DOOR] = "APP_SM_TIMEOUT_DOOR",
+};
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 static void timer_cb(TimerHandle_t timer);
-static bool cancel_slot(timeout_slot_t* slot, bool match_id, app_sm_timeout_id_enum timeout);
+static bool cancel_timer(timeout_timer_t* slot, bool match_id, app_sm_timeout_id_enum timeout);
+static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -81,13 +95,26 @@ void app_sm_port_count_cartridges(cartridge_t* slot) {
 }
 
 void app_sm_port_push_extend(cartridge_t* slot) {
-  (void)slot;
-  /* TODO: Map the slot to its pusher axis. */
+#define FAKE_PUSH_EXTEND_COUNTS (1000U)
+#define FAKE_PUSH_EXTEND_RPM 15
+#define FAKE_PUSH_EXTEND_DIR STEPPER_DIR_CCW
+
+  uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
+  stepper_status_enum status = axis_move(stepper_ctrl_get_axis(axis_num), FAKE_PUSH_EXTEND_COUNTS, FAKE_PUSH_EXTEND_RPM, FAKE_PUSH_EXTEND_DIR);
+  if (status != STEPPER_OK) {
+    app_console_print("[app_sm_port] Failed to extend pusher for slot %d: %d\r\n", slot->num, (int)status);
+  }
 }
 
 void app_sm_port_push_retract(cartridge_t* slot) {
-  (void)slot;
-  /* TODO: Map the slot to its pusher axis. */
+#define FAKE_PUSH_RETRACT_COUNTS (1000U)
+#define FAKE_PUSH_RETRACT_RPM 20
+#define FAKE_PUSH_RETRACT_DIR STEPPER_DIR_CW
+  uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
+  stepper_status_enum status = axis_move(stepper_ctrl_get_axis(axis_num), FAKE_PUSH_RETRACT_COUNTS, FAKE_PUSH_RETRACT_RPM, FAKE_PUSH_RETRACT_DIR);
+  if (status != STEPPER_OK) {
+    app_console_print("[app_sm_port] Failed to retract pusher for slot %d: %d\r\n", slot->num, (int)status);
+  }
 }
 
 void app_sm_port_lift_seek(cartridge_t* slot) {
@@ -105,6 +132,11 @@ void app_sm_port_commit_dispense(cartridge_t* slot) {
   /* TODO: Update remaining and pending counts after confirmed mechanical completion. */
 }
 
+void app_sm_port_halt_motion(cartridge_t* slot) {
+  axis_stop(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)));
+  axis_stop(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)));
+}
+
 void app_sm_port_halt_all_motion(void) {
   /* TODO: Stop all axes after the final motor-to-slot map is available. */
 }
@@ -113,13 +145,7 @@ void app_sm_port_save_state(void) {
   /* TODO: Queue the required nonvolatile records through the existing W25Q stack. */
 }
 
-/**
- * @brief Arm a timeout that posts APP_EV_TIMEOUT after a delay.
- * @param timeout Timeout ID carried in the event value field.
- * @param delay_ms Delay in milliseconds before the event is posted.
- * @note Up to MAX_PENDING_TIMER_EVENTS timeouts may be armed at once.
- */
-void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) {
+bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout_id, uint32_t delay_ms) {
   TickType_t period = pdMS_TO_TICKS(delay_ms);
   bool armed = false;
 
@@ -128,30 +154,30 @@ void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) 
   }
 
   for (uint32_t i = 0U; (i < MAX_PENDING_TIMER_EVENTS) && (armed == false); i++) {
-    timeout_slot_t* slot = &timeout_slots[i];
+    timeout_timer_t* timer = &timeout_timers[i];
     bool claimed;
 
     taskENTER_CRITICAL();
-    claimed = (slot->armed == false);
+    claimed = (timer->armed == false);
     if (claimed) {
-      slot->armed = true;
+      timer->armed = true;
     }
     taskEXIT_CRITICAL();
 
     if (claimed) {
-      slot->timeout = timeout;
+      timer->timeout_id = timeout_id;
 
-      if (slot->handle == NULL) {
-        slot->handle = xTimerCreate("AppSMTimeout", period, pdFALSE, slot, timer_cb);
+      if (timer->handle == NULL) {
+        timer->handle = xTimerCreate("AppSMTimeout", period, pdFALSE, timer, timer_cb);
       }
 
       /* Sets the period and starts the timer; xTimerStart alone would reuse the previous period. */
-      if ((slot->handle != NULL) && (xTimerChangePeriod(slot->handle, period, 0U) == pdPASS)) {
+      if ((timer->handle != NULL) && (xTimerChangePeriod(timer->handle, period, 0U) == pdPASS)) {
         armed = true;
       }
       else {
         taskENTER_CRITICAL();
-        slot->armed = false;
+        timer->armed = false;
         taskEXIT_CRITICAL();
       }
     }
@@ -160,6 +186,8 @@ void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) 
   if (armed == false) {
     app_console_print("[app_sm_port] Failed to arm timeout timer\r\n");
   }
+
+  return armed;
 }
 
 /**
@@ -167,7 +195,7 @@ void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) 
  */
 void app_sm_port_cancel_timeout(void) {
   for (uint32_t i = 0U; i < MAX_PENDING_TIMER_EVENTS; i++) {
-    (void)cancel_slot(&timeout_slots[i], false, (app_sm_timeout_id_enum)0);
+    (void)cancel_timer(&timeout_timers[i], true, (app_sm_timeout_id_enum)0);
   }
 }
 
@@ -175,10 +203,12 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout) {
   bool cancelled = false;
 
   for (uint32_t i = 0U; i < MAX_PENDING_TIMER_EVENTS; i++) {
-    if (cancel_slot(&timeout_slots[i], true, timeout)) {
+    if (cancel_timer(&timeout_timers[i], true, timeout)) {
       cancelled = true;
     }
   }
+
+  app_console_print("[app_sm_port] Cancelled timeout ID %s: %s\r\n", app_sm_port_timeout_id_to_str(timeout), cancelled ? "true" : "false");
 
   return cancelled;
 }
@@ -189,24 +219,32 @@ void app_sm_port_publish_state(const app_sm_t* sm) {
   }
 }
 
+const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
+  if ((size_t)timeout_id >= (sizeof(app_sm_timeout_id_names) / sizeof(app_sm_timeout_id_names[0]))) {
+    return "APP_SM_TIMEOUT_UNKNOWN";
+  }
+
+  return app_sm_timeout_id_names[timeout_id];
+}
+
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
 
 static void timer_cb(TimerHandle_t timer) {
-  timeout_slot_t* slot = (timeout_slot_t*)pvTimerGetTimerID(timer);
+  timeout_timer_t* _timer = (timeout_timer_t*)pvTimerGetTimerID(timer);
   bool fire;
 
   taskENTER_CRITICAL();
-  fire = slot->armed;
-  slot->armed = false;
+  fire = _timer->armed;
+  _timer->armed = false;
   taskEXIT_CRITICAL();
 
   if (fire) {
     app_event_t event = {
         .id = APP_EV_TIMEOUT,
-        .slot = APP_NO_SLOT,
-        .value = (uint32_t)slot->timeout,
+        .slot = determine_slot_from_timer_id(_timer->timeout_id),
+        .value = (uint32_t)_timer->timeout_id,
     };
 
     bool queued = app_task_post(&event);
@@ -215,26 +253,62 @@ static void timer_cb(TimerHandle_t timer) {
 }
 
 /**
- * @brief Clear a slot's armed flag and stop its timer.
- * @param slot Slot to cancel.
+ * @brief Clear a timer's armed flag and stop its timer.
+ * @param timer Timer to cancel.
  * @param match_id When true, cancel only if the slot carries the given timeout ID.
  * @param timeout Timeout ID to match when match_id is true.
  * @return true if the slot was armed and is now cancelled.
  */
-static bool cancel_slot(timeout_slot_t* slot, bool match_id, app_sm_timeout_id_enum timeout) {
+static bool cancel_timer(timeout_timer_t* timer, bool match_id, app_sm_timeout_id_enum timeout) {
   bool cancel;
 
   /* Clearing the flag suppresses the event; the stop below is best effort. */
   taskENTER_CRITICAL();
-  cancel = (slot->armed == true) && ((match_id == false) || (slot->timeout == timeout));
+  cancel = (timer->armed == true) && ((match_id == false) || (timer->timeout_id == timeout));
   if (cancel) {
-    slot->armed = false;
+    timer->armed = false;
   }
   taskEXIT_CRITICAL();
 
   if (cancel) {
-    (void)xTimerStop(slot->handle, 0U);
+    (void)xTimerStop(timer->handle, 0U);
   }
 
   return cancel;
+}
+
+/**
+ * @brief Determine the cartridge slot associated with a timeout ID.
+ * @param timeout_id Timeout identifier to evaluate.
+ * @return Slot number (1-4) for cartridge dispense timeouts, or APP_NO_SLOT when not slot-related.
+ */
+static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id) {
+  uint8_t slot = APP_NO_SLOT;
+
+  switch (timeout_id) {
+    case APP_SM_TIMEOUT_NONE:
+    case APP_SM_TIMEOUT_LOCK:
+    case APP_SM_TIMEOUT_UNLOCK:
+    case APP_SM_TIMEOUT_STARTUP_PUSHER_HOME:
+    case APP_SM_TIMEOUT_STARTUP_LIFTER_HOME:
+    case APP_SM_TIMEOUT_STARTUP_DELAY:
+    case APP_SM_TIMEOUT_MOTION:
+    case APP_SM_TIMEOUT_DOOR:
+    default:
+      // do not relate to cartridge/slot
+      break;
+    case APP_SM_CART1_DISPENSE:
+      slot = 1;
+      break;
+    case APP_SM_CART2_DISPENSE:
+      slot = 2;
+      break;
+    case APP_SM_CART3_DISPENSE:
+      slot = 3;
+      break;
+    case APP_SM_CART4_DISPENSE:
+      slot = 4;
+      break;
+  }
+  return slot;
 }

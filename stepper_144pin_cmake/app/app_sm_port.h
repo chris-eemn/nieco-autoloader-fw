@@ -28,17 +28,6 @@
  * Module Typedefs
  *******************************************************************************/
 
-typedef enum {
-  APP_SM_TIMEOUT_NONE = 0,
-  APP_SM_TIMEOUT_LOCK,
-  APP_SM_TIMEOUT_UNLOCK,
-  APP_SM_TIMEOUT_STARTUP_PUSHER_HOME,
-  APP_SM_TIMEOUT_STARTUP_LIFTER_HOME,
-  APP_SM_TIMEOUT_STARTUP_DELAY,
-  APP_SM_TIMEOUT_MOTION,
-  APP_SM_TIMEOUT_DOOR,
-} app_sm_timeout_id_enum;
-
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
@@ -102,6 +91,13 @@ void app_sm_port_lift_backoff(cartridge_t* slot);
  */
 void app_sm_port_commit_dispense(cartridge_t* slot);
 
+/**
+ * @brief Halt motion for a specific cartridge slot.
+ * @param slot Pointer to the cartridge slot structure (num field is 1-4).
+ * @return true if the motion was successfully halted; otherwise false.
+ */
+void app_sm_port_halt_motion(cartridge_t* slot);
+
 /** @brief Halt every axis immediately. */
 void app_sm_port_halt_all_motion(void);
 
@@ -109,11 +105,13 @@ void app_sm_port_halt_all_motion(void);
 void app_sm_port_save_state(void);
 
 /**
- * @brief Arm the timeout associated with the current sequence step.
- * @param timeout Timeout category to track for this step.
- * @param delay_ms Timeout delay in milliseconds.
+ * @brief Arm a timeout that posts APP_EV_TIMEOUT after a delay.
+ * @param timeout Timeout ID carried in the event value field.
+ * @param delay_ms Delay in milliseconds before the event is posted.
+ * @return true if the timeout timer was successfully started; otherwise false.
+ * @note Up to MAX_PENDING_TIMER_EVENTS timeouts may be armed at once.
  */
-void app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms);
+bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms);
 
 /** @brief Cancel the currently armed sequence timeout. */
 void app_sm_port_cancel_timeout(void);
@@ -129,5 +127,12 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout);
  * @param sm Current application state model.
  */
 void app_sm_port_publish_state(const app_sm_t* sm);
+
+/**
+ * @brief Convert a timeout ID to a human-readable string.
+ * @param timeout_id Timeout ID to convert.
+ * @return Pointer to a constant string describing the timeout ID.
+ */
+const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id);
 
 #endif /* APP_SM_PORT_H_ */

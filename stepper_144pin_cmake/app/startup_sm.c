@@ -114,7 +114,7 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     case STARTUP_HOME_LIFTS_DOWN:
       if (event->id == APP_EV_MOTION_DONE) {
         // cartridge nums are labeled 1-4, but the array is indexed at 0
-        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num, LIFTER) - 1;
+        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num) - 1;
         sm->cartridge[cartridge].lifter_homed_down = true;
 
         bool all_lifts_homed_down = true;
@@ -157,7 +157,7 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     case STARTUP_HOME_LIFTS_UP:
       if (event->id == APP_EV_MOTION_DONE) {
         // cartridge nums are labeled 1-4, but the array is indexed at 0
-        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num, LIFTER) - 1;
+        uint8_t cartridge = cartridge_get_slot_from_axis_num(event->axis_num) - 1;
         sm->cartridge[cartridge].lifter_homed_up = true;
 
         bool all_lifts_homed_up = true;
@@ -190,6 +190,9 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
           cartridge_determine_type(&sm->cartridge[i]);
           app_console_print("[Startup SM] Cartridge %d type determined: %s\r\n", i + 1U, cartridge_type_to_string(sm->cartridge[i].type));
+
+          app_console_print("[Startup SM] Simulating cartridge %d type as WHOPPER for testing purposes\r\n", i + 1U);
+          sm->cartridge[i].type = CARTRIDGE_TYPE_WHOPPER;
         }
 
         const app_event_t new_event = {
@@ -214,6 +217,9 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
           app_sm_port_count_cartridges(&sm->cartridge[i]);
           app_console_print("[Startup SM] Counting cartridges for slot %d, homing_enc_ticks = %d\r\n", i + 1U,
                             sm->cartridge[i].lifter_home_up_encoder_counts);
+
+          app_console_print("[Startup SM] Simulating cartridge %d number of items as 10 for testing purposes\r\n", i + 1U);
+          sm->cartridge[i].remaining = 10U;
         }
         sm->startup.state = STARTUP_COMPLETE;
       }

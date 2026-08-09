@@ -426,6 +426,7 @@ static void axis_emit_failure(axis_t* axis) {
   }
   else {
     /* Idle: the fault changes status only. */
+    axis_emit(axis, AXIS_EVENT_IDLE_FAULT);
   }
 }
 

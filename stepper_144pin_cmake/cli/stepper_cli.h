@@ -31,6 +31,7 @@ typedef enum {
   STEPPER_CLI_CLEAR,
   STEPPER_CLI_ENC,
   STEPPER_CLI_HOME,
+  STEPPER_CLI_QUEUE,
   STEPPER_CLI_NUM_PARAMS,
 } stepper_cli_param_enum;
 

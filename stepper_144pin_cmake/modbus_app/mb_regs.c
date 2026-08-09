@@ -27,10 +27,28 @@
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
+/*******************************************************************************
+ * Function Prototypes
+ *******************************************************************************/
+static int reg_patty1_add_to_queue_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_patty1_add_to_queue_write(uint16_t reg, uint16_t val);
+static int reg_patty2_add_to_queue_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_patty2_add_to_queue_write(uint16_t reg, uint16_t val);
 
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
+static mb_holding_reg_def_t regs_defines[] = {
+    {.reg_id = REG_PATTY1_ADD_TO_QUEUE,
+     .read_callback = reg_patty1_add_to_queue_read,
+     .write_callback = reg_patty1_add_to_queue_write,
+     .name = "patty1_add_to_queue"},
+    {.reg_id = REG_PATTY2_ADD_TO_QUEUE,
+     .read_callback = reg_patty2_add_to_queue_read,
+     .write_callback = reg_patty2_add_to_queue_write,
+     .name = "patty2_add_to_queue"},
+};
+
 static int fw_ver_reg_read(uint16_t reg, uint16_t* val_ptr);
 mb_holding_reg_def_t fw_ver_reg = {
     .reg_id = REG_SLAVE_FW_VERSION,
@@ -89,9 +107,6 @@ mb_holding_reg_array_t reg_array = {
     .length = 0,
     .max_length = REG_ARRAY_LENGTH,
 };
-/*******************************************************************************
- * Function Prototypes
- *******************************************************************************/
 
 /*******************************************************************************
  * Public Function Definitions
@@ -110,6 +125,10 @@ void mb_regs_init(void) {
   slave_params.baud = 57600;
   slave_params.response_delay_us = 5000;
   MB_InitializeModbus(&ui_slave, get_ui_port_fns(), &slave_params);
+
+  for (int i = 0; i < (sizeof(regs_defines) / sizeof(regs_defines[0])); i++) {
+    MB_AddHoldingRegister(&reg_array, &regs_defines[i]);
+  }
 
   MB_AddHoldingRegister(&reg_array, &fw_ver_reg);
   MB_AddHoldingRegister(&reg_array, &serial_number_reg);
@@ -136,6 +155,30 @@ static int fw_ver_reg_read(uint16_t reg, uint16_t* val_ptr) {
 static int serial_number_reg_read(uint16_t reg, uint16_t* val_ptr) {
   (void)reg;
   *val_ptr = 12345;
+  return 0;
+}
+
+static int reg_patty1_add_to_queue_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  *val_ptr = 0x11;
+  return 0;
+}
+
+static int reg_patty1_add_to_queue_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  app_console_print("[INFO] Patty1 add to queue via modbus register write. val: %d\r\n", val);
+  return 0;
+}
+
+static int reg_patty2_add_to_queue_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  *val_ptr = 0x22;
+  return 0;
+}
+
+static int reg_patty2_add_to_queue_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  app_console_print("[INFO] Patty2 add to queue via modbus register write. val: %d\r\n", val);
   return 0;
 }
 

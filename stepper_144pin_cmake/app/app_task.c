@@ -134,12 +134,16 @@ static void app_task_run(void* parameters) {
 static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
   (void)ctx;
 
-  app_event_t app_event = {.id = APP_EV_FAULT, .slot = APP_NO_SLOT, .value = 0U, .axis_num = axis->num};
+  app_event_t app_event = {.id = APP_EV_FAULT, .slot = APP_NO_SLOT, .value = event, .axis_num = axis->num};
 
-  app_console_print("[Axis Event] Axis %d event %s\r\n", axis->num, axis_event_name(event));
+  app_event.slot = cartridge_get_slot_from_axis_num(axis->num);
+  app_console_print("[Axis Event] (slot %d) Axis %d event %s\r\n", app_event.slot, axis->num, axis_event_name(event));
 
-  if (event == AXIS_EVENT_MOVE_FAILED) {
-    app_event.id = APP_EV_FAULT; /* TODO: Replace with a more specific fault code. */
+  if (event == AXIS_EVENT_MOVE_DONE) {
+    app_event.id = APP_EV_MOTION_DONE;
+  }
+  else if (event == AXIS_EVENT_MOVE_FAILED) {
+    app_event.id = APP_EV_MOTION_FAILED;
   }
   else if (event == AXIS_EVENT_HOME_DONE) {
     app_event.id = APP_EV_MOTION_DONE;
@@ -151,6 +155,14 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
     // todo: temporary since we are faking homing
     axis_clear_fault(axis);
     app_event.id = APP_EV_MOTION_DONE;
+  }
+  else if (event == AXIS_EVENT_IDLE_FAULT) {
+    // todo: figure out why axis faults why idle.
+    // todo: clear fault just so we dont lock up
+    axis_clear_fault(axis); /* Clear the fault to allow further motion without immediately re-faulting the axis. */
+  }
+  else {
+    app_console_print("[Axis Event] Unhandled axis event %s\r\n", axis_event_name(event));
   }
   (void)app_task_post(&app_event);
 }
