@@ -49,7 +49,7 @@ static uint8_t get_dispense_fault_code_from_event(const app_event_t* event);
 static patty_handler_result_enum dispense_fail(dispense_sm_t* dispense_sm, uint16_t fault_code);
 
 static bool start_motion(cartridge_t* cartridge, dispense_state_enum next_state);
-static bool halt_motion(cartridge_t* cartridge);
+static void halt_motion(cartridge_t* cartridge);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -63,16 +63,16 @@ void dispense_sm_init(dispense_sm_t* dispense_sm, cartridge_t* cartridge) {
     dispense_sm->measured_lift_travel_counts = 0U;
     dispense_sm->product_may_have_dispensed = false;
     switch (dispense_sm->slot_index) {
-      case 1:
+      case 0:
         dispense_sm->timeout_id = APP_SM_CART1_DISPENSE;
         break;
-      case 2:
+      case 1:
         dispense_sm->timeout_id = APP_SM_CART2_DISPENSE;
         break;
-      case 3:
+      case 2:
         dispense_sm->timeout_id = APP_SM_CART3_DISPENSE;
         break;
-      case 4:
+      case 3:
         dispense_sm->timeout_id = APP_SM_CART4_DISPENSE;
         break;
       default:
@@ -119,7 +119,7 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
           case DISPENSE_PUSH_EXTEND:
             if (event->id == APP_EV_MOTION_DONE) {
               // todo: implement
-              // app_sm_port_cancel_timeout_id(dispense_sm->slot);
+              app_sm_port_cancel_timeout_id(dispense_sm->slot);
               dispense_sm->product_may_have_dispensed = true;
               result = dispense_start_motion(dispense_sm, DISPENSE_PUSH_RETRACT);
             }
@@ -128,7 +128,7 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
           case DISPENSE_PUSH_RETRACT:
             if (event->id == APP_EV_MOTION_DONE) {
               // todo: implement
-              // app_sm_port_cancel_timeout_id(dispense_sm->slot);
+              app_sm_port_cancel_timeout_id(dispense_sm->slot);
               result = dispense_start_motion(dispense_sm, DISPENSE_LIFT_SEEK);
             }
             break;
@@ -136,7 +136,7 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
           case DISPENSE_LIFT_SEEK:
             if (event->id == APP_EV_MOTION_DONE) {
               // todo: implement
-              // app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
+              app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
               // dispense_sm->measured_lift_travel_counts = event->measured_lift_travel_counts;
               // lift home also will backoff automatically
               dispense_sm->state = DISPENSE_COMPLETE;
@@ -222,19 +222,11 @@ static patty_handler_result_enum dispense_start_motion(dispense_sm_t* dispense_s
  * @return PATTY_HANDLER_RESULT_MOTION_REJECTED.
  */
 static patty_handler_result_enum dispense_fail(dispense_sm_t* dispense_sm, uint16_t fault_code) {
-  bool motion_halted;
-
-  // app_sm_port_cancel_timeout_id(dispense_sm->slot);
+  app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
   app_console_print("[Dispense SM] Halting motion for slot %d due to fault code (%d) %s\r\n", dispense_sm->slot_index + 1U, fault_code,
                     dispense_sm_fault_to_str(fault_code));
-  motion_halted = halt_motion(dispense_sm->cartridge);
-
-  if (motion_halted == false) {
-    dispense_sm->fault_code = DISPENSE_FAULT_HALT_REJECT;
-  }
-  else {
-    dispense_sm->fault_code = fault_code;
-  }
+  halt_motion(dispense_sm->cartridge);
+  dispense_sm->fault_code = fault_code;
 
   dispense_sm->state = DISPENSE_FAILED;
   app_console_print("[Dispense SM] Dispense failed for slot %d, state=%d, fault_code=(%d) %s\r\n", dispense_sm->slot_index + 1U, dispense_sm->state,
@@ -270,11 +262,8 @@ static bool start_motion(cartridge_t* cartridge, dispense_state_enum next_state)
   return true;
 }
 
-// todo: placeholder so i can get the project to build
-static bool halt_motion(cartridge_t* cartridge) {
-  (void)cartridge;
-
-  return true;
+static void halt_motion(cartridge_t* cartridge) {
+  app_sm_port_halt_motion(cartridge);
 }
 // axis event ids will be placed in the value of an app_event
 static uint8_t get_dispense_fault_code_from_event(const app_event_t* event) {
