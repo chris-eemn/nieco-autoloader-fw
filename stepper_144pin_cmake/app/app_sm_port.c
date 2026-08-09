@@ -34,20 +34,20 @@
  *******************************************************************************/
 typedef struct {
   TimerHandle_t handle;
-  app_sm_timeout_id_enum timeout;
+  app_sm_timeout_id_enum timeout_id;
   volatile bool armed;
-} timeout_slot_t;
+} timeout_timer_t;
 
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
-static timeout_slot_t timeout_slots[MAX_PENDING_TIMER_EVENTS];
+static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
 
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 static void timer_cb(TimerHandle_t timer);
-static bool cancel_slot(timeout_slot_t* slot, bool match_id, app_sm_timeout_id_enum timeout);
+static bool cancel_timer(timeout_timer_t* slot, bool match_id, app_sm_timeout_id_enum timeout);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -126,7 +126,7 @@ void app_sm_port_save_state(void) {
   /* TODO: Queue the required nonvolatile records through the existing W25Q stack. */
 }
 
-bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) {
+bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout_id, uint32_t delay_ms) {
   TickType_t period = pdMS_TO_TICKS(delay_ms);
   bool armed = false;
 
@@ -135,30 +135,30 @@ bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) 
   }
 
   for (uint32_t i = 0U; (i < MAX_PENDING_TIMER_EVENTS) && (armed == false); i++) {
-    timeout_slot_t* slot = &timeout_slots[i];
+    timeout_timer_t* timer = &timeout_timers[i];
     bool claimed;
 
     taskENTER_CRITICAL();
-    claimed = (slot->armed == false);
+    claimed = (timer->armed == false);
     if (claimed) {
-      slot->armed = true;
+      timer->armed = true;
     }
     taskEXIT_CRITICAL();
 
     if (claimed) {
-      slot->timeout = timeout;
+      timer->timeout_id = timeout_id;
 
-      if (slot->handle == NULL) {
-        slot->handle = xTimerCreate("AppSMTimeout", period, pdFALSE, slot, timer_cb);
+      if (timer->handle == NULL) {
+        timer->handle = xTimerCreate("AppSMTimeout", period, pdFALSE, timer, timer_cb);
       }
 
       /* Sets the period and starts the timer; xTimerStart alone would reuse the previous period. */
-      if ((slot->handle != NULL) && (xTimerChangePeriod(slot->handle, period, 0U) == pdPASS)) {
+      if ((timer->handle != NULL) && (xTimerChangePeriod(timer->handle, period, 0U) == pdPASS)) {
         armed = true;
       }
       else {
         taskENTER_CRITICAL();
-        slot->armed = false;
+        timer->armed = false;
         taskEXIT_CRITICAL();
       }
     }
@@ -176,7 +176,7 @@ bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout, uint32_t delay_ms) 
  */
 void app_sm_port_cancel_timeout(void) {
   for (uint32_t i = 0U; i < MAX_PENDING_TIMER_EVENTS; i++) {
-    (void)cancel_slot(&timeout_slots[i], false, (app_sm_timeout_id_enum)0);
+    (void)cancel_timer(&timeout_timers[i], false, (app_sm_timeout_id_enum)0);
   }
 }
 
@@ -184,7 +184,7 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout) {
   bool cancelled = false;
 
   for (uint32_t i = 0U; i < MAX_PENDING_TIMER_EVENTS; i++) {
-    if (cancel_slot(&timeout_slots[i], true, timeout)) {
+    if (cancel_timer(&timeout_timers[i], true, timeout)) {
       cancelled = true;
     }
   }
@@ -203,19 +203,19 @@ void app_sm_port_publish_state(const app_sm_t* sm) {
  *******************************************************************************/
 
 static void timer_cb(TimerHandle_t timer) {
-  timeout_slot_t* slot = (timeout_slot_t*)pvTimerGetTimerID(timer);
+  timeout_timer_t* _timer = (timeout_timer_t*)pvTimerGetTimerID(timer);
   bool fire;
 
   taskENTER_CRITICAL();
-  fire = slot->armed;
-  slot->armed = false;
+  fire = _timer->armed;
+  _timer->armed = false;
   taskEXIT_CRITICAL();
 
   if (fire) {
     app_event_t event = {
         .id = APP_EV_TIMEOUT,
-        .slot = APP_NO_SLOT,
-        .value = (uint32_t)slot->timeout,
+        .slot = determine_slot_from_timer_id(_timer->timeout_id),
+        .value = (uint32_t)_timer->timeout_id,
     };
 
     bool queued = app_task_post(&event);
@@ -224,25 +224,25 @@ static void timer_cb(TimerHandle_t timer) {
 }
 
 /**
- * @brief Clear a slot's armed flag and stop its timer.
- * @param slot Slot to cancel.
+ * @brief Clear a timer's armed flag and stop its timer.
+ * @param timer Timer to cancel.
  * @param match_id When true, cancel only if the slot carries the given timeout ID.
  * @param timeout Timeout ID to match when match_id is true.
  * @return true if the slot was armed and is now cancelled.
  */
-static bool cancel_slot(timeout_slot_t* slot, bool match_id, app_sm_timeout_id_enum timeout) {
+static bool cancel_timer(timeout_timer_t* timer, bool match_id, app_sm_timeout_id_enum timeout) {
   bool cancel;
 
   /* Clearing the flag suppresses the event; the stop below is best effort. */
   taskENTER_CRITICAL();
-  cancel = (slot->armed == true) && ((match_id == false) || (slot->timeout == timeout));
+  cancel = (timer->armed == true) && ((match_id == false) || (timer->timeout_id == timeout));
   if (cancel) {
-    slot->armed = false;
+    timer->armed = false;
   }
   taskEXIT_CRITICAL();
 
   if (cancel) {
-    (void)xTimerStop(slot->handle, 0U);
+    (void)xTimerStop(timer->handle, 0U);
   }
 
   return cancel;
