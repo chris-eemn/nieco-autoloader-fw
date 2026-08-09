@@ -42,7 +42,20 @@ typedef struct {
  * Module Variable Definitions
  *******************************************************************************/
 static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
-
+static const char* const app_sm_timeout_id_names[] = {
+    [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
+    [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
+    [APP_SM_TIMEOUT_UNLOCK] = "APP_SM_TIMEOUT_UNLOCK",
+    [APP_SM_TIMEOUT_STARTUP_PUSHER_HOME] = "APP_SM_TIMEOUT_STARTUP_PUSHER_HOME",
+    [APP_SM_TIMEOUT_STARTUP_LIFTER_HOME] = "APP_SM_TIMEOUT_STARTUP_LIFTER_HOME",
+    [APP_SM_TIMEOUT_STARTUP_DELAY] = "APP_SM_TIMEOUT_STARTUP_DELAY",
+    [APP_SM_TIMEOUT_MOTION] = "APP_SM_TIMEOUT_MOTION",
+    [APP_SM_CART1_DISPENSE] = "APP_SM_CART1_DISPENSE",
+    [APP_SM_CART2_DISPENSE] = "APP_SM_CART2_DISPENSE",
+    [APP_SM_CART3_DISPENSE] = "APP_SM_CART3_DISPENSE",
+    [APP_SM_CART4_DISPENSE] = "APP_SM_CART4_DISPENSE",
+    [APP_SM_TIMEOUT_DOOR] = "APP_SM_TIMEOUT_DOOR",
+};
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -182,7 +195,7 @@ bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout_id, uint32_t delay_m
  */
 void app_sm_port_cancel_timeout(void) {
   for (uint32_t i = 0U; i < MAX_PENDING_TIMER_EVENTS; i++) {
-    (void)cancel_timer(&timeout_timers[i], false, (app_sm_timeout_id_enum)0);
+    (void)cancel_timer(&timeout_timers[i], true, (app_sm_timeout_id_enum)0);
   }
 }
 
@@ -195,6 +208,8 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout) {
     }
   }
 
+  app_console_print("[app_sm_port] Cancelled timeout ID %s: %s\r\n", app_sm_port_timeout_id_to_str(timeout), cancelled ? "true" : "false");
+
   return cancelled;
 }
 
@@ -202,6 +217,14 @@ void app_sm_port_publish_state(const app_sm_t* sm) {
   if (sm != NULL) {
     /* TODO: Copy the fields required by the Modbus status registers. */
   }
+}
+
+const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
+  if ((size_t)timeout_id >= (sizeof(app_sm_timeout_id_names) / sizeof(app_sm_timeout_id_names[0]))) {
+    return "APP_SM_TIMEOUT_UNKNOWN";
+  }
+
+  return app_sm_timeout_id_names[timeout_id];
 }
 
 /*******************************************************************************

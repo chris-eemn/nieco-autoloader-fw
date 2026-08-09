@@ -128,4 +128,11 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout);
  */
 void app_sm_port_publish_state(const app_sm_t* sm);
 
+/**
+ * @brief Convert a timeout ID to a human-readable string.
+ * @param timeout_id Timeout ID to convert.
+ * @return Pointer to a constant string describing the timeout ID.
+ */
+const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id);
+
 #endif /* APP_SM_PORT_H_ */
