@@ -48,6 +48,7 @@ static void console_rx_task(void* arg);
 static void console_dispatch(char* line);
 static void console_tokenise(char* line, int32_t* argc, char* argv[]);
 static void console_cmd_help(int32_t argc, char* argv[]);
+static void app_console_write_raw(const char* fmt, ...);
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -84,13 +85,22 @@ void app_console_init(void) {
 void app_console_print(const char* fmt, ...) {
   tx_message_t msg;
   va_list args;
+  int32_t n;
+  int32_t prefix_len;
+
+  prefix_len = snprintf(msg.data, sizeof(msg.data), "[%lu] ", (unsigned long)xTaskGetTickCount());
+  if ((prefix_len < 0) || ((size_t)prefix_len >= sizeof(msg.data))) {
+    return;
+  }
 
   va_start(args, fmt);
-  int32_t n = (int32_t)vsnprintf(msg.data, sizeof(msg.data), fmt, args);
+  n = (int32_t)vsnprintf(&msg.data[prefix_len], sizeof(msg.data) - (size_t)prefix_len, fmt, args);
   va_end(args);
 
   if (n <= 0)
     return;
+
+  n += prefix_len;
 
   msg.len = (uint16_t)(n < CONSOLE_TX_MSG_MAX_LEN ? n : CONSOLE_TX_MSG_MAX_LEN - 1);
 
@@ -132,7 +142,7 @@ static void console_rx_task(void* arg) {
   uint16_t pos = 0;
   uint8_t ch;
 
-  app_console_print("\r\n> ");
+  app_console_write_raw("\r\n> ");
 
   for (;;) {
     if (console_port_receive(&ch, portMAX_DELAY) != 0) {
@@ -140,7 +150,7 @@ static void console_rx_task(void* arg) {
     }
 
     if (ch == '\r' || ch == '\n') {
-      app_console_print("\r\n");
+      app_console_write_raw("\r\n");
 
       if (pos > 0) {
         line[pos] = '\0';
@@ -148,17 +158,17 @@ static void console_rx_task(void* arg) {
         pos = 0;
       }
 
-      app_console_print("> ");
+      app_console_write_raw("> ");
     }
     else if (ch == 0x7F || ch == '\b') {
       if (pos > 0) {
         pos--;
-        app_console_print("\b \b");
+        app_console_write_raw("\b \b");
       }
     }
     else if (pos < (CONSOLE_CLI_MAX_LINE_LEN - 1)) {
       line[pos++] = (char)ch;
-      app_console_print("%c", ch);
+      app_console_write_raw("%c", ch);
     }
   }
 }
@@ -223,4 +233,21 @@ static void console_cmd_help(int32_t argc, char* argv[]) {
   for (int32_t i = 0; i < s_commandCount; i++) {
     app_console_print("  %-16s %s\r\n", s_commands[i]->name, s_commands[i]->help);
   }
+}
+
+static void app_console_write_raw(const char* fmt, ...) {
+  tx_message_t msg;
+  va_list args;
+  int32_t n;
+
+  va_start(args, fmt);
+  n = (int32_t)vsnprintf(msg.data, sizeof(msg.data), fmt, args);
+  va_end(args);
+
+  if (n <= 0)
+    return;
+
+  msg.len = (uint16_t)(n < CONSOLE_TX_MSG_MAX_LEN ? n : CONSOLE_TX_MSG_MAX_LEN - 1);
+
+  xQueueSend(s_txQueue, &msg, 0);
 }
