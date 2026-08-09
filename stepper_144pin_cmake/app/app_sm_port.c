@@ -48,6 +48,7 @@ static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
  *******************************************************************************/
 static void timer_cb(TimerHandle_t timer);
 static bool cancel_timer(timeout_timer_t* slot, bool match_id, app_sm_timeout_id_enum timeout);
+static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id);
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -246,4 +247,40 @@ static bool cancel_timer(timeout_timer_t* timer, bool match_id, app_sm_timeout_i
   }
 
   return cancel;
+}
+
+/**
+ * @brief Determine the cartridge slot associated with a timeout ID.
+ * @param timeout_id Timeout identifier to evaluate.
+ * @return Slot number (1-4) for cartridge dispense timeouts, or APP_NO_SLOT when not slot-related.
+ */
+static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id) {
+  uint8_t slot = APP_NO_SLOT;
+
+  switch (timeout_id) {
+    case APP_SM_TIMEOUT_NONE:
+    case APP_SM_TIMEOUT_LOCK:
+    case APP_SM_TIMEOUT_UNLOCK:
+    case APP_SM_TIMEOUT_STARTUP_PUSHER_HOME:
+    case APP_SM_TIMEOUT_STARTUP_LIFTER_HOME:
+    case APP_SM_TIMEOUT_STARTUP_DELAY:
+    case APP_SM_TIMEOUT_MOTION:
+    case APP_SM_TIMEOUT_DOOR:
+    default:
+      // do not relate to cartridge/slot
+      break;
+    case APP_SM_CART1_DISPENSE:
+      slot = 1;
+      break;
+    case APP_SM_CART2_DISPENSE:
+      slot = 2;
+      break;
+    case APP_SM_CART3_DISPENSE:
+      slot = 3;
+      break;
+    case APP_SM_CART4_DISPENSE:
+      slot = 4;
+      break;
+  }
+  return slot;
 }
