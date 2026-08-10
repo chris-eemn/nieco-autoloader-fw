@@ -32,9 +32,6 @@
 #define DISPENSE_FAULT_HALT_REJECT (5U)
 #define DISPENSE_FAULT_INVALID_STATE (6U)
 
-#define DISPENSE_PUSH_RETRACT_TIMEOUT_MS (3000U)
-#define DISPENSE_LIFT_TIMEOUT_MS (5000U)
-
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -310,13 +307,11 @@ static uint32_t get_dispense_timeout_ms_for_state(dispense_state_enum state) {
 
   switch (state) {
     case DISPENSE_PUSH_EXTEND:
-      timeout_ms = DISPENSE_PUSH_RETRACT_TIMEOUT_MS;
-      break;
     case DISPENSE_PUSH_RETRACT:
-      timeout_ms = DISPENSE_PUSH_RETRACT_TIMEOUT_MS;
+      timeout_ms = app_sm_port_get_push_retract_timeout_ms();
       break;
     case DISPENSE_LIFT_SEEK:
-      timeout_ms = DISPENSE_LIFT_TIMEOUT_MS;
+      timeout_ms = app_sm_port_get_lift_timeout_ms();
       break;
     default:
       break;

@@ -16,6 +16,7 @@
 #include "app_sm_port.h"
 #include "app_console.h"
 #include "app_task.h"
+#include "cal_data.h"
 #include "cartridge.h"
 #include "FreeRTOS.h"
 #include "stepper.h"
@@ -225,6 +226,28 @@ const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
   }
 
   return app_sm_timeout_id_names[timeout_id];
+}
+
+uint32_t app_sm_port_get_push_retract_timeout_ms(void) {
+  static const uint32_t default_timeout_ms = 3000U;
+
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL && params->push_retract_timeout_ms != 0U) {
+    return params->push_retract_timeout_ms;
+  }
+
+  return default_timeout_ms;
+}
+
+uint32_t app_sm_port_get_lift_timeout_ms(void) {
+  static const uint32_t default_timeout_ms = 5000U;
+
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL && params->lift_timeout_ms != 0U) {
+    return params->lift_timeout_ms;
+  }
+
+  return default_timeout_ms;
 }
 
 /*******************************************************************************
