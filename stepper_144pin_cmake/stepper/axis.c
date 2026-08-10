@@ -16,6 +16,8 @@
 #include "axis.h"
 #include "app_console.h"
 
+#include <stdbool.h>
+
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -96,8 +98,11 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
   if (axis->config.encoder_counts_denominator == 0U) {
     axis->config.encoder_counts_denominator = AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR;
   }
-  if (axis->config.max_sync_error_counts == 0U) {
-    axis->config.max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS;
+  if (axis->config.stall_error_counts == 0U) {
+    axis->config.stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS;
+  }
+  if (axis->config.home_error_counts == 0U) {
+    axis->config.home_error_counts = AXIS_DEFAULT_HOME_ERROR_COUNTS;
   }
 
   /* Establish the supervisor period from the first axis registered. */
@@ -124,7 +129,7 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
   stepper_sync_config_t sync_config = {
       .encoder_counts_numerator = axis->config.encoder_counts_numerator,
       .encoder_counts_denominator = axis->config.encoder_counts_denominator,
-      .max_error_counts = axis->config.max_sync_error_counts,
+      .max_error_counts = axis->config.stall_error_counts,
   };
 
   if (stepper_sync_configure(motor, encoder, &sync_config) != STEPPER_OK) {
@@ -145,9 +150,9 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
     configASSERT(ret == pdPASS);
   }
 
-  app_console_print("[AXIS] Instance %u init OK. period=%lums encoder=%lu/%lu counts/ustep max_error=%lu counts.\r\n", (unsigned)(s_axis_count - 1U),
+  app_console_print("[AXIS] Instance %u init OK. period=%lums encoder=%lu/%lu counts/ustep stall_err=%lu home_err=%lu.\r\n", (unsigned)(s_axis_count - 1U),
                     axis->config.supervisor_period_ms, axis->config.encoder_counts_numerator, axis->config.encoder_counts_denominator,
-                    axis->config.max_sync_error_counts);
+                    axis->config.stall_error_counts, axis->config.home_error_counts);
 
   return axis;
 }
@@ -168,14 +173,35 @@ void axis_update_config(axis_t* axis, const axis_config_t* config) {
   if (axis->config.encoder_counts_denominator == 0U) {
     axis->config.encoder_counts_denominator = AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR;
   }
-  if (axis->config.max_sync_error_counts == 0U) {
-    axis->config.max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS;
+  if (axis->config.stall_error_counts == 0U) {
+    axis->config.stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS;
   }
+  if (axis->config.home_error_counts == 0U) {
+    axis->config.home_error_counts = AXIS_DEFAULT_HOME_ERROR_COUNTS;
+  }
+
+  /* Always apply the stall threshold; if currently homing the caller should
+   * call axis_update_sync_error_threshold() separately. */
+  stepper_sync_config_t sync_config = {
+      .encoder_counts_numerator = axis->config.encoder_counts_numerator,
+      .encoder_counts_denominator = axis->config.encoder_counts_denominator,
+      .max_error_counts = axis->config.stall_error_counts,
+  };
+
+  (void)stepper_sync_configure(axis->motor, axis->encoder, &sync_config);
+}
+
+void axis_update_sync_error_threshold(axis_t* axis, bool use_home_threshold) {
+  if (axis == NULL) {
+    return;
+  }
+
+  uint32_t threshold = use_home_threshold ? axis->config.home_error_counts : axis->config.stall_error_counts;
 
   stepper_sync_config_t sync_config = {
       .encoder_counts_numerator = axis->config.encoder_counts_numerator,
       .encoder_counts_denominator = axis->config.encoder_counts_denominator,
-      .max_error_counts = axis->config.max_sync_error_counts,
+      .max_error_counts = threshold,
   };
 
   (void)stepper_sync_configure(axis->motor, axis->encoder, &sync_config);
@@ -303,6 +329,9 @@ stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
   axis->homing_substate = HOMING_SEEK;
   axis->status = AXIS_STATUS_HOMING;
 
+  /* Switch to the home threshold for endstop detection. */
+  axis_update_sync_error_threshold(axis, true);
+
   /* Reference for the travel distance reported by axis_get_home_travel_counts().
    * The result is cleared here so a sequence that faults or aborts reports 0
    * instead of the distance measured by the previous sequence. */
@@ -351,6 +380,8 @@ void axis_stop(axis_t* axis) {
   if (axis->status == AXIS_STATUS_HOMING) {
     axis->homing_substate = HOMING_IDLE;
     axis->status = AXIS_STATUS_NOT_HOMED;
+    /* Switch back to stall threshold for normal operation. */
+    axis_update_sync_error_threshold(axis, false);
   }
 
   /* The motor is already stopped; the event is left to the supervisor so that
@@ -484,6 +515,8 @@ static uint8_t handle_sync_event(axis_t* axis) {
       axis->status = AXIS_STATUS_FAULT;
       axis->homing_substate = HOMING_IDLE;
       app_console_print("[AXIS %d] Homing back-off stalled: encoder lagged by %lu counts.\r\n", axis->num, deviation_counts);
+      /* Switch back to stall threshold for normal operation. */
+      axis_update_sync_error_threshold(axis, false);
       axis_emit(axis, AXIS_EVENT_HOME_FAILED);
     }
     else if ((axis->status == AXIS_STATUS_OK) || (axis->status == AXIS_STATUS_NOT_HOMED)) {
@@ -515,6 +548,8 @@ static void handle_homing_tick(axis_t* axis) {
         app_console_print("[AXIS %d] Homing timeout — endstop not reached.\r\n", axis->num);
         axis->status = AXIS_STATUS_FAULT;
         axis->homing_substate = HOMING_IDLE;
+        /* Switch back to stall threshold for normal operation. */
+        axis_update_sync_error_threshold(axis, false);
         axis_emit(axis, AXIS_EVENT_HOME_FAILED);
       }
       break;
@@ -543,6 +578,8 @@ static void handle_homing_tick(axis_t* axis) {
         axis->homing_substate = HOMING_IDLE;
         axis->status = AXIS_STATUS_OK;
         app_console_print("[AXIS %d] Homing complete. Travelled %ld counts. Encoder zeroed.\r\n", axis->num, axis->home_travel_counts);
+        /* Switch back to stall threshold for normal operation. */
+        axis_update_sync_error_threshold(axis, false);
         axis_emit(axis, AXIS_EVENT_HOME_DONE);
       }
       break;
@@ -591,6 +628,8 @@ static void supervisor_tick(axis_t* axis) {
 
   if (axis->stop_pending != 0U) {
     if (axis->active_op == AXIS_OP_HOME) {
+      /* Switch back to stall threshold for normal operation. */
+      axis_update_sync_error_threshold(axis, false);
       axis_emit(axis, AXIS_EVENT_HOME_ABORTED);
     }
     else if (axis->active_op == AXIS_OP_MOVE) {
