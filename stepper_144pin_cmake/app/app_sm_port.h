@@ -135,4 +135,18 @@ void app_sm_port_publish_state(const app_sm_t* sm);
  */
 const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id);
 
+/**
+ * @brief Get the push-retract timeout from calibration data.
+ * @return Timeout in milliseconds. Falls back to 3000 if cal_data is
+ *         unavailable or the value is zero.
+ */
+uint32_t app_sm_port_get_push_retract_timeout_ms(void);
+
+/**
+ * @brief Get the lift seek timeout from calibration data.
+ * @return Timeout in milliseconds. Falls back to 5000 if cal_data is
+ *         unavailable or the value is zero.
+ */
+uint32_t app_sm_port_get_lift_timeout_ms(void);
+
 #endif /* APP_SM_PORT_H_ */
