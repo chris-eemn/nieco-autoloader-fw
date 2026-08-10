@@ -14,11 +14,14 @@
  *******************************************************************************/
 #include "mb_regs.h"
 
+#include <stdint.h>
+
 #include "modbus_config.h"
 #include "modbus_port.h"
 #include "modbus_slave.h"
 #include "app_console.h"
 #include "cal_data.h"
+#include "axis.h"
 
 /*******************************************************************************
  * Module Macros
@@ -120,6 +123,26 @@ mb_holding_reg_def_t lift_timeout_ms_reg = {
     .name = "lift_timeout_ms",
 };
 
+static int reg_stall_error_counts_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_stall_error_counts_write(uint16_t reg, uint16_t val);
+mb_holding_reg_def_t stall_error_counts_reg = {
+    .reg_id = REG_CAL_DATA_STALL_ERROR_COUNTS,
+    .reg_amount = 1,
+    .read_callback = reg_stall_error_counts_read,
+    .write_callback = reg_stall_error_counts_write,
+    .name = "stall_error_counts",
+};
+
+static int reg_home_error_counts_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_home_error_counts_write(uint16_t reg, uint16_t val);
+mb_holding_reg_def_t home_error_counts_reg = {
+    .reg_id = REG_CAL_DATA_HOME_ERROR_COUNTS,
+    .reg_amount = 1,
+    .read_callback = reg_home_error_counts_read,
+    .write_callback = reg_home_error_counts_write,
+    .name = "home_error_counts",
+};
+
 modbus_slave_t ui_slave = {0};
 modbus_slave_params_t slave_params = {};
 mb_holding_reg_def_t* regs[REG_ARRAY_LENGTH];
@@ -159,6 +182,8 @@ void mb_regs_init(void) {
   MB_AddHoldingRegister(&reg_array, &show_black_pixels_reg);
   MB_AddHoldingRegister(&reg_array, &push_retract_timeout_ms_reg);
   MB_AddHoldingRegister(&reg_array, &lift_timeout_ms_reg);
+  MB_AddHoldingRegister(&reg_array, &stall_error_counts_reg);
+  MB_AddHoldingRegister(&reg_array, &home_error_counts_reg);
 
   MB_RegisterHoldingRegisterArray(&ui_slave, &reg_array);
 }
@@ -282,6 +307,60 @@ static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val) {
     }
     else {
       app_console_print("[MODBUS] lift_timeout_ms = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->lift_timeout_ms);
+    }
+  }
+  return 0;
+}
+
+static int reg_stall_error_counts_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    *val_ptr = (uint16_t)params->stall_error_counts;
+  }
+  else {
+    *val_ptr = AXIS_DEFAULT_STALL_ERROR_COUNTS;
+  }
+  return 0;
+}
+
+static int reg_stall_error_counts_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    params->stall_error_counts = (uint32_t)val;
+    if (cal_data_save() == true) {
+      app_console_print("[MODBUS] stall_error_counts = %lu (saved)\r\n", (unsigned long)params->stall_error_counts);
+    }
+    else {
+      app_console_print("[MODBUS] stall_error_counts = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->stall_error_counts);
+    }
+  }
+  return 0;
+}
+
+static int reg_home_error_counts_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    *val_ptr = (uint16_t)params->home_error_counts;
+  }
+  else {
+    *val_ptr = AXIS_DEFAULT_HOME_ERROR_COUNTS;
+  }
+  return 0;
+}
+
+static int reg_home_error_counts_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    params->home_error_counts = (uint32_t)val;
+    if (cal_data_save() == true) {
+      app_console_print("[MODBUS] home_error_counts = %lu (saved)\r\n", (unsigned long)params->home_error_counts);
+    }
+    else {
+      app_console_print("[MODBUS] home_error_counts = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->home_error_counts);
     }
   }
   return 0;
