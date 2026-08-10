@@ -103,7 +103,8 @@ static const axis_config_t s_axis_config = {
     .supervisor_period_ms = 25U,
     .encoder_counts_numerator = STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR,
     .encoder_counts_denominator = STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR,
-    .max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS,
+    .stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS,
+    .home_error_counts = AXIS_DEFAULT_HOME_ERROR_COUNTS,
     .backoff_steps = 200U,
     .home_rpm = 10U,
     .home_max_steps = 50000U,
@@ -156,15 +157,19 @@ void stepper_system_update_configs(void) {
       axis_config.home_rpm = cal_params_ptr->home_rpm;
       axis_config.backoff_steps = cal_params_ptr->home_backoff_steps;
       axis_config.home_max_steps = cal_params_ptr->home_max_steps;
-      axis_config.max_sync_error_counts = cal_params_ptr->max_sync_error_counts;
+      axis_config.stall_error_counts = cal_params_ptr->stall_error_counts;
+      axis_config.home_error_counts = cal_params_ptr->home_error_counts;
       axis_config.supervisor_period_ms = cal_params_ptr->supervisor_period_ms;
       axis_config.settle_delay_ms = cal_params_ptr->home_settle_delay_ms;
 
       if (axis_config.supervisor_period_ms == 0U) {
         axis_config.supervisor_period_ms = AXIS_DEFAULT_SUPERVISOR_PERIOD_MS;
       }
-      if (axis_config.max_sync_error_counts == 0U) {
-        axis_config.max_sync_error_counts = AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS;
+      if (axis_config.stall_error_counts == 0U) {
+        axis_config.stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS;
+      }
+      if (axis_config.home_error_counts == 0U) {
+        axis_config.home_error_counts = AXIS_DEFAULT_HOME_ERROR_COUNTS;
       }
       if (axis_config.home_rpm == 0U) {
         axis_config.home_rpm = 10U;
