@@ -18,6 +18,7 @@
 #include "modbus_port.h"
 #include "modbus_slave.h"
 #include "app_console.h"
+#include "cal_data.h"
 
 /*******************************************************************************
  * Module Macros
@@ -99,6 +100,26 @@ mb_holding_reg_def_t show_black_pixels_reg = {
     .name = "show_black_pixels",
 };
 
+static int reg_push_retract_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_push_retract_timeout_ms_write(uint16_t reg, uint16_t val);
+mb_holding_reg_def_t push_retract_timeout_ms_reg = {
+    .reg_id = REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS,
+    .reg_amount = 1,
+    .read_callback = reg_push_retract_timeout_ms_read,
+    .write_callback = reg_push_retract_timeout_ms_write,
+    .name = "push_retract_timeout_ms",
+};
+
+static int reg_lift_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val);
+mb_holding_reg_def_t lift_timeout_ms_reg = {
+    .reg_id = REG_CAL_DATA_LIFT_TIMEOUT_MS,
+    .reg_amount = 1,
+    .read_callback = reg_lift_timeout_ms_read,
+    .write_callback = reg_lift_timeout_ms_write,
+    .name = "lift_timeout_ms",
+};
+
 modbus_slave_t ui_slave = {0};
 modbus_slave_params_t slave_params = {};
 mb_holding_reg_def_t* regs[REG_ARRAY_LENGTH];
@@ -136,6 +157,8 @@ void mb_regs_init(void) {
   MB_AddHoldingRegister(&reg_array, &self_test_results_reg);
   MB_AddHoldingRegister(&reg_array, &sound_buzzer_reg);
   MB_AddHoldingRegister(&reg_array, &show_black_pixels_reg);
+  MB_AddHoldingRegister(&reg_array, &push_retract_timeout_ms_reg);
+  MB_AddHoldingRegister(&reg_array, &lift_timeout_ms_reg);
 
   MB_RegisterHoldingRegisterArray(&ui_slave, &reg_array);
 }
@@ -207,5 +230,59 @@ static int sound_buzzer_reg_write(uint16_t reg, uint16_t val) {
 static int show_black_pixels_reg_write(uint16_t reg, uint16_t val) {
   (void)reg;
   app_console_print("[INFO] Show black pixels via modbus register write. val: %d\r\n", val);
+  return 0;
+}
+
+static int reg_push_retract_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    *val_ptr = (uint16_t)params->push_retract_timeout_ms;
+  }
+  else {
+    *val_ptr = 3000;
+  }
+  return 0;
+}
+
+static int reg_push_retract_timeout_ms_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    params->push_retract_timeout_ms = (uint32_t)val;
+    if (cal_data_save() == true) {
+      app_console_print("[MODBUS] push_retract_timeout_ms = %lu (saved)\r\n", (unsigned long)params->push_retract_timeout_ms);
+    }
+    else {
+      app_console_print("[MODBUS] push_retract_timeout_ms = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->push_retract_timeout_ms);
+    }
+  }
+  return 0;
+}
+
+static int reg_lift_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    *val_ptr = (uint16_t)params->lift_timeout_ms;
+  }
+  else {
+    *val_ptr = 5000;
+  }
+  return 0;
+}
+
+static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    params->lift_timeout_ms = (uint32_t)val;
+    if (cal_data_save() == true) {
+      app_console_print("[MODBUS] lift_timeout_ms = %lu (saved)\r\n", (unsigned long)params->lift_timeout_ms);
+    }
+    else {
+      app_console_print("[MODBUS] lift_timeout_ms = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->lift_timeout_ms);
+    }
+  }
   return 0;
 }
