@@ -48,11 +48,13 @@ static const char* s_param_names[CAL_DATA_CLI_NUM_PARAMS] = {[CAL_DATA_CLI_PARAM
                                                              [CAL_DATA_CLI_HOME_RPM] = "home_rpm",
                                                              [CAL_DATA_CLI_HOME_BACKOFF_STEPS] = "home_backoff_steps",
                                                              [CAL_DATA_CLI_HOME_MAX_STEPS] = "home_max_steps",
-                                                             [CAL_DATA_CLI_SUPERVISOR_PERIOD_MS] = "supervisor_period_ms",
-                                                             [CAL_DATA_CLI_DEFAULT_MOVE_RPM] = "default_move_rpm",
-                                                             [CAL_DATA_CLI_DEFAULT_MOVE_STEPS] = "default_move_steps",
-                                                             [CAL_DATA_CLI_HOME_SETTLE_DELAY_MS] = "home_settle_delay_ms",
-                                                             [CAL_DATA_CLI_LOAD_OFFSET] = "load_offset"};
+                                                              [CAL_DATA_CLI_SUPERVISOR_PERIOD_MS] = "supervisor_period_ms",
+                                                              [CAL_DATA_CLI_DEFAULT_MOVE_RPM] = "default_move_rpm",
+                                                              [CAL_DATA_CLI_DEFAULT_MOVE_STEPS] = "default_move_steps",
+                                                              [CAL_DATA_CLI_HOME_SETTLE_DELAY_MS] = "home_settle_delay_ms",
+                                                              [CAL_DATA_CLI_LOAD_OFFSET] = "load_offset",
+                                                              [CAL_DATA_CLI_PUSH_RETRACT_TIMEOUT_MS] = "push_retract_timeout_ms",
+                                                              [CAL_DATA_CLI_LIFT_TIMEOUT_MS] = "lift_timeout_ms"};
 
 /*******************************************************************************
  * Function Prototypes
@@ -198,6 +200,15 @@ static uint32_t* param_value_ptr(cal_data_cli_param_enum param) {
       case CAL_DATA_CLI_LOAD_OFFSET:
         value = &params->load_offset;
         break;
+
+      case CAL_DATA_CLI_PUSH_RETRACT_TIMEOUT_MS:
+        value = &params->push_retract_timeout_ms;
+        break;
+
+      case CAL_DATA_CLI_LIFT_TIMEOUT_MS:
+        value = &params->lift_timeout_ms;
+        break;
+
       default:
         break;
     }
