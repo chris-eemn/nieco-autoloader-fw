@@ -150,9 +150,7 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
     configASSERT(ret == pdPASS);
   }
 
-  app_console_print("[AXIS] Instance %u init OK. period=%lums encoder=%lu/%lu counts/ustep stall_err=%lu home_err=%lu.\r\n", (unsigned)(s_axis_count - 1U),
-                    axis->config.supervisor_period_ms, axis->config.encoder_counts_numerator, axis->config.encoder_counts_denominator,
-                    axis->config.stall_error_counts, axis->config.home_error_counts);
+  app_console_print("[AXIS] Instance %u init OK. period=%lums\r\n", (unsigned)(s_axis_count - 1U), axis->config.supervisor_period_ms);
 
   return axis;
 }
@@ -189,6 +187,9 @@ void axis_update_config(axis_t* axis, const axis_config_t* config) {
   };
 
   (void)stepper_sync_configure(axis->motor, axis->encoder, &sync_config);
+
+  app_console_print("[AXIS] Instance %u config updated: stall_err=%lu home_err=%lu.\r\n", axis->num - 1U, axis->config.stall_error_counts,
+                    axis->config.home_error_counts);
 }
 
 void axis_update_sync_error_threshold(axis_t* axis, bool use_home_threshold) {
