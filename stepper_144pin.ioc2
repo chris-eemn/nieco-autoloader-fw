@@ -9966,7 +9966,7 @@
                     "memory_management_schema": "HEAP_4",
                     "dynamic_memory_allocation": true,
                     "static_memory_allocation": false,
-                    "total_heap_size": 32768,
+                    "total_heap_size": 65536,
                     "more": {
                       "application_allocated_heap": false,
                       "stack_allocation_from_separate_heap": false,
