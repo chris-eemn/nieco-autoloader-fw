@@ -73,6 +73,7 @@ static void app_bringup_task_run(void* parameters) {
   if (cal_data_init() == false) {
     app_console_print("[INFO] Cal data blank or from an older layout -- factory defaults written.\r\n");
   }
+  vTaskDelay(pdMS_TO_TICKS(10U));  // give the console time to flush before starting the stepper system
 
   if (stepper_system_init() == false) {
     app_console_print("[ERROR] Stepper system init failed.\r\n");
@@ -82,6 +83,7 @@ static void app_bringup_task_run(void* parameters) {
     app_console_print("[ERROR] Stepper auto-test task start failed.\r\n");
     initialized = false;
   }
+  vTaskDelay(pdMS_TO_TICKS(10U));  // give the console time to flush before starting the stepper system
 
   app_task_register_axis_event_cb();
 
@@ -89,6 +91,7 @@ static void app_bringup_task_run(void* parameters) {
     app_console_print("[ERROR] Control task start event was not queued.\r\n");
     initialized = false;
   }
+  vTaskDelay(pdMS_TO_TICKS(10U));  // give the console time to flush before starting the stepper system
 
   app_simulate_event(2000U / portTICK_PERIOD_MS, APP_EV_DOOR_CLOSED);
   app_simulate_event(2500U / portTICK_PERIOD_MS, APP_EV_LOCK_CONFIRMED);
