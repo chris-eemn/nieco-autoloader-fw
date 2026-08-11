@@ -18,7 +18,7 @@
  * call and runs at a fixed period (default 25 ms, configurable via the first
  * axis's config). All subsequent axes share that period regardless of their own
  * supervisor_period_ms field. Stall and homing-endstop detection occur directly
- * in the step ISR using max_sync_error_counts.
+ * in the step ISR using stall_error_counts or home_error_counts.
  *
  * Use axis_get_status() and axis_is_busy() to observe non-blocking motion, or
  * register a callback with axis_register_event_cb() to be told when a move or
@@ -33,7 +33,8 @@
  *     .home_rpm             = 10,
  *     .home_max_steps       = 50000,
  *     .backoff_steps        = 800,
- *     .max_sync_error_counts = 10,
+ *     .stall_error_counts   = 10,
+ *     .home_error_counts    = 50,
  *   };
  *   axis_t *ax = axis_init(motor, enc, m1_fault_exti_gethandle(), &cfg);
  *   axis_register_event_cb(ax, on_axis_event, (void *)AXIS_ID_LIFT);
@@ -50,6 +51,7 @@
  *******************************************************************************/
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "stepper.h"
 #include "encoder.h"
 #include "stm32_hal.h"
@@ -70,6 +72,9 @@
 
 #define AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS 10U
 
+#define AXIS_DEFAULT_STALL_ERROR_COUNTS 10U
+#define AXIS_DEFAULT_HOME_ERROR_COUNTS 50U
+
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -80,7 +85,7 @@
  *   NOT_HOMED → HOMING (via axis_home())
  *   HOMING    → OK     (homing succeeded)
  *   HOMING    → FAULT  (homing timeout or stepper fault)
- *   OK        → STALLED (encoder lag exceeds max_sync_error_counts)
+ *   OK        → STALLED (encoder lag exceeds stall_error_counts)
  *   OK/HOMING → FAULT  (stepper fault detected)
  *   STALLED   → NOT_HOMED (via axis_clear_fault())
  *   FAULT     → NOT_HOMED (via axis_fault_reset(), deferred over two supervisor ticks)
@@ -174,8 +179,16 @@ typedef struct {
   uint32_t encoder_counts_numerator;
   uint32_t encoder_counts_denominator;
 
-  /** Encoder following-error threshold. Lag stops immediately; lead only reports. */
-  uint32_t max_sync_error_counts;
+  /** Encoder following-error threshold for stall detection when NOT homing.
+   *  Lag stops the motor immediately; lead only reports.
+   *  Use axis_update_sync_error_threshold() to switch to home_error_counts
+   *  when homing begins, and back to stall_error_counts when homing ends. */
+  uint32_t stall_error_counts;
+
+  /** Encoder following-error threshold used during homing (endstop detection).
+   *  Set a higher value during homing so the endstop is detected reliably.
+   *  See axis_update_sync_error_threshold() for switching at runtime. */
+  uint32_t home_error_counts;
 
   /** Back-off distance in microsteps after endstop is detected (no default — must be set). */
   uint32_t backoff_steps;
@@ -324,7 +337,7 @@ uint8_t axis_is_busy(const axis_t* axis);
 /**
  * @brief  Start a non-blocking homing sequence.
  *         Drives in the requested direction until encoder lag reaches
- *         config.max_sync_error_counts, then backs off by config.backoff_steps
+ *         config.home_error_counts, then backs off by config.backoff_steps
  *         in the opposite direction and zeros the encoder. Transitions axis
  *         status to AXIS_STATUS_HOMING.
  *
@@ -421,4 +434,19 @@ void axis_stop(axis_t* axis);
  * @param  config  New configuration to apply. Must not be NULL.
  */
 void axis_update_config(axis_t* axis, const axis_config_t* config);
+
+/**
+ * @brief  Switch the sync-error threshold used by the step ISR.
+ *
+ *         When `use_home_threshold` is true the ISR uses
+ *         config.home_error_counts (for endstop detection during homing).
+ *         When false it uses config.stall_error_counts (for stall detection
+ *         during normal operation).  Immediately applies the new value via
+ *         stepper_sync_configure().
+ *
+ * @param  axis              Handle returned by axis_init(). Must not be NULL.
+ * @param  use_home_threshold  true = use home_error_counts; false = use stall_error_counts.
+ */
+void axis_update_sync_error_threshold(axis_t* axis, bool use_home_threshold);
+
 #endif /* AXIS_H_ */

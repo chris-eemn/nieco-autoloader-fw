@@ -40,6 +40,8 @@ typedef enum {
   // Cal-data backed registers
   REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS = 75,
   REG_CAL_DATA_LIFT_TIMEOUT_MS = 76,
+  REG_CAL_DATA_STALL_ERROR_COUNTS = 77,
+  REG_CAL_DATA_HOME_ERROR_COUNTS = 78,
 
   REG_SLAVE_UI_ENTER_SELF_TEST_MODE = 500,  // Used to tell UI to go into self test mode on boot
   REG_SLAVE_UI_SELF_TEST_RESULTS = 501,     // used to indicate self test results. Bit0: 1 if self test mode was entered, else 0
