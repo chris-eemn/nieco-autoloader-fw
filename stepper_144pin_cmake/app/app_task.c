@@ -139,6 +139,11 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
   app_event.slot = cartridge_get_slot_from_axis_num(axis->num);
   app_console_print("[Axis Event] (slot %d) Axis %d event %s\r\n", app_event.slot, axis->num, axis_event_name(event));
 
+  if (s_app_sm.fault_code == APP_FAULT_CODE_DOOR_OPENED) {
+    app_console_print("[Axis Event] Ignoring axis event because door is open\r\n");
+    return;
+  }
+
   if (event == AXIS_EVENT_MOVE_DONE) {
     app_event.id = APP_EV_MOTION_DONE;
   }

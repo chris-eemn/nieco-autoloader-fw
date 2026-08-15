@@ -26,6 +26,7 @@
 #include "cartridge.h"  // only need for my simulated type hack
 #include "patty_handler.h"
 #include "startup_sm.h"
+#include "app_task.h"
 
 /*******************************************************************************
  * Module Macros
@@ -228,6 +229,15 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
           sm->cartridge[slot].faulted = false;
         }
         app_sm_enter_state(sm, APP_STARTUP);
+      }
+      else if (event->id == APP_EV_DOOR_CLOSED) {
+        if (sm->fault_code == APP_FAULT_CODE_DOOR_OPENED) {
+          app_console_print("[Main SM] Door closed, returning to startup\r\n");
+          sm->fault_code = 0U;
+          patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
+          app_sm_enter_state(sm, APP_STARTUP);
+          app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
+        }
       }
       break;
 
