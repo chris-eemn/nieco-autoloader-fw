@@ -24,6 +24,7 @@
 #include "stepper_ctrl.h"
 #include "cartridge.h"  // only need for my simulated type hack
 #include "patty_handler.h"
+#include "startup_sm.h"
 
 /*******************************************************************************
  * Module Macros
@@ -125,16 +126,19 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       }
       break;
 
-    case APP_STARTUP:
-      startup_sm_dispatch(sm, event);
-      if (sm->startup.state == STARTUP_COMPLETE) {
+    case APP_STARTUP: {
+      startup_result_t result;
+      result = startup_sm_dispatch(&sm->startup, sm->cartridge, event);
+      if (result.status == STARTUP_STATUS_DONE) {
         app_console_print("[Startup SM] Startup complete\r\n");
         app_sm_enter_state(sm, APP_READY);
       }
-      else if (sm->startup.state == STARTUP_FAILED) {
+      else if (result.status == STARTUP_STATUS_FAILED) {
+        app_console_print("[Startup SM] Startup failed: fault_code=%d\r\n", result.fault_code);
         app_sm_enter_sequence_fault(sm);
       }
-      break;
+      sm->fault_code = result.fault_code;
+    } break;
 
     case APP_READY:
       app_console_print("[Main SM] In ready state\r\n");
@@ -243,7 +247,7 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
 
     switch (next) {
       case APP_STARTUP:
-        startup_sm_start(sm);
+        startup_sm_start(&sm->startup);
         break;
 
       case APP_DISPENSE:

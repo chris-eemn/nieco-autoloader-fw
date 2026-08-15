@@ -57,6 +57,7 @@ typedef enum {
   APP_FAULT_CODE_INVALID_STATE,
   APP_FAULT_CODE_SEQUENCE_ERROR,
   APP_FAULT_CODE_DOOR_OPENED,
+  APP_FAULT_CODE_STARTUP_FAILED,
 } app_fault_code_enum;
 
 typedef enum {
