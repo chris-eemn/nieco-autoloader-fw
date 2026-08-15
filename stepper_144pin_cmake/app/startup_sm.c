@@ -141,10 +141,12 @@ void startup_sm_start(startup_sm_t* sm) {
 
 void startup_sm_abort(startup_sm_t* sm) {
   if (sm != NULL) {
-    sm->state = STARTUP_FAILED;
+    sm->state = STARTUP_WAIT_DOOR;
     sm->lift_homing_end_time_ms = 0U;
     sm->lift_homing_timeout_ms = 0U;
-    sm->state = STARTUP_WAIT_DOOR;
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_STARTUP_DELAY);
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
   }
 }
 

@@ -128,16 +128,23 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case APP_STARTUP: {
       startup_result_t result;
-      result = startup_sm_dispatch(&sm->startup, sm->cartridge, event);
-      if (result.status == STARTUP_STATUS_DONE) {
-        app_console_print("[Startup SM] Startup complete\r\n");
-        app_sm_enter_state(sm, APP_READY);
+      if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+        startup_sm_abort(&sm->startup);
+        sm->fault_code = APP_FAULT_CODE_DOOR_OPENED;
+        app_sm_enter_state(sm, APP_FAULT);
       }
-      else if (result.status == STARTUP_STATUS_FAILED) {
-        app_console_print("[Startup SM] Startup failed: fault_code=%d\r\n", result.fault_code);
-        app_sm_enter_sequence_fault(sm);
+      else {
+        result = startup_sm_dispatch(&sm->startup, sm->cartridge, event);
+        if (result.status == STARTUP_STATUS_DONE) {
+          app_console_print("[Startup SM] Startup complete\r\n");
+          app_sm_enter_state(sm, APP_READY);
+        }
+        else if (result.status == STARTUP_STATUS_FAILED) {
+          app_console_print("[Startup SM] Startup failed: fault_code=%d\r\n", result.fault_code);
+          app_sm_enter_sequence_fault(sm);
+        }
+        sm->fault_code = result.fault_code;
       }
-      sm->fault_code = result.fault_code;
     } break;
 
     case APP_READY:
