@@ -17,6 +17,7 @@
 #include "autoloader_types.h"
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include "FreeRTOS.h"
 #include "semphr.h"
@@ -215,4 +216,20 @@ static void input_poll_lock_pin(void) {
 
 static void input_poll_inputs(void) {
   input_poll_lock_pin();
+}
+
+/**
+ * @brief Get the current door state.
+ * @return true if the door is currently closed; otherwise false.
+ */
+bool input_get_door_closed(void) {
+  return (s_door_last_raw == 0U);
+}
+
+/**
+ * @brief Get the current lock state.
+ * @return true if the lock is currently confirmed; otherwise false.
+ */
+bool input_get_lock_confirmed(void) {
+  return (s_lock_last_raw != 0U);
 }

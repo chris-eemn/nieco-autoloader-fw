@@ -15,10 +15,13 @@
 #include "autoloader_sm.h"
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include "app_console.h"
 #include "app_sm_port.h"
 #include "app_task.h"
+#include "autoloader_types.h"
+#include "input.h"
 
 /*******************************************************************************
  * Module Macros
@@ -36,6 +39,7 @@
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
+static void startup_begin_homing(app_sm_t* sm);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -54,11 +58,19 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
   switch (sm->startup.state) {
     case STARTUP_WAIT_DOOR:
-      if (event->id == APP_EV_DOOR_CLOSED) {
-        app_console_print("[Startup SM] Door closed\r\n");
-        sm->startup.state = STARTUP_LOCK_DOOR;
-        app_sm_port_lock_door();
-        app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK, 1000);
+      if ((input_get_door_closed() == true) || (event->id == APP_EV_DOOR_CLOSED)) {
+        if (input_get_lock_confirmed() == true) {
+          app_console_print("[Startup SM] Door already locked\r\n");
+          startup_begin_homing(sm);
+          sm->startup.state = STARTUP_HOME_PUSHERS;
+        }
+        else {
+          app_console_print("[Startup SM] Locking door\r\n");
+
+          sm->startup.state = STARTUP_LOCK_DOOR;
+          app_sm_port_lock_door();
+          app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK, 1000U);
+        }
       }
       break;
 
@@ -67,10 +79,7 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         app_console_print("[Startup SM] Door locked\r\n");
         app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
         sm->startup.state = STARTUP_HOME_PUSHERS;
-        for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
-          app_sm_port_home_pusher(&sm->cartridge[i]);
-          app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
-        }
+        startup_begin_homing(sm);
       }
       else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_LOCK)) {
         sm->startup.state = STARTUP_FAILED;
@@ -81,7 +90,15 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case STARTUP_HOME_PUSHERS:
-      if (event->id == APP_EV_MOTION_DONE) {
+      if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+        for (size_t i = 0U; i < APP_SLOT_COUNT; i++) {
+          app_sm_port_halt_motion(&sm->cartridge[i]);
+        }
+        sm->fault_code = APP_FAULT_CODE_DOOR_OPENED;
+        app_task_post(&(app_event_t){.id = APP_EV_FAULT, .slot = APP_NO_SLOT, .value = 0U});
+        sm->startup.state = STARTUP_FAILED;
+      }
+      else if (event->id == APP_EV_MOTION_DONE) {
         sm->cartridge[event->axis_num - 1U].pusher_homed = true;
 
         bool all_pushers_homed = true;
@@ -243,3 +260,10 @@ void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
+static void startup_begin_homing(app_sm_t* sm) {
+  sm->startup.state = STARTUP_HOME_PUSHERS;
+  for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+    app_sm_port_home_pusher(&sm->cartridge[i]);
+    app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
+  }
+}

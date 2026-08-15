@@ -22,6 +22,7 @@
  *******************************************************************************/
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -69,7 +70,7 @@ void input_register_exti_cb(void);
  *        services door debounce, and calls the input-polling placeholder.
  * @param parameters Unused FreeRTOS task parameter.
  */
-void input_task_run(void *parameters);
+void input_task_run(void* parameters);
 
 /**
  * @brief ISR-safe entry point called from the door EXTI handler.
@@ -79,5 +80,21 @@ void input_task_run(void *parameters);
  *        from ISR context.
  */
 void input_door_exti_callback_from_isr(void);
+
+/**
+ * @brief Get the current door state.
+ *
+ *        Returns the last-known door pin value read by the input task.
+ * @return true if the door is currently closed; otherwise false.
+ */
+bool input_get_door_closed(void);
+
+/**
+ * @brief Get the current lock state.
+ *
+ *        Returns the last-known lock-detect pin value read by the input task.
+ * @return true if the lock is currently confirmed; otherwise false.
+ */
+bool input_get_lock_confirmed(void);
 
 #endif /* INPUT_H_ */
