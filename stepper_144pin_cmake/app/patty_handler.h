@@ -182,4 +182,19 @@ bool patty_handler_has_active_dispenses(const patty_handler_t* handler);
  * @return True when any slot has pending or active work; otherwise false.
  */
 bool patty_handler_has_work(const patty_handler_t* handler);
+
+/**
+ * @brief Aborts all active dispense cycles and clears all pending requests.
+ *
+ * @param handler Initialized handler instance.
+ */
+void patty_handler_abort_all(patty_handler_t* handler);
+
+/**
+ * @brief Converts a patty_handler_result_enum value to a string.
+ *
+ * @param result Result value to convert.
+ * @return Pointer to a static string representation of the result.
+ */
+const char* patty_handler_result_enum_to_str(patty_handler_result_enum result);
 #endif /* PATTY_HANDLER_H_ */

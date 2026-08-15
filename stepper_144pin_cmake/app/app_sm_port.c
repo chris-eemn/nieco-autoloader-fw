@@ -145,8 +145,10 @@ void app_sm_port_halt_motion(cartridge_t* slot) {
   axis_stop(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)));
 }
 
-void app_sm_port_halt_all_motion(void) {
-  /* TODO: Stop all axes after the final motor-to-slot map is available. */
+void app_sm_port_halt_all_motion(cartridge_t cartridges[APP_SLOT_COUNT]) {
+  for (size_t i = 0U; i < APP_SLOT_COUNT; i++) {
+    app_sm_port_halt_motion(&cartridges[i]);
+  }
 }
 
 void app_sm_port_save_state(void) {

@@ -98,8 +98,11 @@ void app_sm_port_commit_dispense(cartridge_t* slot);
  */
 void app_sm_port_halt_motion(cartridge_t* slot);
 
-/** @brief Halt every axis immediately. */
-void app_sm_port_halt_all_motion(void);
+/**
+ * @brief Halt every axis immediately.
+ * @param cartridges Array of cartridge slots.
+ */
+void app_sm_port_halt_all_motion(cartridge_t cartridges[APP_SLOT_COUNT]);
 
 /** @brief Save persistent application state. */
 void app_sm_port_save_state(void);
