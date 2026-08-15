@@ -139,7 +139,11 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     case APP_READY:
       app_console_print("[Main SM] In ready state\r\n");
 
-      if (event->id == APP_EV_DISPENSE_REQUEST) {
+      if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+        sm->fault_code = APP_FAULT_CODE_DOOR_OPENED;
+        app_sm_enter_state(sm, APP_FAULT);
+      }
+      else if (event->id == APP_EV_DISPENSE_REQUEST) {
         app_console_print("[Main SM] Dispense request received: product_type=%s, count=%d\r\n", cartridge_type_to_string(event->product_type),
                           event->value);
         handle_patty_request(sm, event);
@@ -198,7 +202,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
           sm->cartridge[slot].faulted = false;
         }
-        app_sm_enter_state(sm, APP_READY);
+        app_sm_enter_state(sm, APP_STARTUP);
       }
       break;
 

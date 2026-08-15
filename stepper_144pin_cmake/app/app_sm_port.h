@@ -136,6 +136,13 @@ void app_sm_port_publish_state(const app_sm_t* sm);
 const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id);
 
 /**
+ * @brief Convert a fault code to a human-readable string.
+ * @param fault_code Fault code to convert.
+ * @return Pointer to a constant string describing the fault code.
+ */
+const char* app_sm_port_fault_code_to_str(app_fault_code_enum fault_code);
+
+/**
  * @brief Get the push-retract timeout from calibration data.
  * @return Timeout in milliseconds. Falls back to 3000 if cal_data is
  *         unavailable or the value is zero.

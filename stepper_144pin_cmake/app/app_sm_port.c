@@ -57,6 +57,13 @@ static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_CART4_DISPENSE] = "APP_SM_CART4_DISPENSE",
     [APP_SM_TIMEOUT_DOOR] = "APP_SM_TIMEOUT_DOOR",
 };
+
+static const char* const app_fault_code_names[] = {
+    [APP_FAULT_CODE_NONE] = "APP_FAULT_CODE_NONE",
+    [APP_FAULT_CODE_INVALID_STATE] = "APP_FAULT_CODE_INVALID_STATE",
+    [APP_FAULT_CODE_SEQUENCE_ERROR] = "APP_FAULT_CODE_SEQUENCE_ERROR",
+    [APP_FAULT_CODE_DOOR_OPENED] = "APP_FAULT_CODE_DOOR_OPENED",
+};
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -226,6 +233,14 @@ const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
   }
 
   return app_sm_timeout_id_names[timeout_id];
+}
+
+const char* app_sm_port_fault_code_to_str(app_fault_code_enum fault_code) {
+  if ((size_t)fault_code >= (sizeof(app_fault_code_names) / sizeof(app_fault_code_names[0]))) {
+    return "APP_FAULT_CODE_UNKNOWN";
+  }
+
+  return app_fault_code_names[fault_code];
 }
 
 uint32_t app_sm_port_get_push_retract_timeout_ms(void) {
