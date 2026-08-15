@@ -149,6 +149,7 @@ void stepper_cli_set_handler(char* param, int32_t val) {
         }
       }
       app_console_print("[STEPPER] All motors: fault reset requested - supervisor will complete in ~2 ticks.\r\n");
+      app_task_post(&(app_event_t){.id = APP_EV_FAULT_CLEARED, .slot = APP_NO_SLOT, .value = 0U});
       break;
     }
 
