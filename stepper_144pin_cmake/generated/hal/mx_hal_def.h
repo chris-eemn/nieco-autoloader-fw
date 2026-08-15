@@ -470,6 +470,12 @@ extern "C" {
   */
 #define m3_fault_exti_gethandle mx_gpio_default_exti1_gethandle
 
+/**
+  * @brief  Get the EXTI handle for EXTI13 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI13 used by gpio_default instance
+  */
+#define door_exti_gethandle mx_gpio_default_exti13_gethandle
+
   /* *************************************************************
     USB_DRD_FS_HOST: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
