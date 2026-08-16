@@ -21,8 +21,6 @@
  *******************************************************************************/
 #define APP_SLOT_COUNT (1U)  // number of cartridges/slots available in the auto-loader.
 #define APP_NO_SLOT (0xFFU)
-#define APP_FAULT_CODE_INVALID_STATE (1U)
-#define APP_FAULT_CODE_SEQUENCE_ERROR (2U)
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -44,6 +42,7 @@ typedef enum {
   APP_EV_FAULT_CLEARED,
   APP_EV_SHUTDOWN_REQUEST,
   APP_EV_TIMEOUT,
+  APP_EV_CONTINUE,
 #if 0
   APP_DISP_EVENT_PUSH_EXTENDED = 0,
   APP_DISP_EVENT_PUSH_RETRACTED,
@@ -53,6 +52,14 @@ typedef enum {
   APP_DISP_EVENT_MOTION_FAULT
 #endif
 } app_event_id_enum;
+
+typedef enum {
+  APP_FAULT_CODE_NONE = 0,
+  APP_FAULT_CODE_INVALID_STATE,
+  APP_FAULT_CODE_SEQUENCE_ERROR,
+  APP_FAULT_CODE_DOOR_OPENED,
+  APP_FAULT_CODE_STARTUP_FAILED,
+} app_fault_code_enum;
 
 typedef enum {
   APP_INIT = 0,

@@ -93,6 +93,13 @@ void dispense_sm_init(dispense_sm_t* dispense_sm, cartridge_t* cartridge);
 patty_handler_result_enum dispense_sm_start(dispense_sm_t* dispense_sm);
 
 /**
+ * @brief Aborts an ongoing dispense cycle for a cartridge.
+ *
+ * @param dispense_sm State-machine context for the selected cartridge.
+ */
+void dispense_sm_abort(dispense_sm_t* dispense_sm);
+
+/**
  * @brief Handles one event for an individual cartridge dispense cycle.
  *
  * @param dispense_sm State-machine context for the selected cartridge.

@@ -33,7 +33,14 @@
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
-
+static const char* const result_str[] = {
+    [PATTY_HANDLER_RESULT_OK] = "PATTY_HANDLER_RESULT_OK",
+    [PATTY_HANDLER_RESULT_NO_ACTION] = "PATTY_HANDLER_RESULT_NO_ACTION",
+    [PATTY_HANDLER_RESULT_NOT_READY] = "PATTY_HANDLER_RESULT_NOT_READY",
+    [PATTY_HANDLER_RESULT_NOT_ENOUGH_PRODUCT] = "PATTY_HANDLER_RESULT_NOT_ENOUGH_PRODUCT",
+    [PATTY_HANDLER_RESULT_MOTION_REJECTED] = "PATTY_HANDLER_RESULT_MOTION_REJECTED",
+    [PATTY_HANDLER_RESULT_INVALID_ARGUMENT] = "PATTY_HANDLER_RESULT_INVALID_ARGUMENT",
+};
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -73,6 +80,7 @@ patty_handler_result_enum patty_handler_init(patty_handler_t* handler, cartridge
 }
 
 void patty_handler_set_safety_state(patty_handler_t* handler, bool door_closed, bool door_locked, bool dispensing_enabled) {
+  // todo: figure out if the patty handler should care about door state
   if (handler != NULL) {
     handler->door_closed = door_closed;
     handler->door_locked = door_locked;
@@ -210,6 +218,7 @@ patty_handler_result_enum patty_handler_process(patty_handler_t* handler) {
   return result;
 }
 
+// todo: generalize the result to a proper patty_handler_Result_enum
 patty_handler_result_enum patty_handler_dispatch_event(patty_handler_t* handler, const app_event_t* event) {
   patty_handler_result_enum result = PATTY_HANDLER_RESULT_INVALID_ARGUMENT;
   patty_handler_result_enum process_result;
@@ -285,6 +294,24 @@ bool patty_handler_has_work(const patty_handler_t* handler) {
   return has_work;
 }
 
+void patty_handler_abort_all(patty_handler_t* handler) {
+  if (handler != NULL) {
+    patty_handler_set_dispensing_enabled(handler, false);
+    for (uint8_t slot_index = 0U; slot_index < PATTY_HANDLER_SLOT_COUNT; slot_index++) {
+      dispense_sm_abort(&handler->dispense_sm[slot_index]);
+      handler->cartridge[slot_index].pending = 0U;
+    }
+  }
+}
+
+const char* patty_handler_result_enum_to_str(patty_handler_result_enum result) {
+  const uint32_t index = (uint32_t)result;
+  if ((index < (uint32_t)(sizeof(result_str) / sizeof(result_str[0]))) && (result_str[index] != NULL)) {
+    return result_str[index];
+  }
+
+  return "UNKNOWN_PATTY_HANDLER_RESULT";
+}
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/

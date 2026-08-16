@@ -174,6 +174,16 @@ const char* dispense_sm_fault_to_str(uint8_t fault) {
 
   return dispense_fault_names[fault];
 }
+
+void dispense_sm_abort(dispense_sm_t* dispense_sm) {
+  if (dispense_sm != NULL) {
+    app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
+    dispense_sm->state = DISPENSE_IDLE;
+    dispense_sm->fault_code = DISPENSE_FAULT_NONE;
+    // can halt here but should already be halted by main_sm
+    halt_motion(dispense_sm->cartridge);
+  }
+}
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/

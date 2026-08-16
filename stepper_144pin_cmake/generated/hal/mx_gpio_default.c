@@ -25,6 +25,7 @@
 /* Exported variables by reference -------------------------------------------*/
 static hal_exti_handle_t hEXTI1;
 static hal_exti_handle_t hEXTI6;
+static hal_exti_handle_t hEXTI13;
 static hal_exti_handle_t hEXTI14;
 static hal_exti_handle_t hEXTI5;
 
@@ -228,6 +229,18 @@ system_status_t mx_gpio_default_init(void)
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
+  /* Initialize the EXTI for line 13 */
+  HAL_EXTI_Init(&hEXTI13, HAL_EXTI_LINE_13);
+
+  /* Set the trigger as RISING_FALLING for the GPIOF */
+  exti_config.trigger   = HAL_EXTI_TRIGGER_RISING_FALLING;
+  exti_config.gpio_port = HAL_EXTI_GPIOF;
+  HAL_EXTI_SetConfig(&hEXTI13, &exti_config);
+
+  /* Set line 13 Interrupt priority */
+  HAL_CORTEX_NVIC_SetPriority(EXTI13_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_EnableIRQ(EXTI13_IRQn);
+
   /* Initialize the EXTI for line 14 */
   HAL_EXTI_Init(&hEXTI14, HAL_EXTI_LINE_14);
 
@@ -311,6 +324,11 @@ system_status_t mx_gpio_default_deinit(void)
   /* set line 6 Interrupt priority */
   HAL_CORTEX_NVIC_DisableIRQ(EXTI6_IRQn);
 
+  /* De-initialize the EXTI for GPIOF line13 */
+  HAL_EXTI_DeInit(&hEXTI13);
+
+  /* set line 13 Interrupt priority */
+  HAL_CORTEX_NVIC_DisableIRQ(EXTI13_IRQn);
   /* De-initialize the EXTI for GPIOF line14 */
   HAL_EXTI_DeInit(&hEXTI14);
 
@@ -357,6 +375,11 @@ hal_exti_handle_t *mx_gpio_default_exti6_gethandle(void)
   return &hEXTI6;
 }
 
+hal_exti_handle_t *mx_gpio_default_exti13_gethandle(void)
+{
+  return &hEXTI13;
+}
+
 hal_exti_handle_t *mx_gpio_default_exti14_gethandle(void)
 {
   return &hEXTI14;
@@ -381,6 +404,14 @@ void EXTI1_IRQHandler(void)
 void EXTI6_IRQHandler(void)
 {
   HAL_EXTI_IRQHandler(&hEXTI6);
+}
+
+/******************************************************************************/
+/*                           EXTI Line13 interrupt                            */
+/******************************************************************************/
+void EXTI13_IRQHandler(void)
+{
+  HAL_EXTI_IRQHandler(&hEXTI13);
 }
 
 /******************************************************************************/

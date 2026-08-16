@@ -20,10 +20,13 @@
 #include "app_console.h"
 #include "app_event_simulator.h"
 #include "app_sm_port.h"
+#include "autoloader_types.h"
 #include "axis.h"
 #include "stepper_ctrl.h"
 #include "cartridge.h"  // only need for my simulated type hack
 #include "patty_handler.h"
+#include "startup_sm.h"
+#include "app_task.h"
 
 /*******************************************************************************
  * Module Macros
@@ -103,12 +106,12 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     return;
   }
 
-  if (((event->id == APP_EV_FAULT) || (event->id == APP_EV_MOTION_FAILED)) && (sm->state != APP_SHUTDOWN)) {
+  if (event->id == APP_EV_FAULT) {
     app_console_print("[Main SM] Fault event received: fault_code=%d\r\n", event->value);
     sm->fault_code = event->value;
     app_sm_enter_state(sm, APP_FAULT);
-    app_console_print("[Main SM] Simulating fault cleared event in 100ms for testing purposes\r\n");
-    app_simulate_event(100, APP_EV_FAULT_CLEARED);
+    // app_console_print("[Main SM] Simulating fault cleared event in 100ms for testing purposes\r\n");
+    // app_simulate_event(100, APP_EV_FAULT_CLEARED);
     return;
   }
 
@@ -117,29 +120,48 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       if (event->id == APP_EV_START) {
         // TODO: put back to startup
 
+#if 0
         app_console_print("[Startup SM] Simulating cartridge %d type as WHOPPER for testing purposes\r\n", 0 + 1U);
         sm->cartridge[0].type = CARTRIDGE_TYPE_WHOPPER;
         app_console_print("[Startup SM] Simulating cartridge %d number of items as 10 for testing purposes\r\n", 0 + 1U);
         sm->cartridge[0].remaining = 10U;
         app_sm_enter_state(sm, APP_READY);
+#else
+        app_sm_enter_state(sm, APP_STARTUP);
+#endif
       }
       break;
 
-    case APP_STARTUP:
-      startup_sm_dispatch(sm, event);
-      if (sm->startup.state == STARTUP_COMPLETE) {
-        app_console_print("[Startup SM] Startup complete\r\n");
-        app_sm_enter_state(sm, APP_READY);
+    case APP_STARTUP: {
+      startup_result_t result;
+      if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+        startup_sm_abort(&sm->startup);
+        sm->fault_code = APP_FAULT_CODE_DOOR_OPENED;
+        app_sm_enter_state(sm, APP_FAULT);
       }
-      else if (sm->startup.state == STARTUP_FAILED) {
-        app_sm_enter_sequence_fault(sm);
+      else {
+        result = startup_sm_dispatch(&sm->startup, sm->cartridge, event);
+        if (result.status == STARTUP_STATUS_DONE) {
+          app_console_print("[Startup SM] Startup complete\r\n");
+          app_sm_enter_state(sm, APP_READY);
+        }
+        else if (result.status == STARTUP_STATUS_FAILED) {
+          app_console_print("[Startup SM] Startup failed: fault_code=%d\r\n", result.fault_code);
+          app_sm_enter_sequence_fault(sm);
+        }
+        sm->fault_code = result.fault_code;
       }
-      break;
+    } break;
 
     case APP_READY:
       app_console_print("[Main SM] In ready state\r\n");
 
-      if (event->id == APP_EV_DISPENSE_REQUEST) {
+      if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+        sm->fault_code = APP_FAULT_CODE_DOOR_OPENED;
+        patty_handler_abort_all(&sm->patty_handler);
+        app_sm_enter_state(sm, APP_FAULT);
+      }
+      else if (event->id == APP_EV_DISPENSE_REQUEST) {
         app_console_print("[Main SM] Dispense request received: product_type=%s, count=%d\r\n", cartridge_type_to_string(event->product_type),
                           event->value);
         handle_patty_request(sm, event);
@@ -151,6 +173,11 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case APP_DISPENSE:
       app_console_print("[Main SM] In dispense state\r\n");
+      if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+        sm->fault_code = APP_FAULT_CODE_DOOR_OPENED;
+        patty_handler_abort_all(&sm->patty_handler);
+        app_sm_enter_state(sm, APP_FAULT);
+      }
       if (event->id == APP_EV_DISPENSE_REQUEST) {
         /* New requests can be accepted while other cartridges are running. */
         handle_patty_request(sm, event);
@@ -165,7 +192,10 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         patty_handler_set_dispensing_enabled(&sm->patty_handler, false);
       }
       else {
-        patty_handler_dispatch_event(&sm->patty_handler, event);
+        patty_handler_result_enum result;
+        result = patty_handler_dispatch_event(&sm->patty_handler, event);
+
+        app_console_print("[Main SM] Patty handler processed event: result=%d (%s)\r\n", result, patty_handler_result_enum_to_str(result));
       }
 
       if ((sm->reload_pending == true) && (patty_handler_has_active_dispenses(&sm->patty_handler) == false)) {
@@ -198,7 +228,16 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
           sm->cartridge[slot].faulted = false;
         }
-        app_sm_enter_state(sm, APP_READY);
+        app_sm_enter_state(sm, APP_STARTUP);
+      }
+      else if (event->id == APP_EV_DOOR_CLOSED) {
+        if (sm->fault_code == APP_FAULT_CODE_DOOR_OPENED) {
+          app_console_print("[Main SM] Door closed, returning to startup\r\n");
+          sm->fault_code = 0U;
+          patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
+          app_sm_enter_state(sm, APP_STARTUP);
+          app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
+        }
       }
       break;
 
@@ -239,7 +278,7 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
 
     switch (next) {
       case APP_STARTUP:
-        startup_sm_start(sm);
+        startup_sm_start(&sm->startup);
         break;
 
       case APP_DISPENSE:
@@ -252,11 +291,11 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
         break;
 
       case APP_FAULT:
-        app_sm_port_halt_all_motion();
+        app_sm_port_halt_all_motion(sm->cartridge);
         break;
 
       case APP_SHUTDOWN:
-        app_sm_port_halt_all_motion();
+        app_sm_port_halt_all_motion(sm->cartridge);
         app_sm_port_save_state();
         break;
 

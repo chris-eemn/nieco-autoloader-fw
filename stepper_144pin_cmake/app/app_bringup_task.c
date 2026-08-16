@@ -20,6 +20,7 @@
 #include "app_task.h"
 #include "app_version_git.h"
 #include "cal_data.h"
+#include "input.h"
 #include "stepper_auto_task.h"
 #include "stepper_system.h"
 #include "task.h"
@@ -86,6 +87,8 @@ static void app_bringup_task_run(void* parameters) {
   vTaskDelay(pdMS_TO_TICKS(10U));  // give the console time to flush before starting the stepper system
 
   app_task_register_axis_event_cb();
+  input_init();
+  input_register_exti_cb();
 
   if (app_task_begin() == false) {
     app_console_print("[ERROR] Control task start event was not queued.\r\n");
@@ -93,8 +96,8 @@ static void app_bringup_task_run(void* parameters) {
   }
   vTaskDelay(pdMS_TO_TICKS(10U));  // give the console time to flush before starting the stepper system
 
-  app_simulate_event(2000U / portTICK_PERIOD_MS, APP_EV_DOOR_CLOSED);
-  app_simulate_event(2500U / portTICK_PERIOD_MS, APP_EV_LOCK_CONFIRMED);
+  // app_simulate_event(2000U / portTICK_PERIOD_MS, APP_EV_DOOR_CLOSED);
+  // app_simulate_event(2500U / portTICK_PERIOD_MS, APP_EV_LOCK_CONFIRMED);
 
   if (initialized != false) {
     vTaskDelete(NULL);

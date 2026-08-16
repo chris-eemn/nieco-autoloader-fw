@@ -98,8 +98,11 @@ void app_sm_port_commit_dispense(cartridge_t* slot);
  */
 void app_sm_port_halt_motion(cartridge_t* slot);
 
-/** @brief Halt every axis immediately. */
-void app_sm_port_halt_all_motion(void);
+/**
+ * @brief Halt every axis immediately.
+ * @param cartridges Array of cartridge slots.
+ */
+void app_sm_port_halt_all_motion(cartridge_t cartridges[APP_SLOT_COUNT]);
 
 /** @brief Save persistent application state. */
 void app_sm_port_save_state(void);
@@ -134,6 +137,13 @@ void app_sm_port_publish_state(const app_sm_t* sm);
  * @return Pointer to a constant string describing the timeout ID.
  */
 const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id);
+
+/**
+ * @brief Convert a fault code to a human-readable string.
+ * @param fault_code Fault code to convert.
+ * @return Pointer to a constant string describing the fault code.
+ */
+const char* app_sm_port_fault_code_to_str(app_fault_code_enum fault_code);
 
 /**
  * @brief Get the push-retract timeout from calibration data.

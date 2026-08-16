@@ -18,6 +18,7 @@
 #include "cartridge.h"
 #include "patty_handler.h"
 #include "autoloader_types.h"
+#include "startup_sm.h"
 #include <stdint.h>
 
 /*******************************************************************************
@@ -28,13 +29,7 @@
  * Module Typedefs
  *******************************************************************************/
 
-typedef struct {
-  startup_state_enum state;
-  uint32_t lift_homing_end_time_ms;
-  uint32_t lift_homing_timeout_ms;
-} startup_sm_t;
-
-typedef struct {
+typedef struct app_sm {
   app_state_enum state;
   startup_sm_t startup;
   reload_state_enum reload;
@@ -65,19 +60,6 @@ void app_sm_init(app_sm_t* sm);
  * @param event Event to process.
  */
 void app_sm_dispatch(app_sm_t* sm, const app_event_t* event);
-
-/**
- * @brief Enter the startup sequence at its first step.
- * @param sm Application state model.
- */
-void startup_sm_start(app_sm_t* sm);
-
-/**
- * @brief Dispatch one event to the startup sequence.
- * @param sm Application state model.
- * @param event Event to process.
- */
-void startup_sm_dispatch(app_sm_t* sm, const app_event_t* event);
 
 #if 0
 /**

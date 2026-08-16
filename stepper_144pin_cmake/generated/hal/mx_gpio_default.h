@@ -449,6 +449,10 @@ extern "C" {
 #define DOOR_SW_PORT                                    HAL_GPIOF
 #define DOOR_SW_PIN                                     HAL_GPIO_PIN_13
 
+/* EXTI aliases */
+#define DOOR_EXTI_EXTI_LINE                             HAL_EXTI_LINE_13
+#define DOOR_EXTI_EXTI_TRIGGER                          HAL_EXTI_TRIGGER_RISING_FALLING
+
 /* Primary aliases for GPIO PF14 pin */
 #define PF14_PORT                                       HAL_GPIOF
 #define PF14_PIN                                        HAL_GPIO_PIN_14
@@ -551,6 +555,12 @@ hal_exti_handle_t *mx_gpio_default_exti1_gethandle(void);
 hal_exti_handle_t *mx_gpio_default_exti6_gethandle(void);
 
 /**
+  * @brief  Get the EXTI13 object.
+  * @retval Pointer on the EXTI13 Handle
+  */
+hal_exti_handle_t *mx_gpio_default_exti13_gethandle(void);
+
+/**
   * @brief  Get the EXTI14 object.
   * @retval Pointer on the EXTI14 Handle
   */
@@ -571,6 +581,11 @@ void EXTI1_IRQHandler(void);
 /*                            EXTI Line6 interrupt                            */
 /******************************************************************************/
 void EXTI6_IRQHandler(void);
+
+/******************************************************************************/
+/*                           EXTI Line13 interrupt                            */
+/******************************************************************************/
+void EXTI13_IRQHandler(void);
 
 /******************************************************************************/
 /*                           EXTI Line14 interrupt                            */

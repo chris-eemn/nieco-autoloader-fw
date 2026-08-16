@@ -57,6 +57,13 @@ static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_CART4_DISPENSE] = "APP_SM_CART4_DISPENSE",
     [APP_SM_TIMEOUT_DOOR] = "APP_SM_TIMEOUT_DOOR",
 };
+
+static const char* const app_fault_code_names[] = {
+    [APP_FAULT_CODE_NONE] = "APP_FAULT_CODE_NONE",
+    [APP_FAULT_CODE_INVALID_STATE] = "APP_FAULT_CODE_INVALID_STATE",
+    [APP_FAULT_CODE_SEQUENCE_ERROR] = "APP_FAULT_CODE_SEQUENCE_ERROR",
+    [APP_FAULT_CODE_DOOR_OPENED] = "APP_FAULT_CODE_DOOR_OPENED",
+};
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -138,8 +145,10 @@ void app_sm_port_halt_motion(cartridge_t* slot) {
   axis_stop(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)));
 }
 
-void app_sm_port_halt_all_motion(void) {
-  /* TODO: Stop all axes after the final motor-to-slot map is available. */
+void app_sm_port_halt_all_motion(cartridge_t cartridges[APP_SLOT_COUNT]) {
+  for (size_t i = 0U; i < APP_SLOT_COUNT; i++) {
+    app_sm_port_halt_motion(&cartridges[i]);
+  }
 }
 
 void app_sm_port_save_state(void) {
@@ -226,6 +235,14 @@ const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
   }
 
   return app_sm_timeout_id_names[timeout_id];
+}
+
+const char* app_sm_port_fault_code_to_str(app_fault_code_enum fault_code) {
+  if ((size_t)fault_code >= (sizeof(app_fault_code_names) / sizeof(app_fault_code_names[0]))) {
+    return "APP_FAULT_CODE_UNKNOWN";
+  }
+
+  return app_fault_code_names[fault_code];
 }
 
 uint32_t app_sm_port_get_push_retract_timeout_ms(void) {

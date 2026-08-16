@@ -1,7 +1,7 @@
 {
   "disclaimer": "Do not modify this file as it is used by STM32CubeMX2 to determine what and how to update your project with new configuration",
   "version": "1.0.0",
-  "timestamp": "2026-08-07T15:11:58.602Z",
+  "timestamp": "2026-08-14T15:07:42.532Z",
   "files": [
     {
       "fileGroup": "project_file",
@@ -79,7 +79,7 @@
       "fileGroup": "project_file",
       "checksum": {
         "algo": "sha256",
-        "digest": "1c1a9bf9f9eb7a45d15c12a2d509ce2b61f35065289f6e3ce5990cc980c8261d"
+        "digest": "8edd503c731e0b2b457699d746ac15e516122a465625296e60702b394d2071b7"
       },
       "file": "stm32c5xx_dfp/CMakeLists.txt"
     },
@@ -103,7 +103,7 @@
       "fileGroup": "pack",
       "checksum": {
         "algo": "sha256",
-        "digest": "253316e5a48335df29db61a884d2a49834d74784130e486bbb7bc0b5f3152dd1"
+        "digest": "23a6cd6dec61f4feca7b05a8851aea7f6c0a3a530c6c872b95767ac8f0fc3901"
       },
       "file": "stm32c5xx_dfp/RTE_Components.h"
     },
@@ -231,7 +231,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "d16fe09822bfb0f73e08c21bffbb89099d89659bc3f38adce1ceae8c886252d4"
+        "digest": "401df43b3cd2a23ced907bf11dbcdc5113e28becf5f6a7d2030c309d30b230bf"
       },
       "file": "generated/hal/mx_gpio_default.c"
     },
@@ -239,7 +239,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "6e2e79136f359a4f8020bfd0665891643347f0caa07700320ad7b34484ae1343"
+        "digest": "9a2553c89d05ae46b7dcf7a8aeeb38086b2677c540f3c5bc8dba2dd9347beba8"
       },
       "file": "generated/hal/mx_gpio_default.h"
     },
@@ -247,7 +247,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "3b2b473a4fab51d0888628697e36437f1eef94ed899e5c06d1575a41ebd82891"
+        "digest": "bf5b553a15a2a60596ef8d8b0db8cbca7f69746bfb95f2eb2b25aa954912cb9c"
       },
       "file": "generated/hal/mx_hal_def.h"
     },
@@ -623,7 +623,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "b5bfaea434907bb21409438cf80e141abdc63d34370c28d3550b0af832fa3690"
+        "digest": "3763640399a0d01c8bc8126cf9de0bcb57c021aedb0a8675d97f0ae006c4ac04"
       },
       "file": "generated/middleware/FreeRTOSConfig.h"
     },

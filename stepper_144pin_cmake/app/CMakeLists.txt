@@ -9,6 +9,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   patty_handler.c
   reload_sm.c
   startup_sm.c
+  input.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
