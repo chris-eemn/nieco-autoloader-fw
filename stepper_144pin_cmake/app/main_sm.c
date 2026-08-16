@@ -178,31 +178,34 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         patty_handler_abort_all(&sm->patty_handler);
         app_sm_enter_state(sm, APP_FAULT);
       }
-      if (event->id == APP_EV_DISPENSE_REQUEST) {
-        /* New requests can be accepted while other cartridges are running. */
-        handle_patty_request(sm, event);
-      }
-      else if (event->id == APP_EV_RELOAD_REQUEST) {
-        sm->reload_pending = true;
-
-        /*
-         * Prevent the handler from starting another queued cycle.
-         * Already-active cartridge cycles are allowed to finish.
-         */
-        patty_handler_set_dispensing_enabled(&sm->patty_handler, false);
-      }
       else {
-        patty_handler_result_enum result;
-        result = patty_handler_dispatch_event(&sm->patty_handler, event);
+        if (event->id == APP_EV_DISPENSE_REQUEST) {
+          /* New requests can be accepted while other cartridges are running. */
+          handle_patty_request(sm, event);
+        }
+        else if (event->id == APP_EV_RELOAD_REQUEST) {
+          sm->reload_pending = true;
 
-        app_console_print("[Main SM] Patty handler processed event: result=%d (%s)\r\n", result, patty_handler_result_enum_to_str(result));
-      }
+          /*
+           * Prevent the handler from starting another queued cycle.
+           * Already-active cartridge cycles are allowed to finish.
+           */
+          patty_handler_set_dispensing_enabled(&sm->patty_handler, false);
+        }
+        else {
+          patty_handler_result_enum result;
+          result = patty_handler_dispatch_event(&sm->patty_handler, event);
 
-      if ((sm->reload_pending == true) && (patty_handler_has_active_dispenses(&sm->patty_handler) == false)) {
-        app_sm_enter_state(sm, APP_RELOAD);
-      }
-      else if (patty_handler_has_work(&sm->patty_handler) == false) {
-        app_sm_enter_state(sm, APP_READY);
+          app_console_print("[Main SM] Patty handler processed event: result=%d (%s)\r\n", result, patty_handler_result_enum_to_str(result));
+        }
+
+        if ((sm->reload_pending == true) && (patty_handler_has_active_dispenses(&sm->patty_handler) == false)) {
+          app_sm_enter_state(sm, APP_RELOAD);
+        }
+        else if (patty_handler_has_work(&sm->patty_handler) == false) {
+          app_console_print("[Main SM] All dispense work complete, returning to ready state\r\n");
+          app_sm_enter_state(sm, APP_READY);
+        }
       }
       break;
 
