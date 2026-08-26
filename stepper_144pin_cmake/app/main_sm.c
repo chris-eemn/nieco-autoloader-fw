@@ -25,6 +25,7 @@
 #include "stepper_ctrl.h"
 #include "cartridge.h"  // only need for my simulated type hack
 #include "patty_handler.h"
+#include "reload_sm.h"
 #include "startup_sm.h"
 #include "app_task.h"
 
@@ -167,6 +168,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         handle_patty_request(sm, event);
       }
       else if (event->id == APP_EV_RELOAD_REQUEST) {
+        app_console_print("[Main SM] Reload request received\r\n");
         app_sm_enter_state(sm, APP_RELOAD);
       }
       break;
@@ -210,11 +212,11 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_RELOAD:
-      reload_sm_dispatch(sm, event);
-      if (sm->reload == RELOAD_COMPLETE) {
+      reload_result_t reload_result = reload_sm_dispatch(&sm->reload, sm->cartridge, event);
+      if (reload_result.status == RELOAD_STATUS_DONE) {
         app_sm_enter_state(sm, APP_READY);
       }
-      else if (sm->reload == RELOAD_FAILED) {
+      else if (reload_result.status == RELOAD_STATUS_FAILED) {
         app_sm_enter_sequence_fault(sm);
       }
       break;
@@ -290,7 +292,7 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
 
       case APP_RELOAD:
         sm->reload_pending = false;
-        reload_sm_start(sm);
+        reload_sm_start(&sm->reload, sm->cartridge);
         break;
 
       case APP_FAULT:
