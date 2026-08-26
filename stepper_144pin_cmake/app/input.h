@@ -97,4 +97,12 @@ bool input_get_door_closed(void);
  */
 bool input_get_lock_confirmed(void);
 
+/**
+ * @brief Get the current reload-switch state.
+ *
+ *        Returns the last-known reload-switch pin value read by the input task.
+ * @return true if reload is currently requested; otherwise false.
+ */
+bool input_get_reload_requested(void);
+
 #endif /* INPUT_H_ */

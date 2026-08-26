@@ -51,12 +51,17 @@ static volatile uint32_t s_door_last_change_tick = 0U;
 static volatile uint8_t s_lock_last_raw = 0U;
 static volatile uint32_t s_lock_last_change_tick = 0U;
 
+/* Reload-switch state — read by the task thread on every poll. */
+static volatile uint8_t s_reload_last_raw = 1U;
+static volatile uint32_t s_reload_last_change_tick = 0U;
+
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
 static void input_door_debounce(void);
 static void input_poll_lock_pin(void);
+static void input_poll_reload_pin(void);
 static void input_poll_inputs(void);
 static void input_door_exti_cb(hal_exti_handle_t* hexti, hal_exti_trigger_t trigger);
 
@@ -214,8 +219,46 @@ static void input_poll_lock_pin(void) {
   app_task_post(&lock_event);
 }
 
+/**
+ * @brief Poll and debounce the active-low reload switch.
+ *
+ *        Posts APP_EV_RELOAD_REQUEST when the switch transitions from
+ *        inactive to active.  The release transition updates the stored
+ *        state without posting an event.
+ */
+static void input_poll_reload_pin(void) {
+  TickType_t elapsed;
+  uint8_t raw;
+  app_event_t reload_event;
+
+  elapsed = xTaskGetTickCount() - s_reload_last_change_tick;
+
+  if (elapsed < pdMS_TO_TICKS(DOOR_DEBOUNCE_MS)) {
+    return; /* Still debouncing */
+  }
+
+  raw = HAL_GPIO_ReadPin(RELOAD_SW_PORT, RELOAD_SW_PIN);
+
+  if (raw == s_reload_last_raw) {
+    return; /* No state change */
+  }
+
+  s_reload_last_raw = raw;
+  s_reload_last_change_tick = xTaskGetTickCount();
+
+  if (raw == 0U) {
+    reload_event.id = APP_EV_RELOAD_REQUEST;
+    reload_event.slot = APP_NO_SLOT;
+    reload_event.value = 0U;
+    reload_event.axis_num = 0U;
+
+    app_task_post(&reload_event);
+  }
+}
+
 static void input_poll_inputs(void) {
   input_poll_lock_pin();
+  input_poll_reload_pin();
 }
 
 /**
@@ -232,4 +275,12 @@ bool input_get_door_closed(void) {
  */
 bool input_get_lock_confirmed(void) {
   return (s_lock_last_raw != 0U);
+}
+
+/**
+ * @brief Get the current reload-switch state.
+ * @return true if reload is currently requested; otherwise false.
+ */
+bool input_get_reload_requested(void) {
+  return (s_reload_last_raw == 0U);
 }
