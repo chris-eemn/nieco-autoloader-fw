@@ -5,6 +5,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   app_sm_port.c
   cartridge.c
   dispense_sm.c
+  homing.c
   main_sm.c
   patty_handler.c
   reload_sm.c
