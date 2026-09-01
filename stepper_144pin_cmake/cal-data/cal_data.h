@@ -42,7 +42,7 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (7U)
+#define CAL_DATA_VERSION (8U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -69,6 +69,8 @@ typedef struct {
   uint32_t load_offset;           /**< Microstep backup after lifters hit the top during startup homing. */
   uint32_t push_retract_timeout_ms; /**< Push retract timeout, milliseconds. */
   uint32_t lift_timeout_ms;       /**< Lift seek timeout, milliseconds. */
+  uint32_t patty_thickness_counts;  /**< Encoder counts per patty, for recount. 0 = unconfigured. */
+  uint32_t recount_timeout_ms;      /**< Timeout for the recount lift-to-stall move, milliseconds. */
 } cal_data_params_t;
 
 /*******************************************************************************

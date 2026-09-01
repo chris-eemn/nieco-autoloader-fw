@@ -13,8 +13,10 @@
  *******************************************************************************/
 
 #include "app_console.h"
+#include "app_sm_port.h"
 #include "app_task.h"
 #include "axis.h"
+#include "cartridge.h"
 #include "stepper_system.h"
 
 #include <stddef.h>
@@ -151,7 +153,12 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
     app_event.id = APP_EV_MOTION_FAILED;
   }
   else if (event == AXIS_EVENT_HOME_DONE) {
-    app_event.id = APP_EV_MOTION_DONE;
+    if ((app_sm_port_is_recount_active() == true) && (axis->num % 2U == 0U) && (app_event.slot > 0U)) {
+      app_event.id = APP_EV_COUNT_DONE;
+    }
+    else {
+      app_event.id = APP_EV_MOTION_DONE;
+    }
   }
   else if (event == AXIS_EVENT_HOME_ABORTED) {
     app_event.id = APP_EV_FAULT; /* TODO: Replace with a more specific fault code. */

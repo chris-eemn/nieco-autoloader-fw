@@ -15,6 +15,7 @@
  * Includes
  *******************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "autoloader_sm.h"
@@ -158,5 +159,20 @@ uint32_t app_sm_port_get_push_retract_timeout_ms(void);
  *         unavailable or the value is zero.
  */
 uint32_t app_sm_port_get_lift_timeout_ms(void);
+
+/**
+ * @brief Set the recount-active flag.
+ *
+ * When true, AXIS_EVENT_HOME_DONE on a lifter axis is routed to
+ * APP_EV_COUNT_DONE instead of APP_EV_MOTION_DONE.
+ * @param active true to mark recount as active, false to clear.
+ */
+void app_sm_port_set_recount_active(bool active);
+
+/**
+ * @brief Query the recount-active flag.
+ * @return true if a recount is in progress, false otherwise.
+ */
+bool app_sm_port_is_recount_active(void);
 
 #endif /* APP_SM_PORT_H_ */

@@ -176,7 +176,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
       case RELOAD_LOCK_DOOR:
         if (event->id == APP_EV_LOCK_CONFIRMED) {
           app_sm_port_cancel_timeout();
-          reload->state = RELOAD_COUNT_CARTRIDGES;
+          reload->state = RELOAD_RECOUNT;
           // app_sm_port_count_cartridges();
           app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
         }
@@ -188,7 +188,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
         }
         break;
 
-      case RELOAD_COUNT_CARTRIDGES:
+      case RELOAD_RECOUNT:
         if (event->id == APP_EV_COUNT_DONE) {
           app_sm_port_cancel_timeout();
           reload->state = RELOAD_COMPLETE;

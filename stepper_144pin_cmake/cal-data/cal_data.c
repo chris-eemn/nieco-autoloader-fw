@@ -77,6 +77,8 @@ static const cal_data_params_t default_params = {
     .load_offset = 200U,
     .push_retract_timeout_ms = 3000U,
     .lift_timeout_ms = 5000U,
+    .patty_thickness_counts = 0U,    /* unconfigured; recount faults until set */
+    .recount_timeout_ms = 120000U,
 };
 
 /** Live RAM copy handed out by cal_data_get(). */

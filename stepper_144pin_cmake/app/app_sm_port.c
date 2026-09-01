@@ -24,6 +24,7 @@
 #include "timers.h"
 
 #include <stddef.h>
+#include <stdbool.h>
 
 /*******************************************************************************
  * Module Macros
@@ -43,6 +44,7 @@ typedef struct {
  * Module Variable Definitions
  *******************************************************************************/
 static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
+static volatile bool s_recount_active = false;
 static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
     [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
@@ -51,6 +53,7 @@ static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_TIMEOUT_STARTUP_LIFTER_HOME] = "APP_SM_TIMEOUT_STARTUP_LIFTER_HOME",
     [APP_SM_TIMEOUT_STARTUP_DELAY] = "APP_SM_TIMEOUT_STARTUP_DELAY",
     [APP_SM_TIMEOUT_MOTION] = "APP_SM_TIMEOUT_MOTION",
+    [APP_SM_TIMEOUT_RECOUNT] = "APP_SM_TIMEOUT_RECOUNT",
     [APP_SM_CART1_DISPENSE] = "APP_SM_CART1_DISPENSE",
     [APP_SM_CART2_DISPENSE] = "APP_SM_CART2_DISPENSE",
     [APP_SM_CART3_DISPENSE] = "APP_SM_CART3_DISPENSE",
@@ -65,6 +68,7 @@ static const char* const app_fault_code_names[] = {
     [APP_FAULT_CODE_DOOR_OPENED] = "APP_FAULT_CODE_DOOR_OPENED",
     [APP_FAULT_CODE_STARTUP_FAILED] = "APP_FAULT_CODE_STARTUP_FAILED",
     [APP_FAULT_CODE_RELOAD_FAILED] = "APP_FAULT_CODE_RELOAD_FAILED",
+    [APP_FAULT_CODE_CAL_MISSING] = "APP_FAULT_CODE_CAL_MISSING",
 };
 /*******************************************************************************
  * Function Prototypes
@@ -353,4 +357,12 @@ static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id) {
       break;
   }
   return slot;
+}
+
+void app_sm_port_set_recount_active(bool active) {
+  s_recount_active = active;
+}
+
+bool app_sm_port_is_recount_active(void) {
+  return s_recount_active;
 }
