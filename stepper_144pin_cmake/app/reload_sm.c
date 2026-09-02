@@ -265,8 +265,8 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
 
           app_sm_port_set_recount_active(false);
           app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_RECOUNT);
-          reload->state = RELOAD_COMPLETE;
-          result.status = RELOAD_STATUS_DONE;
+          /* All recounts landed — validate cartridge types before completing. */
+          reload->state = RELOAD_VALIDATE;
         }
         else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_RECOUNT)) {
           app_console_print("[Reload SM] Recount timeout, pending mask 0x%02X\r\n", (unsigned int)reload->recount_pending_mask);
@@ -276,6 +276,29 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
           app_console_print("[Reload SM] Motion failed during recount (axis %d)\r\n", (int)event->axis_num);
           reload_fail_recount(reload, cartridges, &result, APP_FAULT_CODE_RELOAD_FAILED);
         }
+        break;
+      }
+
+      case RELOAD_VALIDATE: {
+        /* Synchronous validation: no motion, no external events, no timeout.
+         * A lane mismatch inhibits the discrepant cartridges but does not
+         * fail the reload — the machine returns to READY with compatible
+         * cartridges still usable. */
+        for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+          cartridge_determine_type(&cartridges[slot]);
+        }
+
+        bool mismatch = cartridge_validate_lane_pairs(cartridges);
+
+        if (mismatch) {
+          app_console_print("[Reload SM] Lane-pair mismatch — discrepant cartridges inhibited\r\n");
+        }
+        else {
+          app_console_print("[Reload SM] Cartridge validation passed\r\n");
+        }
+
+        reload->state = RELOAD_COMPLETE;
+        result.status = RELOAD_STATUS_DONE;
         break;
       }
 
