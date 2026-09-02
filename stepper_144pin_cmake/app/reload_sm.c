@@ -19,6 +19,8 @@
 
 #include "app_console.h"
 #include "app_sm_port.h"
+#include "cal_data.h"
+#include "cartridge_recount.h"
 #include "homing.h"
 
 /*******************************************************************************
@@ -74,6 +76,30 @@ static const homing_phase_cfg_t homing_cfg_lifter_down = {
 static homing_event_result_enum reload_handle_homing_event(reload_sm_t* reload, cartridge_t cartridges[APP_SLOT_COUNT], const app_event_t* event,
                                                            reload_result_t* result, const homing_phase_cfg_t* cfg);
 
+/**
+ * @brief Arm the recount timeout.
+ *
+ * Uses the configured recount timeout, falling back to a default when
+ * calibration data is missing or unconfigured.
+ *
+ * @return true when the timer was armed, false otherwise.
+ */
+static bool reload_arm_recount_timeout(void);
+
+/**
+ * @brief Fail the reload from the recount phase.
+ *
+ * Clears the recount-active flag, cancels the recount timeout, halts all
+ * motion (so in-flight lifters do not keep driving into stall), and records
+ * the failure in the result.
+ *
+ * @param reload Application state model.
+ * @param cartridges Array of cartridges.
+ * @param result Output result structure (modified).
+ * @param fault_code Fault code to report.
+ */
+static void reload_fail_recount(reload_sm_t* reload, cartridge_t cartridges[APP_SLOT_COUNT], reload_result_t* result, uint32_t fault_code);
+
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -83,6 +109,8 @@ void reload_sm_start(reload_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]) {
     sm->state = RELOAD_HOME_PUSHERS;
     sm->lift_homing_end_time_ms = 0U;
     sm->lift_homing_timeout_ms = 0U;
+    sm->recount_pending_mask = 0U;
+    app_sm_port_set_recount_active(false);
 
     for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
       app_sm_port_home_pusher(&cartridges[i]);
@@ -177,8 +205,24 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
         if (event->id == APP_EV_LOCK_CONFIRMED) {
           (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
           reload->state = RELOAD_RECOUNT;
-          // app_sm_port_count_cartridges();
-          app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
+          /* Reload is global: all slots recount in parallel, each lifter home-done posts COUNT_DONE. */
+          reload->recount_pending_mask = (uint8_t)((1U << APP_SLOT_COUNT) - 1U);
+          app_sm_port_set_recount_active(true);
+
+          for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+            if (cartridge_recount_start(&cartridges[slot]) == false) {
+              app_console_print("[Reload SM] Recount start rejected for slot %d\r\n", (int)(slot + 1U));
+              reload_fail_recount(reload, cartridges, &result, APP_FAULT_CODE_RELOAD_FAILED);
+              break;
+            }
+          }
+
+          if (result.status == RELOAD_STATUS_IN_PROGRESS) {
+            if (reload_arm_recount_timeout() == false) {
+              app_console_print("[Reload SM] Failed to arm recount timeout\r\n");
+              reload_fail_recount(reload, cartridges, &result, APP_FAULT_CODE_RELOAD_FAILED);
+            }
+          }
         }
         else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_LOCK)) {
           app_console_print("[Reload SM] Lock door timeout\r\n");
@@ -188,19 +232,52 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
         }
         break;
 
-      case RELOAD_RECOUNT:
+      case RELOAD_RECOUNT: {
         if (event->id == APP_EV_COUNT_DONE) {
-          app_sm_port_cancel_timeout();
+          uint8_t event_slot = event->slot;
+
+          if ((event_slot == APP_NO_SLOT) || (event_slot == 0U) || (event_slot > APP_SLOT_COUNT)) {
+            app_console_print("[Reload SM] Recount done for invalid slot %d\r\n", (int)event_slot);
+            reload_fail_recount(reload, cartridges, &result, APP_FAULT_CODE_RELOAD_FAILED);
+            break;
+          }
+
+          uint8_t slot_idx = (uint8_t)(event_slot - 1U);
+          uint8_t slot_bit = (uint8_t)(1U << slot_idx);
+
+          if ((reload->recount_pending_mask & slot_bit) == 0U) {
+            app_console_print("[Reload SM] Unexpected recount done for slot %d\r\n", (int)event_slot);
+            reload_fail_recount(reload, cartridges, &result, APP_FAULT_CODE_RELOAD_FAILED);
+            break;
+          }
+
+          uint32_t fault = APP_FAULT_CODE_NONE;
+          if (cartridge_recount_apply(&cartridges[slot_idx], &fault) == false) {
+            reload_fail_recount(reload, cartridges, &result, fault);
+            break;
+          }
+
+          reload->recount_pending_mask = (uint8_t)(reload->recount_pending_mask & ~slot_bit);
+
+          if (reload->recount_pending_mask != 0U) {
+            break;
+          }
+
+          app_sm_port_set_recount_active(false);
+          app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_RECOUNT);
           reload->state = RELOAD_COMPLETE;
           result.status = RELOAD_STATUS_DONE;
         }
-        else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_MOTION)) {
-          app_console_print("[Reload SM] Count cartridges timeout\r\n");
-          result.status = RELOAD_STATUS_FAILED;
-          result.fault_code = APP_FAULT_CODE_RELOAD_FAILED;
-          reload->state = RELOAD_FAILED;
+        else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_RECOUNT)) {
+          app_console_print("[Reload SM] Recount timeout, pending mask 0x%02X\r\n", (unsigned int)reload->recount_pending_mask);
+          reload_fail_recount(reload, cartridges, &result, APP_FAULT_CODE_RELOAD_FAILED);
+        }
+        else if (event->id == APP_EV_MOTION_FAILED) {
+          app_console_print("[Reload SM] Motion failed during recount (axis %d)\r\n", (int)event->axis_num);
+          reload_fail_recount(reload, cartridges, &result, APP_FAULT_CODE_RELOAD_FAILED);
         }
         break;
+      }
 
       case RELOAD_COMPLETE:
         result.status = RELOAD_STATUS_DONE;
@@ -218,10 +295,16 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
 
 void reload_sm_abort(reload_sm_t* reload) {
   if (reload != NULL) {
-    app_sm_port_cancel_timeout();
+    /* Cancel only the timeouts reload owns; dispense timers must survive. */
+    (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
+    (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
+    (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
+    (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_RECOUNT);
+    app_sm_port_set_recount_active(false);
     reload->state = RELOAD_FAILED;
     reload->lift_homing_end_time_ms = 0U;
     reload->lift_homing_timeout_ms = 0U;
+    reload->recount_pending_mask = 0U;
   }
 }
 
@@ -242,4 +325,32 @@ static homing_event_result_enum reload_handle_homing_event(reload_sm_t* reload, 
   }
 
   return outcome;
+}
+
+static bool reload_arm_recount_timeout(void) {
+  static const uint32_t default_recount_timeout_ms = 120000U;
+  uint32_t timeout_ms = default_recount_timeout_ms;
+  cal_data_params_t* params = cal_data_get();
+
+  if ((params != NULL) && (params->recount_timeout_ms != 0U)) {
+    timeout_ms = params->recount_timeout_ms;
+  }
+
+  return app_sm_port_arm_timeout(APP_SM_TIMEOUT_RECOUNT, timeout_ms);
+}
+
+static void reload_fail_recount(reload_sm_t* reload, cartridge_t cartridges[APP_SLOT_COUNT], reload_result_t* result, uint32_t fault_code) {
+  app_sm_port_set_recount_active(false);
+  app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_RECOUNT);
+
+  /* Halt only when a recount move is actually in flight; halting an idle axis
+   * would emit spurious HOME_ABORTED events for unrelated homing. */
+  if (reload->recount_pending_mask != 0U) {
+    app_sm_port_halt_all_motion(cartridges);
+  }
+
+  reload->recount_pending_mask = 0U;
+  reload->state = RELOAD_FAILED;
+  result->status = RELOAD_STATUS_FAILED;
+  result->fault_code = fault_code;
 }

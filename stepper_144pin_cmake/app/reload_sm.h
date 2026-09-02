@@ -33,6 +33,7 @@ typedef struct {
   reload_state_enum state;
   uint32_t lift_homing_end_time_ms;
   uint32_t lift_homing_timeout_ms;
+  uint8_t recount_pending_mask;  // bit i set while slot i still awaits its recount COUNT_DONE
 } reload_sm_t;
 /*******************************************************************************
  * Module Macros
