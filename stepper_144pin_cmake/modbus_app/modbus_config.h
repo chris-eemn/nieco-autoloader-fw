@@ -36,6 +36,8 @@ typedef enum {
   REG_SLAVE_SERIAL_NUMBER,      // 2
   REG_PATTY1_ADD_TO_QUEUE = 3,  // 3
   REG_PATTY2_ADD_TO_QUEUE = 4,  // 4
+  REG_RELOAD_REQUEST = 5,       // 5 write non-zero to request a cartridge reload
+  REG_STATUS = 6,               // 6 read-only machine status (see app_sm_status_enum)
 
   // Cal-data backed registers
   REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS = 75,

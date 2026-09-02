@@ -20,6 +20,9 @@
 #include "modbus_port.h"
 #include "modbus_slave.h"
 #include "app_console.h"
+#include "app_sm_port.h"
+#include "app_task.h"
+#include "autoloader_types.h"
 #include "cal_data.h"
 #include "axis.h"
 
@@ -38,6 +41,9 @@ static int reg_patty1_add_to_queue_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_patty1_add_to_queue_write(uint16_t reg, uint16_t val);
 static int reg_patty2_add_to_queue_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_patty2_add_to_queue_write(uint16_t reg, uint16_t val);
+static int reload_request_reg_read(uint16_t reg, uint16_t* val_ptr);
+static int reload_request_reg_write(uint16_t reg, uint16_t val);
+static int status_reg_read(uint16_t reg, uint16_t* val_ptr);
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -51,6 +57,13 @@ static mb_holding_reg_def_t regs_defines[] = {
      .read_callback = reg_patty2_add_to_queue_read,
      .write_callback = reg_patty2_add_to_queue_write,
      .name = "patty2_add_to_queue"},
+    {.reg_id = REG_RELOAD_REQUEST,
+     .read_callback = reload_request_reg_read,
+     .write_callback = reload_request_reg_write,
+     .name = "reload_request"},
+    {.reg_id = REG_STATUS,
+     .read_callback = status_reg_read,
+     .name = "status"},
 };
 
 static int fw_ver_reg_read(uint16_t reg, uint16_t* val_ptr);
@@ -227,6 +240,57 @@ static int reg_patty2_add_to_queue_read(uint16_t reg, uint16_t* val_ptr) {
 static int reg_patty2_add_to_queue_write(uint16_t reg, uint16_t val) {
   (void)reg;
   app_console_print("[INFO] Patty2 add to queue via modbus register write. val: %d\r\n", val);
+  return 0;
+}
+
+static int reload_request_reg_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  /* Write-trigger register: reads always return 0. */
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reload_request_reg_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  app_event_t reload_event;
+  bool queued;
+
+  if (val == 0U) {
+    return 0;
+  }
+
+  /* Post through the app-task event queue; the state machine must not be
+   * called directly from the Modbus context. Register callbacks run from
+   * the Modbus timer ISR (TIM7, priority 5 = FreeRTOS safe ceiling), so
+   * the ISR-safe post variant is required here. */
+  reload_event.id = APP_EV_RELOAD_REQUEST;
+  reload_event.slot = APP_NO_SLOT;
+  reload_event.product_type = 0U;
+  reload_event.value = 0U;
+  reload_event.axis_num = 0U;
+
+  /* No console logging here: app_console_print() is not ISR-safe.
+   * A dropped request returns non-zero so the caller can detect it. */
+  queued = app_task_post_from_isr(&reload_event);
+
+  if (queued == false) {
+    /* Event queue full or not yet created: the request was dropped. */
+    return -1;
+  }
+
+  return 0;
+}
+
+static int status_reg_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  /* Cached status published by app_sm_port_publish_state. */
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  *val_ptr = (uint16_t)app_sm_port_get_status();
   return 0;
 }
 
