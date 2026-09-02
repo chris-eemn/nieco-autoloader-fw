@@ -40,20 +40,25 @@
  *
  * Issues the lift-up homing (stall + backoff + encoder zero) move. The caller
  * is responsible for arming APP_SM_TIMEOUT_RECOUNT. On stall, the axis event
- * path posts APP_EV_COUNT_DONE for this slot.
+ * path posts APP_EV_COUNT_DONE for this slot. A false return means the move
+ * was rejected and no COUNT_DONE event will arrive — do not wait for one.
  * @param slot Cartridge slot to recount (num field is 1-4).
+ * @return true when the homing move was started; false when the axis rejected
+ *         it (busy, latched fault, or invalid).
  */
-void cartridge_recount_start(cartridge_t* slot);
+bool cartridge_recount_start(cartridge_t* slot);
 
 /**
  * @brief Apply one completed recount for a slot.
  *
  * Reads the lift travel counts, computes remaining patties from the configured
- * patty thickness, and stores the result in slot->remaining.
+ * patty thickness, and stores the result in slot->remaining. The result is
+ * clamped to at least slot->pending so in-flight dispenses are never
+ * invalidated, and to UINT16_MAX to prevent truncation.
  * @param slot Cartridge slot whose recount move just completed.
  * @param fault_out Output fault code (written on failure).
  * @return true on success; false when patty thickness is unconfigured (0) or
- *         the axis is faulted, in which case *fault_out is set.
+ *         the lifter axis is faulted/invalid, in which case *fault_out is set.
  */
 bool cartridge_recount_apply(cartridge_t* slot, uint32_t* fault_out);
 
