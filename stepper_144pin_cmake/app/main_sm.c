@@ -296,6 +296,7 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
         break;
 
       case APP_FAULT:
+        reload_sm_abort(&sm->reload);
         app_sm_port_halt_all_motion(sm->cartridge);
         break;
 
