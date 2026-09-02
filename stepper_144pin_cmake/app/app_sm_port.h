@@ -30,6 +30,19 @@
  * Module Typedefs
  *******************************************************************************/
 
+/**
+ * @brief Machine status value published for the Modbus status register.
+ *
+ * Values are part of the Modbus protocol contract and must not be
+ * renumbered. States without a dedicated value retain the last published
+ * status (see app_sm_port_publish_state).
+ */
+typedef enum {
+  APP_SM_STATUS_STARTING = 0,  ///< Startup not complete (power-on default).
+  APP_SM_STATUS_READY = 1,     ///< Machine is ready (APP_READY).
+  APP_SM_STATUS_RELOAD = 4,    ///< Reload in progress (APP_RELOAD).
+} app_sm_status_enum;
+
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
@@ -134,6 +147,13 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout);
  * @param sm Current application state model.
  */
 void app_sm_port_publish_state(const app_sm_t* sm);
+
+/**
+ * @brief Get the last published machine status value.
+ * @return Status value maintained by app_sm_port_publish_state, safe to
+ *         read from the Modbus context.
+ */
+app_sm_status_enum app_sm_port_get_status(void);
 
 /**
  * @brief Convert a timeout ID to a human-readable string.

@@ -45,6 +45,7 @@ typedef struct {
  *******************************************************************************/
 static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
 static volatile bool s_recount_active = false;
+static volatile app_sm_status_enum s_status = APP_SM_STATUS_STARTING;
 static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
     [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
@@ -233,8 +234,31 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout) {
 
 void app_sm_port_publish_state(const app_sm_t* sm) {
   if (sm != NULL) {
-    /* TODO: Copy the fields required by the Modbus status registers. */
+    /* Map the main state to the Modbus status value. States without a
+     * dedicated value retain the last published status. */
+    switch (sm->state) {
+      case APP_READY:
+        s_status = APP_SM_STATUS_READY;
+        break;
+
+      case APP_RELOAD:
+        s_status = APP_SM_STATUS_RELOAD;
+        break;
+
+      case APP_INIT:
+      case APP_STARTUP:
+      case APP_DISPENSE:
+      case APP_FAULT:
+      case APP_SHUTDOWN:
+      default:
+        /* Retain the last published status. */
+        break;
+    }
   }
+}
+
+app_sm_status_enum app_sm_port_get_status(void) {
+  return s_status;
 }
 
 const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
