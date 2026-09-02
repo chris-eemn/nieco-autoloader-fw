@@ -82,11 +82,11 @@ static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id);
  *******************************************************************************/
 
 void app_sm_port_lock_door(void) {
-  /* TODO: Drive the door-lock output. */
+  /* TODO: Drive the door-lock output — requires a lock-control output pin in generated/ (CubeMX). */
 }
 
 void app_sm_port_unlock_door(void) {
-  /* TODO: Release the door-lock output. */
+  /* TODO: Release the door-lock output — requires a lock-control output pin in generated/ (CubeMX). */
 }
 
 void app_sm_port_home_pusher(cartridge_t* slot) {
