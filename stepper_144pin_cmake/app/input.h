@@ -98,6 +98,32 @@ bool input_get_door_closed(void);
 bool input_get_lock_confirmed(void);
 
 /**
+ * @brief Drive the door lock-control output high to lock the door.
+ *
+ *        Sets the DOOR_LOCK_CTRL pin high, which commands the lock actuator
+ *        to engage.  Actual lock engagement is confirmed separately via
+ *        input_get_lock_confirmed().
+ */
+void input_lock_door(void);
+
+/**
+ * @brief Drive the door lock-control output low to unlock the door.
+ *
+ *        Clears the DOOR_LOCK_CTRL pin, which commands the lock actuator
+ *        to release.
+ */
+void input_unlock_door(void);
+
+/**
+ * @brief Get the last commanded lock-control state.
+ *
+ *        Returns the state last written by input_lock_door() or
+ *        input_unlock_door(), not the physical lock feedback.
+ * @return true if the lock-control output is currently commanded high (locked); otherwise false.
+ */
+bool input_get_lock_cmd_locked(void);
+
+/**
  * @brief Get the current reload-switch state.
  *
  *        Returns the last-known reload-switch pin value read by the input task.

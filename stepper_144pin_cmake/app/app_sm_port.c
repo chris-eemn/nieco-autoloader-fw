@@ -18,6 +18,7 @@
 #include "app_task.h"
 #include "cal_data.h"
 #include "cartridge.h"
+#include "input.h"
 #include "FreeRTOS.h"
 #include "stepper.h"
 #include "stepper_ctrl.h"
@@ -82,11 +83,11 @@ static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id);
  *******************************************************************************/
 
 void app_sm_port_lock_door(void) {
-  /* TODO: Drive the door-lock output — requires a lock-control output pin in generated/ (CubeMX). */
+  input_lock_door();
 }
 
 void app_sm_port_unlock_door(void) {
-  /* TODO: Release the door-lock output — requires a lock-control output pin in generated/ (CubeMX). */
+  input_unlock_door();
 }
 
 void app_sm_port_home_pusher(cartridge_t* slot) {
