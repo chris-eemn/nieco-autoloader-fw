@@ -20,6 +20,7 @@
 
 #include "autoloader_sm.h"
 #include "cartridge.h"
+#include "stepper.h"
 
 /*******************************************************************************
  * Module Macros
@@ -53,8 +54,10 @@ void app_sm_port_home_pusher(cartridge_t* slot);
  * @brief Home the lift axis for a cartridge slot.
  * @param slot Pointer to the cartridge slot structure (num field is 1-4).
  * @param direction Lift homing direction.
+ * @return Status from the underlying homing command. STEPPER_OK when the
+ *         homing move was started; otherwise the axis rejected it.
  */
-void app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction);
+stepper_status_enum app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction);
 
 /**
  * @brief Begin cartridge stack measurement.

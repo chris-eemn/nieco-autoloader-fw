@@ -92,16 +92,18 @@ void app_sm_port_home_pusher(cartridge_t* slot) {
   axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)), STEPPER_DIR_CW);
 }
 
-void app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction) {
+stepper_status_enum app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction) {
+  uint8_t axis_num = cartridge_get_axis_num(slot, LIFTER);
+
   if (direction == DIR_LIFTER_DOWN) {
-    axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)), STEPPER_DIR_CW);
+    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CW);
   }
   else if (direction == DIR_LIFTER_UP) {
-    axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)), STEPPER_DIR_CCW);
+    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CCW);
   }
-  else {
-    app_console_print("[app_sm_port] Invalid direction for lift homing\r\n");
-  }
+
+  app_console_print("[app_sm_port] Invalid direction for lift homing\r\n");
+  return STEPPER_INVALID;
 }
 
 void app_sm_port_count_cartridges(cartridge_t* slot) {
