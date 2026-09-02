@@ -416,6 +416,26 @@ extern "C" {
 #define M1_FAULT_EXTI_EXTI_LINE                         HAL_EXTI_LINE_6
 #define M1_FAULT_EXTI_EXTI_TRIGGER                      HAL_EXTI_TRIGGER_FALLING
 
+/* Primary aliases for GPIO PE13 pin */
+#define PE13_PORT                                       HAL_GPIOE
+#define PE13_PIN                                        HAL_GPIO_PIN_13
+#define PE13_INIT_STATE                                 HAL_GPIO_PIN_RESET
+#define PE13_ACTIVE_STATE                               HAL_GPIO_PIN_SET
+#define PE13_INACTIVE_STATE                             HAL_GPIO_PIN_RESET
+
+/* Secondary aliases for GPIO PE13 pin */
+#define DOOR_LOCK_CTRL_PORT                             HAL_GPIOE
+#define DOOR_LOCK_CTRL_PIN                              HAL_GPIO_PIN_13
+#define DOOR_LOCK_CTRL_INIT_STATE                       HAL_GPIO_PIN_RESET
+#define DOOR_LOCK_CTRL_ACTIVE_STATE                     HAL_GPIO_PIN_SET
+#define DOOR_LOCK_CTRL_INACTIVE_STATE                   HAL_GPIO_PIN_RESET
+
+#define DOOR_LOCK_CTRL_PORT                             HAL_GPIOE
+#define DOOR_LOCK_CTRL_PIN                              HAL_GPIO_PIN_13
+#define DOOR_LOCK_CTRL_INIT_STATE                       HAL_GPIO_PIN_RESET
+#define DOOR_LOCK_CTRL_ACTIVE_STATE                     HAL_GPIO_PIN_SET
+#define DOOR_LOCK_CTRL_INACTIVE_STATE                   HAL_GPIO_PIN_RESET
+
 /* Primary aliases for GPIO PE14 pin */
 #define PE14_PORT                                       HAL_GPIOE
 #define PE14_PIN                                        HAL_GPIO_PIN_14
