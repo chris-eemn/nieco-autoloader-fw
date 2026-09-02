@@ -132,7 +132,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
 
       case RELOAD_UNLOCK_DOOR:
         if (event->id == APP_EV_LOCK_RELEASED) {
-          app_sm_port_cancel_timeout();
+          (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
           reload->state = RELOAD_WAIT_OPEN;
           app_sm_port_arm_timeout(APP_SM_TIMEOUT_UNLOCK, 1000);
         }
@@ -146,7 +146,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
 
       case RELOAD_WAIT_OPEN:
         if (event->id == APP_EV_DOOR_OPENED) {
-          app_sm_port_cancel_timeout();
+          (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
           reload->state = RELOAD_WAIT_CLOSE;
           app_sm_port_arm_timeout(APP_SM_TIMEOUT_UNLOCK, 1000);
         }
@@ -160,7 +160,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
 
       case RELOAD_WAIT_CLOSE:
         if (event->id == APP_EV_DOOR_CLOSED) {
-          app_sm_port_cancel_timeout();
+          (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
           reload->state = RELOAD_LOCK_DOOR;
           app_sm_port_lock_door();
           app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK, 1000);
@@ -175,7 +175,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
 
       case RELOAD_LOCK_DOOR:
         if (event->id == APP_EV_LOCK_CONFIRMED) {
-          app_sm_port_cancel_timeout();
+          (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
           reload->state = RELOAD_RECOUNT;
           // app_sm_port_count_cartridges();
           app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 1000);
