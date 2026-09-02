@@ -214,6 +214,15 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     case APP_RELOAD:
       reload_result_t reload_result = reload_sm_dispatch(&sm->reload, sm->cartridge, event);
       if (reload_result.status == RELOAD_STATUS_DONE) {
+        /*
+         * Reload disabled dispensing when it was requested. Re-enable it now that
+         * the reload completed and the door is closed and locked. The handler
+         * refuses enable unless door_closed && door_locked, so a false return
+         * means the safety state has not been applied yet.
+         */
+        if (patty_handler_set_dispensing_enabled(&sm->patty_handler, true) == false) {
+          app_console_print("[Main SM] WARNING: reload done but dispensing re-enable refused (safety state not applied)\r\n");
+        }
         app_sm_enter_state(sm, APP_READY);
       }
       else if (reload_result.status == RELOAD_STATUS_FAILED) {
