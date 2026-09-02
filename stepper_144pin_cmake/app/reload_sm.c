@@ -224,6 +224,16 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
             }
           }
         }
+        else if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+          /* Door reopened (or lock released, which the lock sensor reports
+           * independently) while locking: unlock the actuator and wait for the
+           * user to close the door again, with the close timeout re-armed. */
+          app_console_print("[Reload SM] Door reopened while locking, waiting for close\r\n");
+          (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
+          reload->state = RELOAD_WAIT_CLOSE;
+          app_sm_port_unlock_door();
+          (void)app_sm_port_arm_timeout(APP_SM_TIMEOUT_UNLOCK, 1000);
+        }
         else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_LOCK)) {
           app_console_print("[Reload SM] Lock door timeout\r\n");
           result.status = RELOAD_STATUS_FAILED;
