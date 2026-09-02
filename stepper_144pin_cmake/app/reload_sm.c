@@ -22,6 +22,7 @@
 #include "cal_data.h"
 #include "cartridge_recount.h"
 #include "homing.h"
+#include "input.h"
 
 /*******************************************************************************
  * Module Macros
@@ -110,7 +111,22 @@ void reload_sm_start(reload_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]) {
     sm->lift_homing_end_time_ms = 0U;
     sm->lift_homing_timeout_ms = 0U;
     sm->recount_pending_mask = 0U;
+    sm->last_fault_code = APP_FAULT_CODE_NONE;
     app_sm_port_set_recount_active(false);
+
+    /* Reload homes with the door locked. Reload is entered from READY/DISPENSE
+     * where the door was already verified, but a level check here closes the
+     * latch-window gap: if the door or lock state changed since the event was
+     * sampled, fail immediately instead of homing an open machine. */
+    if ((input_get_door_closed() == false) || (input_get_lock_confirmed() == false)) {
+      app_console_print("[Reload SM] Entry check failed: door not closed or lock not confirmed\r\n");
+      sm->state = RELOAD_FAILED;
+      /* Record the fault code so the first dispatch reports it and the
+       * APP_FAULT door-closed recovery path (which matches on this code)
+       * can restart startup without an explicit fault-clear. */
+      sm->last_fault_code = APP_FAULT_CODE_DOOR_OPENED;
+      return;
+    }
 
     for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
       app_sm_port_home_pusher(&cartridges[i]);
@@ -319,6 +335,11 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
       case RELOAD_FAILED:
       default:
         result.status = RELOAD_STATUS_FAILED;
+        /* In-call failures set result.fault_code themselves; this arm only
+         * reports the code recorded before this dispatch (entry-check fail). */
+        if (result.fault_code == APP_FAULT_CODE_NONE) {
+          result.fault_code = reload->last_fault_code;
+        }
         break;
     }
   }
@@ -338,6 +359,7 @@ void reload_sm_abort(reload_sm_t* reload) {
     reload->lift_homing_end_time_ms = 0U;
     reload->lift_homing_timeout_ms = 0U;
     reload->recount_pending_mask = 0U;
+    reload->last_fault_code = APP_FAULT_CODE_NONE;
   }
 }
 

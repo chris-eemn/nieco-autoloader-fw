@@ -223,9 +223,13 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         if (patty_handler_set_dispensing_enabled(&sm->patty_handler, true) == false) {
           app_console_print("[Main SM] WARNING: reload done but dispensing re-enable refused (safety state not applied)\r\n");
         }
+        sm->reload_pending = false;
         app_sm_enter_state(sm, APP_READY);
       }
       else if (reload_result.status == RELOAD_STATUS_FAILED) {
+        /* Reload owns the fault code for this transition; a stale code from a
+         * prior state must not survive into APP_FAULT. */
+        sm->fault_code = reload_result.fault_code;
         app_sm_enter_sequence_fault(sm);
       }
       break;
@@ -300,7 +304,6 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
         break;
 
       case APP_RELOAD:
-        sm->reload_pending = false;
         reload_sm_start(&sm->reload, sm->cartridge);
         break;
 

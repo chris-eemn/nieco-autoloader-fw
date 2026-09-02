@@ -34,6 +34,7 @@ typedef struct {
   uint32_t lift_homing_end_time_ms;
   uint32_t lift_homing_timeout_ms;
   uint8_t recount_pending_mask;  // bit i set while slot i still awaits its recount COUNT_DONE
+  uint32_t last_fault_code;      // fault recorded at entry-check failure, reported by the next dispatch
 } reload_sm_t;
 /*******************************************************************************
  * Module Macros
@@ -53,6 +54,13 @@ typedef struct {
 
 /**
  * @brief Enter the reload sequence at its first step.
+ *
+ * Verifies the door is closed and the lock is confirmed before starting
+ * pusher homing. On failure the sequence enters RELOAD_FAILED without
+ * starting motion; the failure is reported by the next
+ * reload_sm_dispatch() call (in practice the dispatch of the same event
+ * that triggered entry), not synchronously here.
+ *
  * @param sm Application state model.
  * @param cartridges Array of cartridges.
  */
