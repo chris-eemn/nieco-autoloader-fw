@@ -18,6 +18,7 @@
 #include "cartridge.h"
 #include "patty_handler.h"
 #include "autoloader_types.h"
+#include "reload_sm.h"
 #include "startup_sm.h"
 #include <stdint.h>
 
@@ -32,7 +33,7 @@
 typedef struct app_sm {
   app_state_enum state;
   startup_sm_t startup;
-  reload_state_enum reload;
+  reload_sm_t reload;
   patty_handler_t patty_handler;
   cartridge_t cartridge[APP_SLOT_COUNT];
   uint8_t active_slot;
@@ -60,34 +61,5 @@ void app_sm_init(app_sm_t* sm);
  * @param event Event to process.
  */
 void app_sm_dispatch(app_sm_t* sm, const app_event_t* event);
-
-#if 0
-/**
- * @brief Begin one dispense sequence.
- * @param sm Application state model.
- * @param slot Zero-based cartridge slot.
- */
-void dispense_sm_start(app_sm_t* sm, uint8_t slot);
-
-/**
- * @brief Dispatch one event to the dispense sequence.
- * @param sm Application state model.
- * @param event Event to process.
- */
-void dispense_sm_dispatch(app_sm_t* sm, const app_event_t* event);
-#endif
-
-/**
- * @brief Enter the reload sequence at its first step.
- * @param sm Application state model.
- */
-void reload_sm_start(app_sm_t* sm);
-
-/**
- * @brief Dispatch one event to the reload sequence.
- * @param sm Application state model.
- * @param event Event to process.
- */
-void reload_sm_dispatch(app_sm_t* sm, const app_event_t* event);
 
 #endif /* AUTOLOADER_SM_H_ */

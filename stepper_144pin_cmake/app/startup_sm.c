@@ -21,6 +21,7 @@
 #include "app_sm_port.h"
 #include "app_task.h"
 #include "autoloader_types.h"
+#include "homing.h"
 #include "input.h"
 
 /*******************************************************************************
@@ -32,65 +33,6 @@
  * Module Typedefs
  *******************************************************************************/
 
-typedef enum {
-  HOMING_TARGET_PUSHER = 0,
-  HOMING_TARGET_LIFTER_DOWN,
-  HOMING_TARGET_LIFTER_UP,
-} homing_target_enum;
-
-/**
- * @brief Configuration for a generic homing phase.
- *
- * Each homing phase (pushers, lifters down, lifters up) is described by
- * a small config struct so the event handler can be shared.
- */
-typedef struct {
-  const char* name;               // human-readable name for log messages
-  homing_target_enum target;      // cartridge homing flag managed by this phase
-  startup_state_enum next_state;  // state to transition to when all homed
-  const char* success_log;        // log message when all homed
-  const char* timeout_log;        // log message on timeout
-} homing_phase_cfg_t;
-
-typedef enum {
-  HOMING_EVENT_WAITING = 0,
-  HOMING_EVENT_COMPLETE,
-  HOMING_EVENT_FAILED,
-} homing_event_result_enum;
-
-/**
- * @brief Handle a generic homing-phase event.
- *
- * Processes motion-failed, timeout, and motion-done events for any homing
- * phase. On motion-done, marks the axis as homed and checks if all axes
- * are done. The caller performs the configured state transition when
- * the phase reports completion.
- *
- * @param sm Application state model.
- * @param cartridges Array of cartridges.
- * @param event Event to process.
- * @param result Output result structure (modified on failure).
- * @param cfg Homing phase configuration.
- * @return Outcome indicating whether the phase is waiting, complete, or failed.
- */
-static homing_event_result_enum startup_handle_homing_event(startup_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT], const app_event_t* event,
-                                                            startup_result_t* result, const homing_phase_cfg_t* cfg);
-
-/**
- * @brief Check if all cartridges have a given homing flag set.
- * @param cartridges Array of cartridges.
- * @param target Homing flag to check.
- * @return true if all cartridges pass the check.
- */
-static bool homing_all_homed(const cartridge_t cartridges[APP_SLOT_COUNT], homing_target_enum target);
-
-/**
- * @brief Mark the selected homing target complete for a cartridge.
- * @param cartridge Cartridge to update.
- * @param target Homing flag to set.
- */
-static void homing_mark_complete(cartridge_t* cartridge, homing_target_enum target);
-
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
@@ -100,6 +42,7 @@ static const homing_phase_cfg_t homing_cfg_pusher = {
     .name = "Pusher",
     .target = HOMING_TARGET_PUSHER,
     .next_state = STARTUP_HOME_LIFTS_DOWN,
+    .fault_code = APP_FAULT_CODE_STARTUP_FAILED,
     .success_log = "[Startup SM] Pushers homed\r\n",
     .timeout_log = "[Startup SM] Pushers home timeout\r\n",
 };
@@ -109,6 +52,7 @@ static const homing_phase_cfg_t homing_cfg_lifter_down = {
     .name = "Lift",
     .target = HOMING_TARGET_LIFTER_DOWN,
     .next_state = STARTUP_HOME_LIFTS_DELAY,
+    .fault_code = APP_FAULT_CODE_STARTUP_FAILED,
     .success_log = "[Startup SM] Lifts homed down\r\n",
     .timeout_log = "[Startup SM] Lift homing down timeout\r\n",
 };
@@ -118,6 +62,7 @@ static const homing_phase_cfg_t homing_cfg_lifter_up = {
     .name = "Lift",
     .target = HOMING_TARGET_LIFTER_UP,
     .next_state = STARTUP_DETERMINE_TYPE,
+    .fault_code = APP_FAULT_CODE_STARTUP_FAILED,
     .success_log = "[Startup SM] Lifts homed up\r\n",
     .timeout_log = "[Startup SM] Lifts home up timeout\r\n",
 };
@@ -129,6 +74,23 @@ static void startup_begin_homing(startup_sm_t* sm, cartridge_t cartridges[APP_SL
 static void startup_begin_lifter_homing(cartridge_t cartridges[APP_SLOT_COUNT], homing_target_enum target);
 static void startup_post_home_done(void);
 
+/**
+ * @brief Handle a generic homing-phase event for the startup sequence.
+ *
+ * Wraps the shared homing handler and applies the startup failure
+ * side effects (result status, fault code, and state transition) when
+ * the phase reports a failure.
+ *
+ * @param sm Application state model.
+ * @param cartridges Array of cartridges.
+ * @param event Event to process.
+ * @param result Output result structure (modified on failure).
+ * @param cfg Homing phase configuration.
+ * @return Outcome indicating whether the phase is waiting, complete, or failed.
+ */
+static homing_event_result_enum startup_handle_homing_event(startup_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT], const app_event_t* event,
+                                                             startup_result_t* result, const homing_phase_cfg_t* cfg);
+
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -136,6 +98,8 @@ static void startup_post_home_done(void);
 void startup_sm_start(startup_sm_t* sm) {
   if (sm != NULL) {
     sm->state = STARTUP_WAIT_DOOR;
+    // feed dispatcher to check door and lock status, and to start the sequence if both are satisfied
+    app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
   }
 }
 
@@ -198,7 +162,7 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
       }
       // All homed — start lift-down homing inline
       app_console_print(homing_cfg_pusher.success_log);
-      sm->state = homing_cfg_pusher.next_state;
+      sm->state = (startup_state_enum)homing_cfg_pusher.next_state;
       app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
       startup_begin_lifter_homing(cartridges, HOMING_TARGET_LIFTER_DOWN);
       break;
@@ -210,7 +174,7 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
       }
       // All homed — transition to delay state
       app_console_print(homing_cfg_lifter_down.success_log);
-      sm->state = homing_cfg_lifter_down.next_state;
+      sm->state = (startup_state_enum)homing_cfg_lifter_down.next_state;
       app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
       app_sm_port_arm_timeout(APP_SM_TIMEOUT_STARTUP_DELAY, LIFT_HOMING_SETTLE_DELAY_MS);
       break;
@@ -232,8 +196,9 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
       }
       // All homed — transition to determine type
       app_console_print(homing_cfg_lifter_up.success_log);
-      sm->state = homing_cfg_lifter_up.next_state;
+      sm->state = (startup_state_enum)homing_cfg_lifter_up.next_state;
       app_sm_port_cancel_timeout();
+      app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
       startup_post_home_done();
       break;
     }
@@ -307,67 +272,11 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
  *******************************************************************************/
 
 /**
- * @brief Check if all cartridges have a given homing flag set.
- * @param cartridges Array of cartridges.
- * @param target Homing flag to check.
- * @return true if all cartridges pass the check.
- */
-static bool homing_all_homed(const cartridge_t cartridges[APP_SLOT_COUNT], homing_target_enum target) {
-  bool all_homed = false;
-
-  if (cartridges != NULL) {
-    all_homed = true;
-    for (uint8_t i = 0U; (i < APP_SLOT_COUNT) && (all_homed == true); i++) {
-      switch (target) {
-        case HOMING_TARGET_PUSHER:
-          all_homed = cartridges[i].pusher_homed;
-          break;
-        case HOMING_TARGET_LIFTER_DOWN:
-          all_homed = cartridges[i].lifter_homed_down;
-          break;
-        case HOMING_TARGET_LIFTER_UP:
-          all_homed = cartridges[i].lifter_homed_up;
-          break;
-        default:
-          all_homed = false;
-          break;
-      }
-    }
-  }
-
-  return all_homed;
-}
-
-/**
- * @brief Mark the selected homing target complete for a cartridge.
- * @param cartridge Cartridge to update.
- * @param target Homing flag to set.
- */
-static void homing_mark_complete(cartridge_t* cartridge, homing_target_enum target) {
-  if (cartridge != NULL) {
-    switch (target) {
-      case HOMING_TARGET_PUSHER:
-        cartridge->pusher_homed = true;
-        break;
-      case HOMING_TARGET_LIFTER_DOWN:
-        cartridge->lifter_homed_down = true;
-        break;
-      case HOMING_TARGET_LIFTER_UP:
-        cartridge->lifter_homed_up = true;
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-/**
- * @brief Handle a generic homing-phase event.
+ * @brief Handle a generic homing-phase event for the startup sequence.
  *
- * Processes motion-failed, timeout, and motion-done events for any homing
- * phase. On motion-done, marks the axis as homed and checks if all axes
- * are done. The returned outcome tells the caller whether to wait,
- * transition, or propagate a failure.
+ * Wraps the shared homing handler and applies the startup failure
+ * side effects (result status, fault code, and state transition) when
+ * the phase reports a failure.
  *
  * @param sm Application state model.
  * @param cartridges Array of cartridges.
@@ -377,46 +286,18 @@ static void homing_mark_complete(cartridge_t* cartridge, homing_target_enum targ
  * @return Outcome indicating whether the phase is waiting, complete, or failed.
  */
 static homing_event_result_enum startup_handle_homing_event(startup_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT], const app_event_t* event,
-                                                            startup_result_t* result, const homing_phase_cfg_t* cfg) {
-  if ((sm == NULL) || (event == NULL) || (result == NULL) || (cfg == NULL)) {
-    return HOMING_EVENT_FAILED;
-  }
+                                                             startup_result_t* result, const homing_phase_cfg_t* cfg) {
+  uint32_t fault_code = APP_FAULT_CODE_NONE;
 
-  if (event->id == APP_EV_MOTION_FAILED) {
-    app_console_print("[Startup SM] %s homing failed: axis_num=%d\r\n", cfg->name, event->axis_num);
+  homing_event_result_enum outcome = homing_handle_event(cartridges, event, &fault_code, cfg);
+
+  if (outcome == HOMING_EVENT_FAILED) {
     result->status = STARTUP_STATUS_FAILED;
-    result->fault_code = APP_FAULT_CODE_STARTUP_FAILED;
+    result->fault_code = fault_code;
     sm->state = STARTUP_FAILED;
-    return HOMING_EVENT_FAILED;
   }
 
-  if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_MOTION)) {
-    app_console_print("%s", cfg->timeout_log);
-    result->status = STARTUP_STATUS_FAILED;
-    result->fault_code = APP_FAULT_CODE_STARTUP_FAILED;
-    sm->state = STARTUP_FAILED;
-    return HOMING_EVENT_FAILED;
-  }
-
-  if (event->id == APP_EV_MOTION_DONE) {
-    // Mark the axis as homed for this phase.
-    uint8_t cartridge_idx = cartridge_get_slot_from_axis_num(event->axis_num) - 1;
-    homing_mark_complete(&cartridges[cartridge_idx], cfg->target);
-
-    // Check if all cartridges are homed.
-    if (homing_all_homed(cartridges, cfg->target) == true) {
-      return HOMING_EVENT_COMPLETE;
-    }
-
-    return HOMING_EVENT_WAITING;
-  }
-
-  // Unexpected event — fail
-  app_console_print("[Startup SM] Unexpected event in homing: id=%d, value=%d\r\n", event->id, event->value);
-  result->status = STARTUP_STATUS_FAILED;
-  result->fault_code = APP_FAULT_CODE_STARTUP_FAILED;
-  sm->state = STARTUP_FAILED;
-  return HOMING_EVENT_FAILED;
+  return outcome;
 }
 
 /**

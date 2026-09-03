@@ -205,6 +205,21 @@ system_status_t mx_gpio_default_init(void)
 
   /*
     GPIO pin labels :
+    PE13  ---------> PE13, DOOR_LOCK_CTRL, DOOR_LOCK_CTRL
+    */
+  /* Configure PE13 GPIO pin in output mode */
+  gpio_config.mode            = HAL_GPIO_MODE_OUTPUT;
+  gpio_config.speed           = HAL_GPIO_SPEED_FREQ_LOW;
+  gpio_config.pull            = HAL_GPIO_PULL_NO;
+  gpio_config.output_type     = HAL_GPIO_OUTPUT_PUSHPULL;
+  gpio_config.init_state      = PE13_INIT_STATE;
+  if (HAL_GPIO_Init(PE13_PORT, PE13_PIN, &gpio_config) != HAL_OK)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /*
+    GPIO pin labels :
     PE14  ---------> PE14, RELOAD_SW, RELOAD_SW
     */
   /* Configure PE14 GPIO pin in input mode */
@@ -354,7 +369,7 @@ system_status_t mx_gpio_default_deinit(void)
   HAL_GPIO_DeInit(HAL_GPIOD, PD0_PIN | PD3_PIN | PD4_PIN | PD5_PIN | PD6_PIN);
 
   /* De-initialize pins of GPIOE port */
-  HAL_GPIO_DeInit(PE14_PORT, PE14_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOE, PE13_PIN | PE14_PIN);
 
   /* De-initialize pins of GPIOF port */
   HAL_GPIO_DeInit(HAL_GPIOF, PF12_PIN | PF13_PIN | PF14_PIN | PF15_PIN);

@@ -25,6 +25,7 @@
 #include "stepper_ctrl.h"
 #include "cartridge.h"  // only need for my simulated type hack
 #include "patty_handler.h"
+#include "reload_sm.h"
 #include "startup_sm.h"
 #include "app_task.h"
 
@@ -39,25 +40,7 @@
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
-static const char* const app_event_id_names[] = {
-    [APP_EV_START] = "APP_EV_START",
-    [APP_EV_DOOR_OPENED] = "APP_EV_DOOR_OPENED",
-    [APP_EV_DOOR_CLOSED] = "APP_EV_DOOR_CLOSED",
-    [APP_EV_LOCK_CONFIRMED] = "APP_EV_LOCK_CONFIRMED",
-    [APP_EV_LOCK_RELEASED] = "APP_EV_LOCK_RELEASED",
-    [APP_EV_MOTION_DONE] = "APP_EV_MOTION_DONE",
-    [APP_EV_HOME_DONE] = "APP_EV_HOME_DONE",
-    [APP_EV_DETERMINE_TYPE_DONE] = "APP_EV_DETERMINE_TYPE_DONE",
-    [APP_EV_MOTION_FAILED] = "APP_EV_MOTION_FAILED",
-    [APP_EV_STARTUP_DONE] = "APP_EV_STARTUP_DONE",
-    [APP_EV_COUNT_DONE] = "APP_EV_COUNT_DONE",
-    [APP_EV_DISPENSE_REQUEST] = "APP_EV_DISPENSE_REQUEST",
-    [APP_EV_RELOAD_REQUEST] = "APP_EV_RELOAD_REQUEST",
-    [APP_EV_FAULT] = "APP_EV_FAULT",
-    [APP_EV_FAULT_CLEARED] = "APP_EV_FAULT_CLEARED",
-    [APP_EV_SHUTDOWN_REQUEST] = "APP_EV_SHUTDOWN_REQUEST",
-    [APP_EV_TIMEOUT] = "APP_EV_TIMEOUT",
-};
+
 
 /*******************************************************************************
  * Function Prototypes
@@ -167,6 +150,7 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         handle_patty_request(sm, event);
       }
       else if (event->id == APP_EV_RELOAD_REQUEST) {
+        app_console_print("[Main SM] Reload request received\r\n");
         app_sm_enter_state(sm, APP_RELOAD);
       }
       break;
@@ -210,11 +194,24 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_RELOAD:
-      reload_sm_dispatch(sm, event);
-      if (sm->reload == RELOAD_COMPLETE) {
+      reload_result_t reload_result = reload_sm_dispatch(&sm->reload, sm->cartridge, event);
+      if (reload_result.status == RELOAD_STATUS_DONE) {
+        /*
+         * Reload disabled dispensing when it was requested. Re-enable it now that
+         * the reload completed and the door is closed and locked. The handler
+         * refuses enable unless door_closed && door_locked, so a false return
+         * means the safety state has not been applied yet.
+         */
+        if (patty_handler_set_dispensing_enabled(&sm->patty_handler, true) == false) {
+          app_console_print("[Main SM] WARNING: reload done but dispensing re-enable refused (safety state not applied)\r\n");
+        }
+        sm->reload_pending = false;
         app_sm_enter_state(sm, APP_READY);
       }
-      else if (sm->reload == RELOAD_FAILED) {
+      else if (reload_result.status == RELOAD_STATUS_FAILED) {
+        /* Reload owns the fault code for this transition; a stale code from a
+         * prior state must not survive into APP_FAULT. */
+        sm->fault_code = reload_result.fault_code;
         app_sm_enter_sequence_fault(sm);
       }
       break;
@@ -289,11 +286,11 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
         break;
 
       case APP_RELOAD:
-        sm->reload_pending = false;
-        reload_sm_start(sm);
+        reload_sm_start(&sm->reload);
         break;
 
       case APP_FAULT:
+        reload_sm_abort(&sm->reload);
         app_sm_port_halt_all_motion(sm->cartridge);
         break;
 
@@ -354,10 +351,3 @@ static void handle_patty_request(app_sm_t* sm, const app_event_t* event) {
   }
 }
 
-const char* app_event_id_to_str(app_event_id_enum event_id) {
-  if ((size_t)event_id >= (sizeof(app_event_id_names) / sizeof(app_event_id_names[0]))) {
-    return "APP_EV_UNKNOWN";
-  }
-
-  return app_event_id_names[event_id];
-}

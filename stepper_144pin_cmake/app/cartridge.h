@@ -74,6 +74,15 @@ uint8_t cartridge_get_axis_num(cartridge_t* slot, cartridge_actuator_type_t type
 uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num);
 
 /**
+ * @brief Reads the raw type-sensor GPIO levels for a cartridge slot.
+ *
+ * @param cartridge Cartridge whose slot selects the sensor pins.
+ * @param sensor1_out Output raw level (0/1) of sensor 1.
+ * @param sensor2_out Output raw level (0/1) of sensor 2.
+ */
+void cartridge_read_type_sensors(const cartridge_t* cartridge, uint8_t* sensor1_out, uint8_t* sensor2_out);
+
+/**
  * @brief Determines and updates the cartridge type metadata.
  *
  * @param cartridge Pointer to the cartridge structure to evaluate and update.

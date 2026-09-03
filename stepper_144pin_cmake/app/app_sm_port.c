@@ -18,12 +18,14 @@
 #include "app_task.h"
 #include "cal_data.h"
 #include "cartridge.h"
+#include "input.h"
 #include "FreeRTOS.h"
 #include "stepper.h"
 #include "stepper_ctrl.h"
 #include "timers.h"
 
 #include <stddef.h>
+#include <stdbool.h>
 
 /*******************************************************************************
  * Module Macros
@@ -43,6 +45,8 @@ typedef struct {
  * Module Variable Definitions
  *******************************************************************************/
 static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
+static volatile bool s_recount_active = false;
+static volatile app_sm_status_enum s_status = APP_SM_STATUS_STARTING;
 static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
     [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
@@ -51,6 +55,7 @@ static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_TIMEOUT_STARTUP_LIFTER_HOME] = "APP_SM_TIMEOUT_STARTUP_LIFTER_HOME",
     [APP_SM_TIMEOUT_STARTUP_DELAY] = "APP_SM_TIMEOUT_STARTUP_DELAY",
     [APP_SM_TIMEOUT_MOTION] = "APP_SM_TIMEOUT_MOTION",
+    [APP_SM_TIMEOUT_RECOUNT] = "APP_SM_TIMEOUT_RECOUNT",
     [APP_SM_CART1_DISPENSE] = "APP_SM_CART1_DISPENSE",
     [APP_SM_CART2_DISPENSE] = "APP_SM_CART2_DISPENSE",
     [APP_SM_CART3_DISPENSE] = "APP_SM_CART3_DISPENSE",
@@ -63,6 +68,9 @@ static const char* const app_fault_code_names[] = {
     [APP_FAULT_CODE_INVALID_STATE] = "APP_FAULT_CODE_INVALID_STATE",
     [APP_FAULT_CODE_SEQUENCE_ERROR] = "APP_FAULT_CODE_SEQUENCE_ERROR",
     [APP_FAULT_CODE_DOOR_OPENED] = "APP_FAULT_CODE_DOOR_OPENED",
+    [APP_FAULT_CODE_STARTUP_FAILED] = "APP_FAULT_CODE_STARTUP_FAILED",
+    [APP_FAULT_CODE_RELOAD_FAILED] = "APP_FAULT_CODE_RELOAD_FAILED",
+    [APP_FAULT_CODE_CAL_MISSING] = "APP_FAULT_CODE_CAL_MISSING",
 };
 /*******************************************************************************
  * Function Prototypes
@@ -75,27 +83,29 @@ static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id);
  *******************************************************************************/
 
 void app_sm_port_lock_door(void) {
-  /* TODO: Drive the door-lock output. */
+  input_lock_door();
 }
 
 void app_sm_port_unlock_door(void) {
-  /* TODO: Release the door-lock output. */
+  input_unlock_door();
 }
 
 void app_sm_port_home_pusher(cartridge_t* slot) {
   axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)), STEPPER_DIR_CW);
 }
 
-void app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction) {
+stepper_status_enum app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction) {
+  uint8_t axis_num = cartridge_get_axis_num(slot, LIFTER);
+
   if (direction == DIR_LIFTER_DOWN) {
-    axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)), STEPPER_DIR_CW);
+    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CW);
   }
   else if (direction == DIR_LIFTER_UP) {
-    axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, LIFTER)), STEPPER_DIR_CCW);
+    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CCW);
   }
-  else {
-    app_console_print("[app_sm_port] Invalid direction for lift homing\r\n");
-  }
+
+  app_console_print("[app_sm_port] Invalid direction for lift homing\r\n");
+  return STEPPER_INVALID;
 }
 
 void app_sm_port_count_cartridges(cartridge_t* slot) {
@@ -204,6 +214,7 @@ bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout_id, uint32_t delay_m
  * @brief Cancel every pending timeout.
  */
 void app_sm_port_cancel_timeout(void) {
+  // TODO: this is broken. timeout=0 means timer_id 0
   for (uint32_t i = 0U; i < MAX_PENDING_TIMER_EVENTS; i++) {
     (void)cancel_timer(&timeout_timers[i], true, (app_sm_timeout_id_enum)0);
   }
@@ -225,8 +236,31 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout) {
 
 void app_sm_port_publish_state(const app_sm_t* sm) {
   if (sm != NULL) {
-    /* TODO: Copy the fields required by the Modbus status registers. */
+    /* Map the main state to the Modbus status value. States without a
+     * dedicated value retain the last published status. */
+    switch (sm->state) {
+      case APP_READY:
+        s_status = APP_SM_STATUS_READY;
+        break;
+
+      case APP_RELOAD:
+        s_status = APP_SM_STATUS_RELOAD;
+        break;
+
+      case APP_INIT:
+      case APP_STARTUP:
+      case APP_DISPENSE:
+      case APP_FAULT:
+      case APP_SHUTDOWN:
+      default:
+        /* Retain the last published status. */
+        break;
+    }
   }
+}
+
+app_sm_status_enum app_sm_port_get_status(void) {
+  return s_status;
 }
 
 const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
@@ -351,4 +385,12 @@ static uint8_t determine_slot_from_timer_id(app_sm_timeout_id_enum timeout_id) {
       break;
   }
   return slot;
+}
+
+void app_sm_port_set_recount_active(bool active) {
+  s_recount_active = active;
+}
+
+bool app_sm_port_is_recount_active(void) {
+  return s_recount_active;
 }

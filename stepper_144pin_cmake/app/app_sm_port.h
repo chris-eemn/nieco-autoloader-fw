@@ -15,10 +15,12 @@
  * Includes
  *******************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "autoloader_sm.h"
 #include "cartridge.h"
+#include "stepper.h"
 
 /*******************************************************************************
  * Module Macros
@@ -27,6 +29,19 @@
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
+
+/**
+ * @brief Machine status value published for the Modbus status register.
+ *
+ * Values are part of the Modbus protocol contract and must not be
+ * renumbered. States without a dedicated value retain the last published
+ * status (see app_sm_port_publish_state).
+ */
+typedef enum {
+  APP_SM_STATUS_STARTING = 0,  ///< Startup not complete (power-on default).
+  APP_SM_STATUS_READY = 1,     ///< Machine is ready (APP_READY).
+  APP_SM_STATUS_RELOAD = 4,    ///< Reload in progress (APP_RELOAD).
+} app_sm_status_enum;
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -52,8 +67,10 @@ void app_sm_port_home_pusher(cartridge_t* slot);
  * @brief Home the lift axis for a cartridge slot.
  * @param slot Pointer to the cartridge slot structure (num field is 1-4).
  * @param direction Lift homing direction.
+ * @return Status from the underlying homing command. STEPPER_OK when the
+ *         homing move was started; otherwise the axis rejected it.
  */
-void app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction);
+stepper_status_enum app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction);
 
 /**
  * @brief Begin cartridge stack measurement.
@@ -132,6 +149,13 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout);
 void app_sm_port_publish_state(const app_sm_t* sm);
 
 /**
+ * @brief Get the last published machine status value.
+ * @return Status value maintained by app_sm_port_publish_state, safe to
+ *         read from the Modbus context.
+ */
+app_sm_status_enum app_sm_port_get_status(void);
+
+/**
  * @brief Convert a timeout ID to a human-readable string.
  * @param timeout_id Timeout ID to convert.
  * @return Pointer to a constant string describing the timeout ID.
@@ -158,5 +182,20 @@ uint32_t app_sm_port_get_push_retract_timeout_ms(void);
  *         unavailable or the value is zero.
  */
 uint32_t app_sm_port_get_lift_timeout_ms(void);
+
+/**
+ * @brief Set the recount-active flag.
+ *
+ * When true, AXIS_EVENT_HOME_DONE on a lifter axis is routed to
+ * APP_EV_COUNT_DONE instead of APP_EV_MOTION_DONE.
+ * @param active true to mark recount as active, false to clear.
+ */
+void app_sm_port_set_recount_active(bool active);
+
+/**
+ * @brief Query the recount-active flag.
+ * @return true if a recount is in progress, false otherwise.
+ */
+bool app_sm_port_is_recount_active(void);
 
 #endif /* APP_SM_PORT_H_ */
