@@ -214,6 +214,7 @@ bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout_id, uint32_t delay_m
  * @brief Cancel every pending timeout.
  */
 void app_sm_port_cancel_timeout(void) {
+  // TODO: this is broken. timeout=0 means timer_id 0
   for (uint32_t i = 0U; i < MAX_PENDING_TIMER_EVENTS; i++) {
     (void)cancel_timer(&timeout_timers[i], true, (app_sm_timeout_id_enum)0);
   }
