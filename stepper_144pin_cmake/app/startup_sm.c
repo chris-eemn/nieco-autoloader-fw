@@ -98,6 +98,8 @@ static homing_event_result_enum startup_handle_homing_event(startup_sm_t* sm, ca
 void startup_sm_start(startup_sm_t* sm) {
   if (sm != NULL) {
     sm->state = STARTUP_WAIT_DOOR;
+    // feed dispatcher to check door and lock status, and to start the sequence if both are satisfied
+    app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
   }
 }
 
@@ -196,6 +198,7 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
       app_console_print(homing_cfg_lifter_up.success_log);
       sm->state = (startup_state_enum)homing_cfg_lifter_up.next_state;
       app_sm_port_cancel_timeout();
+      app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
       startup_post_home_done();
       break;
     }
