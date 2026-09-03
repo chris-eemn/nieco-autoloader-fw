@@ -97,6 +97,8 @@ typedef enum {
   RELOAD_VALIDATE,
   RELOAD_COMPLETE,
   RELOAD_FAILED,
+  RELOAD_WAIT_DOOR,         /* Entry wait for door closed + lock confirmed. */
+  RELOAD_LOCK_DOOR_RECOUNT, /* Post-reload re-lock before recount. */
 } reload_state_enum;
 typedef enum { PATTY_REQUEST_SOURCE_QUEUE = 0, PATTY_REQUEST_SOURCE_MANUAL } patty_request_source_enum;
 

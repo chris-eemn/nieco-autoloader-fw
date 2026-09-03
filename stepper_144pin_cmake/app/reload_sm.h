@@ -55,16 +55,14 @@ typedef struct {
 /**
  * @brief Enter the reload sequence at its first step.
  *
- * Verifies the door is closed and the lock is confirmed before starting
- * pusher homing. On failure the sequence enters RELOAD_FAILED without
- * starting motion; the failure is reported by the next
- * reload_sm_dispatch() call (in practice the dispatch of the same event
- * that triggered entry), not synchronously here.
+ * Enters RELOAD_WAIT_DOOR: like startup, the sequence waits for the door
+ * to close, commands the lock, and begins homing only once the lock is
+ * confirmed. No motion is started here; door/lock progress is reported by
+ * subsequent reload_sm_dispatch() calls.
  *
  * @param sm Application state model.
- * @param cartridges Array of cartridges.
  */
-void reload_sm_start(reload_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]);
+void reload_sm_start(reload_sm_t* sm);
 
 /**
  * @brief Dispatch one event to the reload sequence.
@@ -77,7 +75,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
 
 /**
  * @brief Abort the reload sequence.
- * @param sm Application state model.
+ * @param reload Application state model.
  */
 void reload_sm_abort(reload_sm_t* reload);
 #endif /* RELOAD_SM_H_ */

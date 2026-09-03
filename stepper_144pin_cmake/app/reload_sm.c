@@ -19,6 +19,7 @@
 
 #include "app_console.h"
 #include "app_sm_port.h"
+#include "app_task.h"
 #include "cal_data.h"
 #include "cartridge_recount.h"
 #include "homing.h"
@@ -57,10 +58,10 @@ static const homing_phase_cfg_t homing_cfg_lifter_down = {
 };
 
 /** @brief Door lock/unlock actuator timeout, matching the startup lock scale. */
-#define RELOAD_LOCK_TIMEOUT_MS 5000U
+#define RELOAD_LOCK_TIMEOUT_MS 30000U
 
 /** @brief Door open/close user-interaction timeout, matching the startup motion scale. */
-#define RELOAD_DOOR_TIMEOUT_MS 10000U
+#define RELOAD_DOOR_TIMEOUT_MS 100000U
 
 /** @brief Homing motion timeout, matching the startup motion scale. */
 #define RELOAD_MOTION_TIMEOUT_MS 10000U
@@ -133,49 +134,37 @@ static void reload_fail_recount(reload_sm_t* reload, cartridge_t cartridges[APP_
  */
 static bool reload_arm_timeout(reload_sm_t* reload, reload_result_t* result, app_sm_timeout_id_enum id, uint32_t timeout_ms, uint32_t fault_code);
 
+/**
+ * @brief Begin pusher homing for the reload sequence.
+ *
+ * Commands pusher homing for every slot and arms the motion watchdog.
+ * A failed arm fails the reload immediately: the pusher moves just
+ * commanded are halted because a move is demonstrably in flight and the
+ * arm failure means no watchdog will bound it.
+ *
+ * @param sm Application state model.
+ * @param cartridges Array of cartridges.
+ */
+static void reload_begin_homing(reload_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]);
+
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
 
-void reload_sm_start(reload_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]) {
+void reload_sm_start(reload_sm_t* sm) {
   if (sm != NULL) {
-    sm->state = RELOAD_HOME_PUSHERS;
+    /* Like startup, the reload waits for the door instead of faulting at
+     * entry: RELOAD_WAIT_DOOR polls the door level and the lock sensor,
+     * commands the lock when the door is closed, and begins homing only
+     * once the lock is confirmed. */
+    sm->state = RELOAD_WAIT_DOOR;
     sm->lift_homing_end_time_ms = 0U;
     sm->lift_homing_timeout_ms = 0U;
     sm->recount_pending_mask = 0U;
     sm->last_fault_code = APP_FAULT_CODE_NONE;
     app_sm_port_set_recount_active(false);
-
-    /* Reload homes with the door locked. Reload is entered from READY/DISPENSE
-     * where the door was already verified, but a level check here closes the
-     * latch-window gap: if the door or lock state changed since the event was
-     * sampled, fail immediately instead of homing an open machine. */
-    if ((input_get_door_closed() == false) || (input_get_lock_confirmed() == false)) {
-      app_console_print("[Reload SM] Entry check failed: door not closed or lock not confirmed\r\n");
-      sm->state = RELOAD_FAILED;
-      /* Record the fault code so the first dispatch reports it and the
-       * APP_FAULT door-closed recovery path (which matches on this code)
-       * can restart startup without an explicit fault-clear. */
-      sm->last_fault_code = APP_FAULT_CODE_DOOR_OPENED;
-      return;
-    }
-
-    for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
-      app_sm_port_home_pusher(&cartridges[i]);
-    }
-
-    /* No watchdog, no homing: a failed arm fails the reload before the first
-     * dispatch runs, so the recorded code reaches the shared RELOAD_FAILED
-     * dispatch arm the same way an entry-check failure does. Halt the pusher
-     * moves just commanded — a move is demonstrably in flight, and the arm
-     * failure means no watchdog will bound it. */
-    if (app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, RELOAD_MOTION_TIMEOUT_MS) == false) {
-      app_console_print("[Reload SM] Failed to arm pusher homing timeout\r\n");
-      app_sm_port_halt_all_motion(cartridges);
-      sm->state = RELOAD_FAILED;
-      sm->last_fault_code = APP_FAULT_CODE_RELOAD_FAILED;
-      return;
-    }
+    // feed dispatcher to check door and lock status, and to start the sequence if both are satisfied
+    app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
   }
 }
 
@@ -189,7 +178,54 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
     result.status = RELOAD_STATUS_FAILED;
   }
   else {
+    app_console_print("[Reload SM] dispatch event %s slot %u value 0x%04X\r\n", app_event_id_to_str(event->id), event->slot, event->value);
     switch (reload->state) {
+      case RELOAD_WAIT_DOOR:
+        /* No timeout while waiting for the door (matches STARTUP_WAIT_DOOR):
+         * only a fault event or shutdown breaks out of an unclosed door. */
+        if ((input_get_door_closed() == true) || (event->id == APP_EV_DOOR_CLOSED)) {
+          if (input_get_lock_confirmed() == true) {
+            app_console_print("[Reload SM] Door already locked\r\n");
+            reload_begin_homing(reload, cartridges);
+          }
+          else {
+            app_console_print("[Reload SM] Locking door\r\n");
+            reload->state = RELOAD_LOCK_DOOR;
+            app_sm_port_lock_door();
+            (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_LOCK, RELOAD_LOCK_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
+          }
+        }
+        break;
+
+      case RELOAD_LOCK_DOOR:
+        if (event->id == APP_EV_LOCK_CONFIRMED) {
+          app_console_print("[Reload SM] Door locked\r\n");
+          (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
+          reload_begin_homing(reload, cartridges);
+        }
+        else if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+          /* Door reopened (or lock released) while locking: unlock the
+           * actuator and wait for the user to close the door again. No
+           * motion halt — homing has not started in the entry states.
+           * Park in RELOAD_WAIT_OPEN (no timeout armed): the level poll in
+           * RELOAD_WAIT_DOOR would re-command the lock on the very next
+           * event if the door sensor still reads closed, pulsing the
+           * actuator. RELOAD_WAIT_OPEN only leaves on a fresh
+           * APP_EV_DOOR_CLOSED edge, so the lock is re-commanded once per
+           * genuine close. */
+          app_console_print("[Reload SM] Door reopened while locking, waiting for close\r\n");
+          (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
+          reload->state = RELOAD_WAIT_OPEN;
+          app_sm_port_unlock_door();
+        }
+        else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_LOCK)) {
+          app_console_print("[Reload SM] Lock door timeout\r\n");
+          result.status = RELOAD_STATUS_FAILED;
+          result.fault_code = APP_FAULT_CODE_RELOAD_FAILED;
+          reload->state = RELOAD_FAILED;
+        }
+        break;
+
       case RELOAD_HOME_PUSHERS: {
         if (reload_handle_homing_event(reload, cartridges, event, &result, &homing_cfg_pusher) != HOMING_EVENT_COMPLETE) {
           break;
@@ -249,7 +285,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
       case RELOAD_WAIT_CLOSE:
         if (event->id == APP_EV_DOOR_CLOSED) {
           (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
-          reload->state = RELOAD_LOCK_DOOR;
+          reload->state = RELOAD_LOCK_DOOR_RECOUNT;
           app_sm_port_lock_door();
           (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_LOCK, RELOAD_LOCK_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
         }
@@ -261,7 +297,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
         }
         break;
 
-      case RELOAD_LOCK_DOOR:
+      case RELOAD_LOCK_DOOR_RECOUNT:
         if (event->id == APP_EV_LOCK_CONFIRMED) {
           (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
           reload->state = RELOAD_RECOUNT;
@@ -380,7 +416,8 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
       default:
         result.status = RELOAD_STATUS_FAILED;
         /* In-call failures set result.fault_code themselves; this arm only
-         * reports the code recorded before this dispatch (entry-check fail). */
+         * reports the code recorded before this dispatch (e.g. by
+         * reload_begin_homing on a failed motion-timeout arm). */
         if (result.fault_code == APP_FAULT_CODE_NONE) {
           result.fault_code = reload->last_fault_code;
         }
@@ -399,7 +436,10 @@ void reload_sm_abort(reload_sm_t* reload) {
     (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
     (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_RECOUNT);
     app_sm_port_set_recount_active(false);
-    reload->state = RELOAD_FAILED;
+    /* Park in the entry-wait state, not RELOAD_FAILED: a fault during the
+     * wait phase resumes cleanly on the next reload_sm_start() instead of
+     * dead-ending in the failed state. */
+    reload->state = RELOAD_WAIT_DOOR;
     reload->lift_homing_end_time_ms = 0U;
     reload->lift_homing_timeout_ms = 0U;
     reload->recount_pending_mask = 0U;
@@ -436,6 +476,24 @@ static bool reload_arm_recount_timeout(void) {
   }
 
   return app_sm_port_arm_timeout(APP_SM_TIMEOUT_RECOUNT, timeout_ms);
+}
+
+static void reload_begin_homing(reload_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]) {
+  sm->state = RELOAD_HOME_PUSHERS;
+
+  for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
+    app_sm_port_home_pusher(&cartridges[i]);
+  }
+
+  /* A failed arm fails the reload before any homing event can arrive. Halt
+   * the pusher moves just commanded — a move is demonstrably in flight, and
+   * the arm failure means no watchdog will bound it. */
+  if (app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, RELOAD_MOTION_TIMEOUT_MS) == false) {
+    app_console_print("[Reload SM] Failed to arm pusher homing timeout\r\n");
+    app_sm_port_halt_all_motion(cartridges);
+    sm->state = RELOAD_FAILED;
+    sm->last_fault_code = APP_FAULT_CODE_RELOAD_FAILED;
+  }
 }
 
 static bool reload_arm_timeout(reload_sm_t* reload, reload_result_t* result, app_sm_timeout_id_enum id, uint32_t timeout_ms, uint32_t fault_code) {
