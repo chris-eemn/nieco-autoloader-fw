@@ -69,4 +69,11 @@ bool app_task_post_from_isr(const app_event_t* event);
  *        receives that operation's completion event.
  */
 void app_task_register_axis_event_cb(void);
+
+/**
+ * @brief Convert an application event ID to a string for logging.
+ * @param event_id Event ID to convert.
+ * @return Pointer to a static string describing the event ID.
+ */
+const char* app_event_id_to_str(app_event_id_enum event_id);
 #endif /* APP_TASK_H_ */

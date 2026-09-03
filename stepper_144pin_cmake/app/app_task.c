@@ -44,6 +44,26 @@
 static QueueHandle_t s_event_queue = NULL;
 static app_sm_t s_app_sm;
 
+static const char* const app_event_id_names[] = {
+    [APP_EV_START] = "APP_EV_START",
+    [APP_EV_DOOR_OPENED] = "APP_EV_DOOR_OPENED",
+    [APP_EV_DOOR_CLOSED] = "APP_EV_DOOR_CLOSED",
+    [APP_EV_LOCK_CONFIRMED] = "APP_EV_LOCK_CONFIRMED",
+    [APP_EV_LOCK_RELEASED] = "APP_EV_LOCK_RELEASED",
+    [APP_EV_MOTION_DONE] = "APP_EV_MOTION_DONE",
+    [APP_EV_HOME_DONE] = "APP_EV_HOME_DONE",
+    [APP_EV_DETERMINE_TYPE_DONE] = "APP_EV_DETERMINE_TYPE_DONE",
+    [APP_EV_MOTION_FAILED] = "APP_EV_MOTION_FAILED",
+    [APP_EV_STARTUP_DONE] = "APP_EV_STARTUP_DONE",
+    [APP_EV_COUNT_DONE] = "APP_EV_COUNT_DONE",
+    [APP_EV_DISPENSE_REQUEST] = "APP_EV_DISPENSE_REQUEST",
+    [APP_EV_RELOAD_REQUEST] = "APP_EV_RELOAD_REQUEST",
+    [APP_EV_FAULT] = "APP_EV_FAULT",
+    [APP_EV_FAULT_CLEARED] = "APP_EV_FAULT_CLEARED",
+    [APP_EV_SHUTDOWN_REQUEST] = "APP_EV_SHUTDOWN_REQUEST",
+    [APP_EV_TIMEOUT] = "APP_EV_TIMEOUT",
+    [APP_EV_CONTINUE] = "APP_EV_CONTINUE",
+};
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -166,7 +186,12 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
   else if (event == AXIS_EVENT_HOME_FAILED) {
     // todo: temporary since we are faking homing
     axis_clear_fault(axis);
-    app_event.id = APP_EV_MOTION_DONE;
+    if ((app_sm_port_is_recount_active() == true) && (axis->num % 2U == 0U) && (app_event.slot > 0U)) {
+      app_event.id = APP_EV_COUNT_DONE;
+    }
+    else {
+      app_event.id = APP_EV_MOTION_DONE;
+    }
   }
   else if (event == AXIS_EVENT_IDLE_FAULT) {
     // todo: figure out why axis faults why idle.
@@ -177,4 +202,12 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
     app_console_print("[Axis Event] Unhandled axis event %s\r\n", axis_event_name(event));
   }
   (void)app_task_post(&app_event);
+}
+
+const char* app_event_id_to_str(app_event_id_enum event_id) {
+  if ((size_t)event_id >= (sizeof(app_event_id_names) / sizeof(app_event_id_names[0]))) {
+    return "APP_EV_UNKNOWN";
+  }
+
+  return app_event_id_names[event_id];
 }
