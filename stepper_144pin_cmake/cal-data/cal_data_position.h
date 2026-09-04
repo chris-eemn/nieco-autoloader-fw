@@ -53,6 +53,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "cal_data_map.h"
+#include "cal_data_save.h"
 
 /*******************************************************************************
  * Module Macros
@@ -81,14 +82,8 @@ typedef struct {
                                                     *   saved record is never all-0xFF. */
 } cal_data_position_t;
 
-/** Progress of the most recent cal_data_position_save() for a given pair. */
-typedef enum {
-  CAL_DATA_SAVE_IDLE = 0, /**< No save outstanding -- either none was ever issued, or the last
-                           *   one finished. */
-  CAL_DATA_SAVE_PENDING,  /**< Erase and/or write still queued or in progress. */
-  CAL_DATA_SAVE_ERROR,    /**< The w25q driver reported a transfer error. The stored position
-                           *   must be assumed lost; the section was already erased. */
-} cal_data_save_status_enum;
+/* The save-progress status enum (cal_data_save_status_enum) lives in cal_data_save.h, shared
+ * with the general-section save path in cal_data.c. */
 
 /*******************************************************************************
  * Module Variable Definitions

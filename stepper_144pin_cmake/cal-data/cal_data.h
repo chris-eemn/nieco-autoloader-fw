@@ -35,6 +35,7 @@
  *******************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
+#include "cal_data_save.h"
 
 /*******************************************************************************
  * Module Macros
@@ -42,7 +43,7 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (9U)
+#define CAL_DATA_VERSION (10U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -74,6 +75,21 @@ typedef struct {
   /** Encoder counts per Patty 2 patty; reserved for per-product thickness. Recount still uses
    * patty_thickness_counts for all slots. 0 = unconfigured. */
   uint32_t patty2_thickness_counts;
+  /** Lock-wait timeout, milliseconds. Replaces the duplicated startup (5000) / reload (30000)
+   * literals. The default is the plan's interim value; unifying on the reload 30000 is a
+   * Phase 5 consumer-side decision. Consumers adopt this field in a later phase. */
+  uint32_t lock_timeout_ms;
+  /** Motion/homing timeout, milliseconds. Shared by the startup and reload motion waits.
+   * Consumers adopt it in a later phase. */
+  uint32_t motion_timeout_ms;
+  /** Door-interaction timeout, milliseconds (reload unlock/door wait). Consumers adopt it in a
+   * later phase. */
+  uint32_t door_timeout_ms;
+  /** Post-home settle delay during startup, milliseconds. Consumers adopt it in a later phase. */
+  uint32_t startup_settle_delay_ms;
+  /** Door/lock/reload input debounce, milliseconds. Sampled once at input_init(); changing it
+   * at runtime takes effect on the next boot. Consumers adopt it in a later phase. */
+  uint32_t door_debounce_ms;
 } cal_data_params_t;
 
 /*******************************************************************************
@@ -103,11 +119,31 @@ bool cal_data_init(void);
 cal_data_params_t* cal_data_get(void);
 
 /**
- * @brief writes the RAM copy of the parameters to flash
+ * @brief stages the RAM copy and queues the erase and write that store it
+ * @note returns as soon as the commands are queued -- the data is not on the chip yet. The
+ *       payload is copied into a module-owned staging buffer that the driver reads from during
+ *       the write, so the RAM copy does not need to outlive the call. Poll
+ *       cal_data_save_status() for completion
  * @note erases and rewrites the general section only; stepper position sections are untouched
- * @return bool true if the record was written and verified
+ * @note fails while a previous save is still in flight (the staging buffer is in use), when the
+ *       w25q queue cannot hold all five commands, or when the driver is already in an error
+ *       state. The erases are never queued unless the write can be queued behind them, so a
+ *       rejected save leaves the stored record intact
+ * @return bool true if all commands were accepted into the w25q queue
  */
 bool cal_data_save(void);
+
+/**
+ * @brief reports how far the most recent cal_data_save() has got
+ * @note the w25q driver exposes no per-command completion, so this resolves to IDLE once the
+ *       command queue has drained and the driver is no longer busy -- which also means any
+ *       other module's queued traffic delays the transition to IDLE
+ * @note CAL_DATA_SAVE_ERROR is sticky until the next save is queued. The driver has no reset
+ *       entry point; its error state clears when the next direct (non-queued) w25q operation
+ *       runs, such as the boot-path save in cal_data_init()
+ * @return cal_data_save_status_enum progress of the last save issued
+ */
+cal_data_save_status_enum cal_data_save_status(void);
 
 /**
  * @brief overwrites the RAM copy with the factory defaults, without touching flash
