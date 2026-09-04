@@ -97,7 +97,9 @@ void cartridge_determine_type(cartridge_t* cartridge) {
       cartridge->type = CARTRIDGE_TYPE_JR;
     }
     else if ((sensor1_value == 0) && (sensor2_value == 0)) {
-      cartridge->type = CARTRIDGE_TYPE_LTO;
+      // cartridge->type = CARTRIDGE_TYPE_LTO;
+      // TODO: hack for now until we rig of type pins
+      cartridge->type = CARTRIDGE_TYPE_WHOPPER;
     }
   }
 }
