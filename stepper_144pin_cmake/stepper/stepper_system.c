@@ -106,7 +106,6 @@ static const axis_config_t s_axis_config = {
     .stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS,
     .home_error_counts = AXIS_DEFAULT_HOME_ERROR_COUNTS,
     .backoff_steps = 200U,
-    .home_rpm = 10U,
     .home_max_steps = 50000U,
 };
 
@@ -154,7 +153,6 @@ void stepper_system_update_configs(void) {
   for (size_t i = 0U; i < STEPPER_SYSTEM_MOTOR_COUNT; i++) {
     if (s_axes[i] != NULL) {
       axis_config_t axis_config = s_axis_config;
-      axis_config.home_rpm = cal_params_ptr->home_rpm;
       axis_config.backoff_steps = cal_params_ptr->home_backoff_steps;
       axis_config.home_max_steps = cal_params_ptr->home_max_steps;
       axis_config.stall_error_counts = cal_params_ptr->stall_error_counts;
@@ -170,9 +168,6 @@ void stepper_system_update_configs(void) {
       }
       if (axis_config.home_error_counts == 0U) {
         axis_config.home_error_counts = AXIS_DEFAULT_HOME_ERROR_COUNTS;
-      }
-      if (axis_config.home_rpm == 0U) {
-        axis_config.home_rpm = 10U;
       }
       if (axis_config.backoff_steps == 0U) {
         axis_config.backoff_steps = 200U;
