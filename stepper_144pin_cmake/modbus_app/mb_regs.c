@@ -24,6 +24,7 @@
 #include "app_task.h"
 #include "autoloader_types.h"
 #include "cal_data.h"
+#include "cartridge.h"
 
 /*******************************************************************************
  * Module Macros
@@ -279,8 +280,28 @@ static int reg_patty1_add_to_queue_read(uint16_t reg, uint16_t* val_ptr) {
 }
 
 static int reg_patty1_add_to_queue_write(uint16_t reg, uint16_t val) {
+  app_event_t dispense_event;
+  bool queued;
+
   (void)reg;
-  app_console_print("[INFO] Patty1 add to queue via modbus register write. val: %d\r\n", val);
+
+  if (val == 0U) {
+    return 0;
+  }
+
+  dispense_event.id = APP_EV_DISPENSE_REQUEST;
+  dispense_event.slot = APP_NO_SLOT;
+  dispense_event.product_type = (uint8_t)CARTRIDGE_TYPE_WHOPPER;
+  dispense_event.value = val;
+  dispense_event.axis_num = 0U;
+
+  queued = app_task_post_from_isr(&dispense_event);
+
+  if (queued == false) {
+    /* Event queue full or not yet created: the request was dropped. */
+    return -1;
+  }
+
   return 0;
 }
 
@@ -291,8 +312,28 @@ static int reg_patty2_add_to_queue_read(uint16_t reg, uint16_t* val_ptr) {
 }
 
 static int reg_patty2_add_to_queue_write(uint16_t reg, uint16_t val) {
+  app_event_t dispense_event;
+  bool queued;
+
   (void)reg;
-  app_console_print("[INFO] Patty2 add to queue via modbus register write. val: %d\r\n", val);
+
+  if (val == 0U) {
+    return 0;
+  }
+
+  dispense_event.id = APP_EV_DISPENSE_REQUEST;
+  dispense_event.slot = APP_NO_SLOT;
+  dispense_event.product_type = (uint8_t)CARTRIDGE_TYPE_JR;
+  dispense_event.value = val;
+  dispense_event.axis_num = 0U;
+
+  queued = app_task_post_from_isr(&dispense_event);
+
+  if (queued == false) {
+    /* Event queue full or not yet created: the request was dropped. */
+    return -1;
+  }
+
   return 0;
 }
 
