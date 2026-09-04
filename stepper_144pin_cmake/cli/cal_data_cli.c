@@ -57,7 +57,8 @@ static const char* s_param_names[CAL_DATA_CLI_NUM_PARAMS] = {[CAL_DATA_CLI_PARAM
                                                                [CAL_DATA_CLI_PUSH_RETRACT_TIMEOUT_MS] = "push_retract_timeout_ms",
                                                                [CAL_DATA_CLI_LIFT_TIMEOUT_MS] = "lift_timeout_ms",
                                                                [CAL_DATA_CLI_PATTY_THICKNESS_COUNTS] = "patty_thickness_counts",
-                                                               [CAL_DATA_CLI_RECOUNT_TIMEOUT_MS] = "recount_timeout_ms"};
+                                                               [CAL_DATA_CLI_RECOUNT_TIMEOUT_MS] = "recount_timeout_ms",
+                                                               [CAL_DATA_CLI_PATTY2_THICKNESS_COUNTS] = "patty2_thickness_counts"};
 
 /*******************************************************************************
  * Function Prototypes
@@ -222,6 +223,10 @@ static uint32_t* param_value_ptr(cal_data_cli_param_enum param) {
 
       case CAL_DATA_CLI_RECOUNT_TIMEOUT_MS:
         value = &params->recount_timeout_ms;
+        break;
+
+      case CAL_DATA_CLI_PATTY2_THICKNESS_COUNTS:
+        value = &params->patty2_thickness_counts;
         break;
 
       default:

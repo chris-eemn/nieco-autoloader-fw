@@ -232,6 +232,8 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
     case STARTUP_COUNT_CARTRIDGES:
       if (event->id == APP_EV_DETERMINE_TYPE_DONE) {
         app_console_print("[Startup SM] Counting cartridges\r\n");
+        /* Recount uses cal_data.patty_thickness_counts for every slot. Per-product thickness
+         * selection (e.g. cal_data.patty2_thickness_counts for Patty 2 slots) is future glue. */
         for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
           uint32_t fault = APP_FAULT_CODE_NONE;
           if (cartridge_recount_apply(&cartridges[i], &fault) == false) {

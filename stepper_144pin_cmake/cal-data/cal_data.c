@@ -79,6 +79,7 @@ static const cal_data_params_t default_params = {
     .lift_timeout_ms = 5000U,
     .patty_thickness_counts = 50U,    /* unconfigured; recount faults until set */
     .recount_timeout_ms = 120000U,
+    .patty2_thickness_counts = 50U, /* unconfigured; same as patty_thickness_counts until per-product selection lands */
 };
 
 /** Live RAM copy handed out by cal_data_get(). */
