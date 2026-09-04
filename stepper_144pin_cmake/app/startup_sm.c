@@ -23,6 +23,7 @@
 #include "autoloader_types.h"
 #include "homing.h"
 #include "input.h"
+#include "cartridge_recount.h"
 
 /*******************************************************************************
  * Module Macros
@@ -232,12 +233,12 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
       if (event->id == APP_EV_DETERMINE_TYPE_DONE) {
         app_console_print("[Startup SM] Counting cartridges\r\n");
         for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
-          app_sm_port_count_cartridges(&cartridges[i]);
-          app_console_print("[Startup SM] Counting cartridges for slot %d, homing_enc_ticks = %d\r\n", i + 1U,
-                            cartridges[i].lifter_home_up_encoder_counts);
-
-          app_console_print("[Startup SM] Simulating cartridge %d number of items as 10 for testing purposes\r\n", i + 1U);
-          cartridges[i].remaining = 10U;
+          uint32_t fault = APP_FAULT_CODE_NONE;
+          if (cartridge_recount_apply(&cartridges[i], &fault) == false) {
+            result.status = STARTUP_STATUS_FAILED;
+            result.fault_code = fault;
+            break;
+          }
         }
         sm->state = STARTUP_COMPLETE;
         result.status = STARTUP_STATUS_DONE;
