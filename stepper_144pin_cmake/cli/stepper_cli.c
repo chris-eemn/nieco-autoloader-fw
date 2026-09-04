@@ -37,6 +37,7 @@
 #include "axis.h"
 #include "app_console.h"
 #include "app_task.h"
+#include "cal_data.h"
 #include <string.h>
 
 /*******************************************************************************
@@ -268,7 +269,11 @@ static void stepper_cli_home(int32_t motor_num) {
     return;
   }
 
-  stepper_status_enum status = stepper_ctrl_home((uint8_t)motor_num, STEPPER_DIR_CW);
+  /* Home at the configured speed; cal_data is the single source of truth. */
+  cal_data_params_t* params = cal_data_get();
+  uint32_t home_rpm = ((params != NULL) && (params->home_rpm != 0U)) ? params->home_rpm : 10U;
+
+  stepper_status_enum status = stepper_ctrl_home((uint8_t)motor_num, STEPPER_DIR_CW, home_rpm);
   if (status == STEPPER_OK) {
     app_console_print("[STEPPER] Motor %ld: homing started.\r\n", motor_num);
   }
