@@ -24,7 +24,6 @@
 #include "app_task.h"
 #include "autoloader_types.h"
 #include "cal_data.h"
-#include "axis.h"
 
 /*******************************************************************************
  * Module Macros
@@ -44,116 +43,54 @@ static int reg_patty2_add_to_queue_write(uint16_t reg, uint16_t val);
 static int reload_request_reg_read(uint16_t reg, uint16_t* val_ptr);
 static int reload_request_reg_write(uint16_t reg, uint16_t val);
 static int status_reg_read(uint16_t reg, uint16_t* val_ptr);
+static int fw_ver_reg_read(uint16_t reg, uint16_t* val_ptr);
+static int serial_number_reg_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_push_retract_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_push_retract_timeout_ms_write(uint16_t reg, uint16_t val);
+static int reg_lift_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val);
 
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
 static mb_holding_reg_def_t regs_defines[] = {
     {.reg_id = REG_PATTY1_ADD_TO_QUEUE,
+     .reg_amount = 1,
      .read_callback = reg_patty1_add_to_queue_read,
      .write_callback = reg_patty1_add_to_queue_write,
      .name = "patty1_add_to_queue"},
     {.reg_id = REG_PATTY2_ADD_TO_QUEUE,
+     .reg_amount = 1,
      .read_callback = reg_patty2_add_to_queue_read,
      .write_callback = reg_patty2_add_to_queue_write,
      .name = "patty2_add_to_queue"},
     {.reg_id = REG_RELOAD_REQUEST,
+     .reg_amount = 1,
      .read_callback = reload_request_reg_read,
      .write_callback = reload_request_reg_write,
      .name = "reload_request"},
     {.reg_id = REG_STATUS,
+     .reg_amount = 1,
      .read_callback = status_reg_read,
      .name = "status"},
-};
-
-static int fw_ver_reg_read(uint16_t reg, uint16_t* val_ptr);
-mb_holding_reg_def_t fw_ver_reg = {
-    .reg_id = REG_SLAVE_FW_VERSION,
-    .reg_amount = 1,
-    .read_callback = fw_ver_reg_read,
-    .name = "fw_ver",
-};
-
-static int serial_number_reg_read(uint16_t reg, uint16_t* val_ptr);
-mb_holding_reg_def_t serial_number_reg = {
-    .reg_id = REG_SLAVE_SERIAL_NUMBER,
-    .reg_amount = 1,
-    .read_callback = serial_number_reg_read,
-    .name = "serial_number",
-};
-
-static int self_test_mode_reg_read(uint16_t reg, uint16_t* val_ptr);
-static int self_test_mode_reg_write(uint16_t reg, uint16_t val);
-mb_holding_reg_def_t self_test_mode_reg = {
-    .reg_id = REG_SLAVE_UI_ENTER_SELF_TEST_MODE,
-    .reg_amount = 1,
-    .read_callback = self_test_mode_reg_read,
-    .write_callback = self_test_mode_reg_write,
-    .name = "self_test_mode",
-};
-
-static int self_test_results_reg_read(uint16_t reg, uint16_t* val_ptr);
-mb_holding_reg_def_t self_test_results_reg = {
-    .reg_id = REG_SLAVE_UI_SELF_TEST_RESULTS,
-    .reg_amount = 1,
-    .read_callback = self_test_results_reg_read,
-    .name = "self_test_results",
-};
-
-static int sound_buzzer_reg_write(uint16_t reg, uint16_t val);
-mb_holding_reg_def_t sound_buzzer_reg = {
-    .reg_id = REG_SLAVE_UI_SOUND_BUZZER,
-    .reg_amount = 1,
-    .write_callback = sound_buzzer_reg_write,
-    .name = "sound_buzzer",
-};
-
-static int show_black_pixels_reg_write(uint16_t reg, uint16_t val);
-mb_holding_reg_def_t show_black_pixels_reg = {
-    .reg_id = REG_SLAVE_UI_SHOW_BLACK_PIXELS,
-    .reg_amount = 1,
-    .write_callback = show_black_pixels_reg_write,
-    .name = "show_black_pixels",
-};
-
-static int reg_push_retract_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
-static int reg_push_retract_timeout_ms_write(uint16_t reg, uint16_t val);
-mb_holding_reg_def_t push_retract_timeout_ms_reg = {
-    .reg_id = REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS,
-    .reg_amount = 1,
-    .read_callback = reg_push_retract_timeout_ms_read,
-    .write_callback = reg_push_retract_timeout_ms_write,
-    .name = "push_retract_timeout_ms",
-};
-
-static int reg_lift_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
-static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val);
-mb_holding_reg_def_t lift_timeout_ms_reg = {
-    .reg_id = REG_CAL_DATA_LIFT_TIMEOUT_MS,
-    .reg_amount = 1,
-    .read_callback = reg_lift_timeout_ms_read,
-    .write_callback = reg_lift_timeout_ms_write,
-    .name = "lift_timeout_ms",
-};
-
-static int reg_stall_error_counts_read(uint16_t reg, uint16_t* val_ptr);
-static int reg_stall_error_counts_write(uint16_t reg, uint16_t val);
-mb_holding_reg_def_t stall_error_counts_reg = {
-    .reg_id = REG_CAL_DATA_STALL_ERROR_COUNTS,
-    .reg_amount = 1,
-    .read_callback = reg_stall_error_counts_read,
-    .write_callback = reg_stall_error_counts_write,
-    .name = "stall_error_counts",
-};
-
-static int reg_home_error_counts_read(uint16_t reg, uint16_t* val_ptr);
-static int reg_home_error_counts_write(uint16_t reg, uint16_t val);
-mb_holding_reg_def_t home_error_counts_reg = {
-    .reg_id = REG_CAL_DATA_HOME_ERROR_COUNTS,
-    .reg_amount = 1,
-    .read_callback = reg_home_error_counts_read,
-    .write_callback = reg_home_error_counts_write,
-    .name = "home_error_counts",
+    {.reg_id = REG_SLAVE_FW_VERSION,
+     .reg_amount = 1,
+     .read_callback = fw_ver_reg_read,
+     .name = "fw_ver"},
+    {.reg_id = REG_SLAVE_SERIAL_NUMBER,
+     .reg_amount = 1,
+     .read_callback = serial_number_reg_read,
+     .name = "serial_number"},
+    {.reg_id = REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS,
+     .reg_amount = 1,
+     .read_callback = reg_push_retract_timeout_ms_read,
+     .write_callback = reg_push_retract_timeout_ms_write,
+     .name = "push_retract_timeout_ms"},
+    {.reg_id = REG_CAL_DATA_LIFT_TIMEOUT_MS,
+     .reg_amount = 1,
+     .read_callback = reg_lift_timeout_ms_read,
+     .write_callback = reg_lift_timeout_ms_write,
+     .name = "lift_timeout_ms"},
 };
 
 modbus_slave_t ui_slave = {0};
@@ -186,17 +123,6 @@ void mb_regs_init(void) {
   for (int i = 0; i < (sizeof(regs_defines) / sizeof(regs_defines[0])); i++) {
     MB_AddHoldingRegister(&reg_array, &regs_defines[i]);
   }
-
-  MB_AddHoldingRegister(&reg_array, &fw_ver_reg);
-  MB_AddHoldingRegister(&reg_array, &serial_number_reg);
-  MB_AddHoldingRegister(&reg_array, &self_test_mode_reg);
-  MB_AddHoldingRegister(&reg_array, &self_test_results_reg);
-  MB_AddHoldingRegister(&reg_array, &sound_buzzer_reg);
-  MB_AddHoldingRegister(&reg_array, &show_black_pixels_reg);
-  MB_AddHoldingRegister(&reg_array, &push_retract_timeout_ms_reg);
-  MB_AddHoldingRegister(&reg_array, &lift_timeout_ms_reg);
-  MB_AddHoldingRegister(&reg_array, &stall_error_counts_reg);
-  MB_AddHoldingRegister(&reg_array, &home_error_counts_reg);
 
   MB_RegisterHoldingRegisterArray(&ui_slave, &reg_array);
 }
@@ -294,34 +220,6 @@ static int status_reg_read(uint16_t reg, uint16_t* val_ptr) {
   return 0;
 }
 
-static int self_test_mode_reg_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  *val_ptr = 0x77;
-  return 0;
-}
-static int self_test_mode_reg_write(uint16_t reg, uint16_t val) {
-  (void)reg;
-  app_console_print("[INFO] Entering self test mode via modbus register write. val: %d\r\n", val);
-  return 0;
-}
-static int self_test_results_reg_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  *val_ptr = 0x66;
-  return 0;
-}
-
-static int sound_buzzer_reg_write(uint16_t reg, uint16_t val) {
-  (void)reg;
-  app_console_print("[INFO] Sound buzzer via modbus register write. val: %d\r\n", val);
-  return 0;
-}
-
-static int show_black_pixels_reg_write(uint16_t reg, uint16_t val) {
-  (void)reg;
-  app_console_print("[INFO] Show black pixels via modbus register write. val: %d\r\n", val);
-  return 0;
-}
-
 static int reg_push_retract_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
   (void)reg;
   cal_data_params_t* params = cal_data_get();
@@ -371,60 +269,6 @@ static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val) {
     }
     else {
       app_console_print("[MODBUS] lift_timeout_ms = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->lift_timeout_ms);
-    }
-  }
-  return 0;
-}
-
-static int reg_stall_error_counts_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    *val_ptr = (uint16_t)params->stall_error_counts;
-  }
-  else {
-    *val_ptr = AXIS_DEFAULT_STALL_ERROR_COUNTS;
-  }
-  return 0;
-}
-
-static int reg_stall_error_counts_write(uint16_t reg, uint16_t val) {
-  (void)reg;
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    params->stall_error_counts = (uint32_t)val;
-    if (cal_data_save() == true) {
-      app_console_print("[MODBUS] stall_error_counts = %lu (saved)\r\n", (unsigned long)params->stall_error_counts);
-    }
-    else {
-      app_console_print("[MODBUS] stall_error_counts = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->stall_error_counts);
-    }
-  }
-  return 0;
-}
-
-static int reg_home_error_counts_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    *val_ptr = (uint16_t)params->home_error_counts;
-  }
-  else {
-    *val_ptr = AXIS_DEFAULT_HOME_ERROR_COUNTS;
-  }
-  return 0;
-}
-
-static int reg_home_error_counts_write(uint16_t reg, uint16_t val) {
-  (void)reg;
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    params->home_error_counts = (uint32_t)val;
-    if (cal_data_save() == true) {
-      app_console_print("[MODBUS] home_error_counts = %lu (saved)\r\n", (unsigned long)params->home_error_counts);
-    }
-    else {
-      app_console_print("[MODBUS] home_error_counts = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->home_error_counts);
     }
   }
   return 0;
