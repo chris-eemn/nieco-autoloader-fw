@@ -90,18 +90,73 @@ void app_sm_port_unlock_door(void) {
   input_unlock_door();
 }
 
+/**
+ * @brief Homing speed from cal_data, with the historical default as fallback.
+ * @return Configured home_rpm, or 10 when cal_data is unavailable or unset.
+ */
+static uint32_t app_sm_port_get_home_rpm(void) {
+  static const uint32_t default_home_rpm = 10U;
+
+  cal_data_params_t* params = cal_data_get();
+  if ((params != NULL) && (params->home_rpm != 0U)) {
+    return params->home_rpm;
+  }
+
+  return default_home_rpm;
+}
+
+/**
+ * @brief Pusher move speed from cal_data, falling back to the default move pair.
+ * @return Configured pusher_rpm, or default_move_rpm when unset, or 5 when
+ *         cal_data is unavailable or both are unset.
+ */
+static uint32_t app_sm_port_get_pusher_rpm(void) {
+  static const uint32_t default_rpm = 5U;
+
+  cal_data_params_t* params = cal_data_get();
+  if (params != NULL) {
+    if (params->pusher_rpm != 0U) {
+      return params->pusher_rpm;
+    }
+    if (params->default_move_rpm != 0U) {
+      return params->default_move_rpm;
+    }
+  }
+
+  return default_rpm;
+}
+
+/**
+ * @brief Pusher move distance from cal_data, with the historical default as fallback.
+ * @return Configured default_move_steps, or 800 when cal_data is unavailable or unset.
+ */
+static uint32_t app_sm_port_get_default_move_steps(void) {
+  static const uint32_t default_steps = 800U;
+
+  cal_data_params_t* params = cal_data_get();
+  if ((params != NULL) && (params->default_move_steps != 0U)) {
+    return params->default_move_steps;
+  }
+
+  return default_steps;
+}
+
 void app_sm_port_home_pusher(cartridge_t* slot) {
-  axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)), STEPPER_DIR_CW);
+  stepper_status_enum status = axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)), STEPPER_DIR_CW, app_sm_port_get_home_rpm());
+  if (status != STEPPER_OK) {
+    app_console_print("[app_sm_port] Failed to home pusher for slot %d: %d\r\n", slot->num, (int)status);
+  }
 }
 
 stepper_status_enum app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction) {
   uint8_t axis_num = cartridge_get_axis_num(slot, LIFTER);
+  uint32_t home_rpm = app_sm_port_get_home_rpm();
 
   if (direction == DIR_LIFTER_DOWN) {
-    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CW);
+    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CW, home_rpm);
   }
   else if (direction == DIR_LIFTER_UP) {
-    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CCW);
+    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CCW, home_rpm);
   }
 
   app_console_print("[app_sm_port] Invalid direction for lift homing\r\n");
@@ -113,23 +168,21 @@ void app_sm_port_count_cartridges(cartridge_t* slot) {
 }
 
 void app_sm_port_push_extend(cartridge_t* slot) {
-#define FAKE_PUSH_EXTEND_COUNTS (1000U)
-#define FAKE_PUSH_EXTEND_RPM 15
-#define FAKE_PUSH_EXTEND_DIR STEPPER_DIR_CCW
+#define PUSH_EXTEND_DIR STEPPER_DIR_CCW
 
   uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
-  stepper_status_enum status = axis_move(stepper_ctrl_get_axis(axis_num), FAKE_PUSH_EXTEND_COUNTS, FAKE_PUSH_EXTEND_RPM, FAKE_PUSH_EXTEND_DIR);
+  stepper_status_enum status =
+      axis_move(stepper_ctrl_get_axis(axis_num), app_sm_port_get_default_move_steps(), app_sm_port_get_pusher_rpm(), PUSH_EXTEND_DIR);
   if (status != STEPPER_OK) {
     app_console_print("[app_sm_port] Failed to extend pusher for slot %d: %d\r\n", slot->num, (int)status);
   }
 }
 
 void app_sm_port_push_retract(cartridge_t* slot) {
-#define FAKE_PUSH_RETRACT_COUNTS (1000U)
-#define FAKE_PUSH_RETRACT_RPM 20
-#define FAKE_PUSH_RETRACT_DIR STEPPER_DIR_CW
+#define PUSH_RETRACT_DIR STEPPER_DIR_CW
   uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
-  stepper_status_enum status = axis_move(stepper_ctrl_get_axis(axis_num), FAKE_PUSH_RETRACT_COUNTS, FAKE_PUSH_RETRACT_RPM, FAKE_PUSH_RETRACT_DIR);
+  stepper_status_enum status =
+      axis_move(stepper_ctrl_get_axis(axis_num), app_sm_port_get_default_move_steps(), app_sm_port_get_pusher_rpm(), PUSH_RETRACT_DIR);
   if (status != STEPPER_OK) {
     app_console_print("[app_sm_port] Failed to retract pusher for slot %d: %d\r\n", slot->num, (int)status);
   }
