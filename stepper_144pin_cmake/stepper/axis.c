@@ -53,7 +53,7 @@ static const char* const s_event_names[] = {
 static TaskHandle_t s_supervisor_handle = NULL;
 static uint32_t s_supervisor_period_ms = 0U;
 
-/* Fake-homing bench-test state. RAM-only, OFF at boot, never written to
+/* Fake-homing bench-test state. Never written to
  * cal_data flash. Kept OUTSIDE axis_config_t on purpose: axis_update_config()
  * does a wholesale `axis->config = *config` overwrite on every param set,
  * which would wipe any per-axis fake-homing fields. Global flag + distance,
