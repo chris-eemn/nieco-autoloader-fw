@@ -2,8 +2,8 @@
  * @file cal_data_cli.c
  * @author Chris Owens (cowens@eemn.io)
  * @brief CLI handlers for the "param" command group. See cal_data_cli.h for the command
- *        summary, for why a set persists to flash inline rather than via a separate save
- *        command, and for the outstanding SPI flash concurrency note that applies to it.
+ *        summary, for why a set persists to flash before the command returns (via the queued
+ *        w25q save path), and for the outstanding SPI flash concurrency note that applies to it.
  * @version 0.1
  * @date 2026-07-27
  *
@@ -31,6 +31,10 @@
 /*******************************************************************************
  * Module Macros
  *******************************************************************************/
+/** Longest wait for a queued flash save to land before the CLI reports it as unfinished. A
+ * sector erase is ~45 ms and the queue drains from the SPI ISR, so this only trips if the
+ * driver has wedged or another module (e.g. a firmware upload) holds the queue. */
+#define CAL_DATA_CLI_SAVE_TIMEOUT_MS (2000U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -67,6 +71,18 @@ static const char* s_param_names[CAL_DATA_CLI_NUM_PARAMS] = {[CAL_DATA_CLI_PARAM
 static uint32_t* param_value_ptr(cal_data_cli_param_enum param);
 static cal_data_cli_param_enum lookup_param(const char* name);
 
+/**
+ * @brief queue a cal-data save and wait for it to land in flash.
+ *
+ *        cal_data_save() is asynchronous -- it only puts the erase and write on the w25q
+ *        command queue. Poll cal_data_save_status() so "(saved)" is printed only once the
+ *        data is actually on the chip. The console RX task yields while waiting.
+ *
+ * @return true if the save completed successfully, false if it could not be queued, ended in
+ *         an error, or did not finish within CAL_DATA_CLI_SAVE_TIMEOUT_MS.
+ */
+static bool param_save_and_wait(void);
+
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -101,9 +117,15 @@ void cal_data_cli_set_handler(char* param, int32_t val) {
        * follow with a save is a set that silently reverts on the next power cycle. On failure the
        * RAM copy still holds the new value, so say so rather than implying nothing happened. */
 
-      if (cal_data_save() == true) {
+      if (param_save_and_wait() == true) {
         app_console_print("[PARAM] %s = %lu (saved)\r\n", s_param_names[id], (unsigned long)*value);
         stepper_system_update_configs(); /* Apply the new values to the axes immediately. */
+      }
+      else if (cal_data_save_status() == CAL_DATA_SAVE_PENDING) {
+        /* The save is queued and still running -- it may land after this message. Do not call
+         * it a failure; say it has not finished. */
+        app_console_print("[PARAM] %s = %lu -- SAVE STILL PENDING, check 'param list' next boot\r\n", s_param_names[id],
+                          (unsigned long)*value);
       }
       else {
         app_console_print("[PARAM] %s = %lu -- FLASH SAVE FAILED, RAM only\r\n", s_param_names[id], (unsigned long)*value);
@@ -126,14 +148,17 @@ void cal_data_cli_list_handler(void) {
     vTaskDelay(pdMS_TO_TICKS(10U)); /* Yield to the console task so it can flush the output. */
   }
 
-  app_console_print("  a 'param set' is written to flash immediately; 'param reset' for defaults\r\n");
+  app_console_print("  a 'param set' is queued to flash and awaited before the command returns; 'param reset' for defaults\r\n");
 }
 
 void cal_data_cli_reset_handler(void) {
   cal_data_load_defaults();
 
-  if (cal_data_save() == true) {
+  if (param_save_and_wait() == true) {
     app_console_print("[PARAM] Factory defaults loaded and saved.\r\n");
+  }
+  else if (cal_data_save_status() == CAL_DATA_SAVE_PENDING) {
+    app_console_print("[PARAM] Factory defaults loaded -- SAVE STILL PENDING, check 'param list' next boot\r\n");
   }
   else {
     app_console_print("[PARAM] Factory defaults loaded -- FLASH SAVE FAILED, RAM only\r\n");
@@ -143,6 +168,31 @@ void cal_data_cli_reset_handler(void) {
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
+
+/**
+ * @brief queue a cal-data save and wait for it to land in flash.
+ * @return true if the save completed successfully, false if it could not be queued, ended in
+ *         an error, or did not finish within CAL_DATA_CLI_SAVE_TIMEOUT_MS.
+ */
+static bool param_save_and_wait(void) {
+  bool saved = false;
+
+  if (cal_data_save() == true) {
+    uint32_t waited_ms = 0U;
+
+    while (cal_data_save_status() == CAL_DATA_SAVE_PENDING) {
+      if (waited_ms >= CAL_DATA_CLI_SAVE_TIMEOUT_MS) {
+        break;
+      }
+      vTaskDelay(pdMS_TO_TICKS(10U));
+      waited_ms += 10U;
+    }
+
+    saved = (cal_data_save_status() == CAL_DATA_SAVE_IDLE);
+  }
+
+  return saved;
+}
 
 /**
  * @brief Resolve a parameter id to the field it names inside the cal-data RAM copy.
