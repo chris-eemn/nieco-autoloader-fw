@@ -236,6 +236,15 @@ uint8_t stepper_is_busy(stepper_t* motor) {
   return motor->running;
 }
 
+uint32_t stepper_get_steps_done(const stepper_t* motor) {
+  if (motor == NULL) {
+    return 0U;
+  }
+
+  /* Single-word load of a volatile uint32_t — atomic against the step ISR. */
+  return motor->steps_done;
+}
+
 void stepper_register_done_cb(stepper_t* motor, stepper_done_cb_t cb) {
   if (motor != NULL) {
     motor->done_cb = cb;

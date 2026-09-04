@@ -44,8 +44,9 @@
  *******************************************************************************/
 
 static const char* s_param_names[STEPPER_CLI_NUM_PARAMS] = {
-    [STEPPER_CLI_AUTO] = "auto", [STEPPER_CLI_CW] = "cw",       [STEPPER_CLI_CCW] = "ccw", [STEPPER_CLI_HOME] = "home",   [STEPPER_CLI_RPM] = "rpm",
-    [STEPPER_CLI_STEP] = "step", [STEPPER_CLI_CLEAR] = "clear", [STEPPER_CLI_ENC] = "enc", [STEPPER_CLI_QUEUE] = "queue",
+    [STEPPER_CLI_AUTO] = "auto",             [STEPPER_CLI_CW] = "cw",       [STEPPER_CLI_CCW] = "ccw",           [STEPPER_CLI_HOME] = "home",
+    [STEPPER_CLI_RPM] = "rpm",               [STEPPER_CLI_STEP] = "step",   [STEPPER_CLI_CLEAR] = "clear",       [STEPPER_CLI_ENC] = "enc",
+    [STEPPER_CLI_QUEUE] = "queue",           [STEPPER_CLI_FAKE_HOME] = "fake_home", [STEPPER_CLI_FAKE_HOME_DIST] = "fake_home_dist",
 };
 
 /*******************************************************************************
@@ -56,6 +57,7 @@ static stepper_cli_param_enum lookup_param(const char* name);
 static axis_t* stepper_cli_lookup_axis(int32_t motor_num);
 static void stepper_cli_home(int32_t motor_num);
 static void enqueue_patties(uint16_t n);
+static void stepper_cli_print_fake_home(void);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -121,6 +123,33 @@ void stepper_cli_set_handler(char* param, int32_t val) {
       }
       break;
 
+    case STEPPER_CLI_FAKE_HOME: {
+      if (val != 0) {
+        uint32_t dist = 0U;
+        axis_get_fake_homing(NULL, &dist);
+        /* Rejected inside axis_set_fake_homing() if dist == 0. */
+        axis_set_fake_homing(true, dist);
+      }
+      else {
+        axis_set_fake_homing(false, 0U);
+      }
+      stepper_cli_print_fake_home();
+      break;
+    }
+
+    case STEPPER_CLI_FAKE_HOME_DIST: {
+      if (val <= 0) {
+        app_console_print("[STEPPER] fake_home_dist must be > 0 usteps.\r\n");
+      }
+      else {
+        bool enabled = false;
+        axis_get_fake_homing(&enabled, NULL);
+        axis_set_fake_homing(enabled, (uint32_t)val);
+        stepper_cli_print_fake_home();
+      }
+      break;
+    }
+
     case STEPPER_CLI_RPM:
       if (val <= 0) {
         app_console_print("[STEPPER] RPM must be > 0.\r\n");
@@ -185,6 +214,17 @@ void stepper_cli_get_handler(char* param) {
       app_console_print("[STEPPER] steps = %lu\r\n", stepper_ctrl_get_steps());
       break;
 
+    case STEPPER_CLI_FAKE_HOME:
+      stepper_cli_print_fake_home();
+      break;
+
+    case STEPPER_CLI_FAKE_HOME_DIST: {
+      uint32_t dist = 0U;
+      axis_get_fake_homing(NULL, &dist);
+      app_console_print("[STEPPER] fake_home_dist = %lu usteps\r\n", dist);
+      break;
+    }
+
     case STEPPER_CLI_ENC: {
       for (uint8_t motor_num = 1U; motor_num <= STEPPER_CTRL_MAX_MOTORS; motor_num++) {
         axis_t* ax = stepper_ctrl_get_axis(motor_num);
@@ -210,6 +250,8 @@ void stepper_cli_list_handler(void) {
   app_console_print("  clear <ignored>  full fault reset for all motors (axis latch + DRV8424 sleep/wake)\r\n");
   app_console_print("  enc            current encoder count for every motor\r\n");
   app_console_print("  queue <n>      enqueue patties\r\n");
+  app_console_print("  fake_home <0|1>  simulated endstop for open-loop bench testing (all axes, RAM-only, OFF at boot)\r\n");
+  app_console_print("  fake_home_dist <usteps>  seek distance in motor microsteps before the FAKE endstop fires\r\n");
 }
 
 /*******************************************************************************
@@ -273,6 +315,18 @@ static stepper_cli_param_enum lookup_param(const char* name) {
   }
 
   return STEPPER_CLI_NUM_PARAMS;
+}
+
+/**
+ * @brief Print the current fake-homing enable flag and seek distance.
+ */
+static void stepper_cli_print_fake_home(void) {
+  bool enabled = false;
+  uint32_t dist = 0U;
+
+  axis_get_fake_homing(&enabled, &dist);
+  app_console_print("[STEPPER] fake_home = %u\r\n", enabled ? 1U : 0U);
+  app_console_print("[STEPPER] fake_home_dist = %lu usteps\r\n", dist);
 }
 
 static void enqueue_patties(uint16_t n) {

@@ -52,6 +52,14 @@ static const char* const s_event_names[] = {
  * step-pulse ISR and avoids stack constraints of the timer daemon task. */
 static TaskHandle_t s_supervisor_handle = NULL;
 static uint32_t s_supervisor_period_ms = 0U;
+
+/* Fake-homing bench-test state. RAM-only, OFF at boot, never written to
+ * cal_data flash. Kept OUTSIDE axis_config_t on purpose: axis_update_config()
+ * does a wholesale `axis->config = *config` overwrite on every param set,
+ * which would wipe any per-axis fake-homing fields. Global flag + distance,
+ * all axes. */
+static bool s_fake_homing_enabled = true;
+static uint32_t s_fake_homing_distance_umsteps = 500U;
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -371,6 +379,37 @@ void axis_fault_reset(axis_t* axis) {
   axis->fault_reset_pending = 1U;
 }
 
+void axis_set_fake_homing(bool enable, uint32_t distance_umsteps) {
+  if (enable && (distance_umsteps == 0U)) {
+    app_console_print("[AXIS] FAKE homing NOT enabled: distance must be > 0 usteps (state unchanged).\r\n");
+    return;
+  }
+
+  /* Best-effort warning: a homing started between this scan and the stores
+   * below would see the new setting immediately. A homing already in flight
+   * keeps its original detection path; the new setting only takes effect on
+   * the next axis_home() call. */
+  for (uint8_t i = 0U; i < s_axis_count; i++) {
+    if (s_axes[i].status == AXIS_STATUS_HOMING) {
+      app_console_print("[AXIS] WARNING: homing in flight — fake-homing change applies to the next homing.\r\n");
+      break;
+    }
+  }
+
+  s_fake_homing_enabled = enable;
+  s_fake_homing_distance_umsteps = distance_umsteps;
+}
+
+void axis_get_fake_homing(bool* enabled_out, uint32_t* distance_out) {
+  if (enabled_out != NULL) {
+    *enabled_out = s_fake_homing_enabled;
+  }
+
+  if (distance_out != NULL) {
+    *distance_out = s_fake_homing_distance_umsteps;
+  }
+}
+
 void axis_stop(axis_t* axis) {
   if (axis == NULL) {
     return;
@@ -542,8 +581,26 @@ static uint8_t handle_sync_event(axis_t* axis) {
  * @param axis Axis instance in AXIS_STATUS_HOMING.
  */
 static void handle_homing_tick(axis_t* axis) {
+  /* Snapshot the ISR-maintained counter once so the check and the log line
+   * report the same value. */
+  const uint32_t steps_done = stepper_get_steps_done(axis->motor);
+
   switch (axis->homing_substate) {
     case HOMING_SEEK: {
+      /* Bench-test fake endstop: fires once the seek has driven the configured
+       * distance, ahead of the timeout check. A real LAG event is consumed by
+       * handle_sync_event() before this tick runs, so the real endstop always
+       * wins. stepper_s is opaque here, so the settle is entered directly —
+       * exactly what the real LAG path does when it consumes its event — and
+       * the sequence flows through the identical settle → back-off → zero →
+       * HOME_DONE path. */
+      if (s_fake_homing_enabled && (steps_done >= s_fake_homing_distance_umsteps)) {
+        stepper_stop(axis->motor);
+        app_console_print("[AXIS %d] FAKE endstop at %lu usteps (fake homing ON).\r\n", axis->num, steps_done);
+        start_homing_settle(axis);
+        break;
+      }
+
       if (stepper_is_busy(axis->motor) == 0U) {
         /* The seek used all home_max_steps without an ISR following-error event. */
         app_console_print("[AXIS %d] Homing timeout — endstop not reached.\r\n", axis->num);
@@ -564,6 +621,8 @@ static void handle_homing_tick(axis_t* axis) {
       if ((int32_t)(xTaskGetTickCount() - axis->settle_end_time_ms) >= 0) {
         axis->settle_end_time_ms = 0U;
         start_homing_backoff(axis);
+        int32_t travel_counts = encoder_get_count(axis->encoder);
+        app_console_print("[AXIS %d] Settle complete; starting back-off. Current count %ld.\r\n", axis->num, travel_counts);
         axis->homing_substate = HOMING_BACKOFF;
       }
       break;
@@ -574,6 +633,8 @@ static void handle_homing_tick(axis_t* axis) {
         /* Latch the seek-plus-backoff distance before zeroing, which discards it.
          * Ordered ahead of axis_emit() so the callback can read the result. */
         axis->home_travel_counts = encoder_get_count(axis->encoder) - axis->home_start_counts;
+        int32_t travel_counts = encoder_get_count(axis->encoder);
+        app_console_print("[AXIS %d] Back-off complete. Current count %ld.\r\n", axis->num, travel_counts);
 
         encoder_zero(axis->encoder);
         axis->homing_substate = HOMING_IDLE;

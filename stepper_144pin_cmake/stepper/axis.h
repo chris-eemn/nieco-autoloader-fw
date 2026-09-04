@@ -449,4 +449,35 @@ void axis_update_config(axis_t* axis, const axis_config_t* config);
  */
 void axis_update_sync_error_threshold(axis_t* axis, bool use_home_threshold);
 
+/**
+ * @brief  Enable or disable simulated endstop detection for bench testing
+ *         (applies to all axes).
+ *
+ *         When enabled, the axis supervisor stops the homing seek once the
+ *         motor has driven `distance_umsteps` microsteps and injects the same
+ *         lag event the real endstop path produces, so the genuine settle →
+ *         back-off → encoder-zero → AXIS_EVENT_HOME_DONE pipeline runs
+ *         unchanged. A real lag event still wins: it is consumed before the
+ *         fake check on every supervisor tick.
+ *
+ *         State is RAM-only (module statics, OFF at boot) and never written to
+ *         cal_data flash. Enabling with distance_umsteps == 0 is rejected — a
+ *         0-step seek would instantly "home" and zero the encoder at an
+ *         arbitrary position. If a homing sequence is in flight when the state
+ *         changes, the new setting applies to the next homing.
+ *
+ * @param  enable           true = fake homing ON, false = OFF (real endstop).
+ * @param  distance_umsteps Seek distance in motor microsteps before the fake
+ *                          endstop fires. Must be > 0 when enabling.
+ */
+void axis_set_fake_homing(bool enable, uint32_t distance_umsteps);
+
+/**
+ * @brief  Read the current fake-homing configuration.
+ *
+ * @param  enabled_out  Receives the enable flag. May be NULL.
+ * @param  distance_out Receives the seek distance in microsteps. May be NULL.
+ */
+void axis_get_fake_homing(bool* enabled_out, uint32_t* distance_out);
+
 #endif /* AXIS_H_ */
