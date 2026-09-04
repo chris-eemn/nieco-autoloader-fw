@@ -303,7 +303,7 @@ uint8_t axis_is_busy(const axis_t* axis) {
   return stepper_is_busy(axis->motor);
 }
 
-stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
+stepper_status_enum axis_home(axis_t* axis, uint8_t direction, uint32_t rpm) {
   if (axis == NULL) {
     return STEPPER_INVALID;
   }
@@ -311,6 +311,12 @@ stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
   /* The back-off move is derived by inverting this direction, so an out-of-range
    * value is rejected here rather than silently taken as CCW by the driver. */
   if ((direction != STEPPER_DIR_CW) && (direction != STEPPER_DIR_CCW)) {
+    return STEPPER_INVALID;
+  }
+
+  /* Reject 0 rpm at the API boundary: stepper_rpm_to_ticks() maps it to
+   * UINT32_MAX, which would run a motor that effectively never steps. */
+  if (rpm == 0U) {
     return STEPPER_INVALID;
   }
 
@@ -326,7 +332,7 @@ stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
     return STEPPER_FAULT;
   }
 
-  stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.home_max_steps, axis->config.home_rpm, direction);
+  stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.home_max_steps, rpm, direction);
 
   if (ret != STEPPER_OK) {
     return ret;
@@ -335,6 +341,9 @@ stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
   axis->stop_pending = 0U;
   axis->active_op = AXIS_OP_HOME;
   axis->home_direction = direction;
+  /* Latched so the back-off move issued later by the supervisor runs at the
+   * same speed as this seek. */
+  axis->home_rpm = rpm;
   axis->homing_substate = HOMING_SEEK;
   axis->status = AXIS_STATUS_HOMING;
 
@@ -347,8 +356,7 @@ stepper_status_enum axis_home(axis_t* axis, uint8_t direction) {
   axis->home_start_counts = encoder_get_count(axis->encoder);
   axis->home_travel_counts = 0;
 
-  app_console_print("[AXIS %d] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", axis->num, direction, axis->config.home_rpm,
-                    axis->config.home_max_steps);
+  app_console_print("[AXIS %d] Homing started. dir=%u rpm=%lu max=%lu usteps.\r\n", axis->num, direction, rpm, axis->config.home_max_steps);
 
   return STEPPER_OK;
 }
@@ -507,7 +515,7 @@ static void axis_emit_failure(axis_t* axis) {
  */
 static void start_homing_backoff(axis_t* axis) {
   uint8_t backoff_dir = (axis->home_direction == STEPPER_DIR_CW) ? STEPPER_DIR_CCW : STEPPER_DIR_CW;
-  stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.backoff_steps, axis->config.home_rpm, backoff_dir);
+  stepper_status_enum ret = stepper_move_start(axis->motor, axis->config.backoff_steps, axis->home_rpm, backoff_dir);
 
   if (ret == STEPPER_OK) {
     axis->homing_substate = HOMING_BACKOFF;
