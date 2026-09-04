@@ -30,14 +30,50 @@
  * Module Typedefs
  *******************************************************************************/
 
+/* Customer register ids. Values are 1-based register numbers: the dispatcher
+ * adds 1 to the wire address before lookup, so enum value N is reached at
+ * wire address N-1 (existing convention, inherited by all ids below).
+ * Sheet references are to MODBUS_Register_Map_AsSpecified.md. */
 typedef enum {
   /* ID registers */
   REG_SLAVE_FW_VERSION = 1,
   REG_SLAVE_SERIAL_NUMBER = 2,
-  REG_PATTY1_ADD_TO_QUEUE = 3,  // 3
-  REG_PATTY2_ADD_TO_QUEUE = 4,  // 4
-  REG_RELOAD_REQUEST = 5,       // 5 write non-zero to request a cartridge reload
-  REG_STATUS = 6,               // 6 read-only machine status (see app_sm_status_enum)
+
+  REG_PATTY1_ADD_TO_QUEUE = 3,  /* write count of Patty 1 patties to dispense */
+  REG_PATTY2_ADD_TO_QUEUE = 4,  /* write count of Patty 2 patties to dispense */
+  REG_RELOAD_REQUEST = 5,
+  REG_STATUS = 6,               /* machine status (see app_sm_status_enum; enum
+                                 * values do not match the sheet's 1-5 codes yet) */
+  REG_LTO_PAUSE = 7,            /* 1 = pause LTO dispense logic, 0 = resume
+                                 * (future: patty_handler_set_lto_pause via event post) */
+  REG_HOME_THRESHOLD = 8,       /* home error threshold
+                                 * (future: cal_data.home_error_counts) */
+  REG_LOAD_OFFSET = 9,          /* load offset
+                                 * (future: cal_data.load_offset) */
+  REG_STALL_THRESHOLD = 10,     /* stall error threshold
+                                 * (future: cal_data.stall_error_counts) */
+  REG_PATTY1_THICKNESS = 11,    /* per-patty travel for Patty 1
+                                 * (future: cal_data.patty_thickness_counts) */
+  REG_PATTY2_THICKNESS = 12,    /* per-patty travel for Patty 2
+                                 * (future: cal_data.patty2_thickness_counts) */
+  REG_CARTRIDGE1_STATUS = 13,   /* cartridge 1 type (future: cartridge_read_type_sensors) */
+  REG_CARTRIDGE2_STATUS = 14,   /* cartridge 2 type (future: cartridge_read_type_sensors) */
+  REG_CARTRIDGE3_STATUS = 15,   /* cartridge 3 type (future: cartridge_read_type_sensors) */
+  REG_CARTRIDGE4_STATUS = 16,   /* cartridge 4 type (future: cartridge_read_type_sensors) */
+  REG_CARTRIDGE1_REMAINING = 17, /* cartridge 1 patty remaining (future: cartridge_t.remaining) */
+  REG_CARTRIDGE2_REMAINING = 18, /* cartridge 2 patty remaining (future: cartridge_t.remaining) */
+  REG_CARTRIDGE3_REMAINING = 19, /* cartridge 3 patty remaining (future: cartridge_t.remaining) */
+  REG_CARTRIDGE4_REMAINING = 20, /* cartridge 4 patty remaining (future: cartridge_t.remaining) */
+  REG_CARTRIDGE1_QUEUE = 21,    /* cartridge 1 dispense queue depth (future: cartridge_t.pending) */
+  REG_CARTRIDGE2_QUEUE = 22,    /* cartridge 2 dispense queue depth (future: cartridge_t.pending) */
+  REG_CARTRIDGE3_QUEUE = 23,    /* cartridge 3 dispense queue depth (future: cartridge_t.pending) */
+  REG_CARTRIDGE4_QUEUE = 24,    /* cartridge 4 dispense queue depth (future: cartridge_t.pending) */
+  REG_DOOR_SWITCH = 25,         /* 0 = open, 1 = closed (future: input_get_door_closed) */
+  REG_DOOR_LOCK = 26,           /* 0 = unlocked, 1 = locked (future: input_get_lock_confirmed) */
+  REG_TEMP_SENSOR1 = 27,        /* 0.1 deg F signed (no sensor hardware/driver exists) */
+  REG_TEMP_SENSOR2 = 28,        /* 0.1 deg F signed (no sensor hardware/driver exists) */
+  REG_ERROR_BITMASK = 29,       /* error bits (future: synthesize from app_sm_t.fault_code,
+                                 * cartridge_t.faulted, cartridge_validate_lane_pairs) */
 
   // Cal-data backed registers
   REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS = 75,

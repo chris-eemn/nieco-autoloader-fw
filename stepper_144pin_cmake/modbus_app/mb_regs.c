@@ -49,6 +49,35 @@ static int reg_push_retract_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_push_retract_timeout_ms_write(uint16_t reg, uint16_t val);
 static int reg_lift_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val);
+static int reg_lto_pause_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_lto_pause_write(uint16_t reg, uint16_t val);
+static int reg_home_threshold_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_home_threshold_write(uint16_t reg, uint16_t val);
+static int reg_load_offset_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_load_offset_write(uint16_t reg, uint16_t val);
+static int reg_stall_threshold_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_stall_threshold_write(uint16_t reg, uint16_t val);
+static int reg_patty1_thickness_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_patty1_thickness_write(uint16_t reg, uint16_t val);
+static int reg_patty2_thickness_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_patty2_thickness_write(uint16_t reg, uint16_t val);
+static int reg_cartridge1_status_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge2_status_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge3_status_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge4_status_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge1_remaining_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge2_remaining_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge3_remaining_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge4_remaining_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge1_queue_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge2_queue_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge3_queue_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_cartridge4_queue_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_door_switch_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_door_lock_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_temp_sensor1_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_temp_sensor2_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_error_bitmask_read(uint16_t reg, uint16_t* val_ptr);
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -91,6 +120,104 @@ static mb_holding_reg_def_t regs_defines[] = {
      .read_callback = reg_lift_timeout_ms_read,
      .write_callback = reg_lift_timeout_ms_write,
      .name = "lift_timeout_ms"},
+    {.reg_id = REG_LTO_PAUSE,
+     .reg_amount = 1,
+     .read_callback = reg_lto_pause_read,
+     .write_callback = reg_lto_pause_write,
+     .name = "lto_pause"},
+    {.reg_id = REG_HOME_THRESHOLD,
+     .reg_amount = 1,
+     .read_callback = reg_home_threshold_read,
+     .write_callback = reg_home_threshold_write,
+     .name = "home_threshold"},
+    {.reg_id = REG_LOAD_OFFSET,
+     .reg_amount = 1,
+     .read_callback = reg_load_offset_read,
+     .write_callback = reg_load_offset_write,
+     .name = "load_offset"},
+    {.reg_id = REG_STALL_THRESHOLD,
+     .reg_amount = 1,
+     .read_callback = reg_stall_threshold_read,
+     .write_callback = reg_stall_threshold_write,
+     .name = "stall_threshold"},
+    {.reg_id = REG_PATTY1_THICKNESS,
+     .reg_amount = 1,
+     .read_callback = reg_patty1_thickness_read,
+     .write_callback = reg_patty1_thickness_write,
+     .name = "patty1_thickness"},
+    {.reg_id = REG_PATTY2_THICKNESS,
+     .reg_amount = 1,
+     .read_callback = reg_patty2_thickness_read,
+     .write_callback = reg_patty2_thickness_write,
+     .name = "patty2_thickness"},
+    {.reg_id = REG_CARTRIDGE1_STATUS,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge1_status_read,
+     .name = "cartridge1_status"},
+    {.reg_id = REG_CARTRIDGE2_STATUS,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge2_status_read,
+     .name = "cartridge2_status"},
+    {.reg_id = REG_CARTRIDGE3_STATUS,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge3_status_read,
+     .name = "cartridge3_status"},
+    {.reg_id = REG_CARTRIDGE4_STATUS,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge4_status_read,
+     .name = "cartridge4_status"},
+    {.reg_id = REG_CARTRIDGE1_REMAINING,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge1_remaining_read,
+     .name = "cartridge1_remaining"},
+    {.reg_id = REG_CARTRIDGE2_REMAINING,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge2_remaining_read,
+     .name = "cartridge2_remaining"},
+    {.reg_id = REG_CARTRIDGE3_REMAINING,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge3_remaining_read,
+     .name = "cartridge3_remaining"},
+    {.reg_id = REG_CARTRIDGE4_REMAINING,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge4_remaining_read,
+     .name = "cartridge4_remaining"},
+    {.reg_id = REG_CARTRIDGE1_QUEUE,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge1_queue_read,
+     .name = "cartridge1_queue"},
+    {.reg_id = REG_CARTRIDGE2_QUEUE,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge2_queue_read,
+     .name = "cartridge2_queue"},
+    {.reg_id = REG_CARTRIDGE3_QUEUE,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge3_queue_read,
+     .name = "cartridge3_queue"},
+    {.reg_id = REG_CARTRIDGE4_QUEUE,
+     .reg_amount = 1,
+     .read_callback = reg_cartridge4_queue_read,
+     .name = "cartridge4_queue"},
+    {.reg_id = REG_DOOR_SWITCH,
+     .reg_amount = 1,
+     .read_callback = reg_door_switch_read,
+     .name = "door_switch"},
+    {.reg_id = REG_DOOR_LOCK,
+     .reg_amount = 1,
+     .read_callback = reg_door_lock_read,
+     .name = "door_lock"},
+    {.reg_id = REG_TEMP_SENSOR1,
+     .reg_amount = 1,
+     .read_callback = reg_temp_sensor1_read,
+     .name = "temp_sensor1"},
+    {.reg_id = REG_TEMP_SENSOR2,
+     .reg_amount = 1,
+     .read_callback = reg_temp_sensor2_read,
+     .name = "temp_sensor2"},
+    {.reg_id = REG_ERROR_BITMASK,
+     .reg_amount = 1,
+     .read_callback = reg_error_bitmask_read,
+     .name = "error_bitmask"},
 };
 
 modbus_slave_t ui_slave = {0};
@@ -271,5 +398,277 @@ static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val) {
       app_console_print("[MODBUS] lift_timeout_ms = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->lift_timeout_ms);
     }
   }
+  return 0;
+}
+
+static int reg_lto_pause_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] lto_pause: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_lto_pause_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  (void)val;
+  app_console_print("[MODBUS] lto_pause: not implemented\r\n");
+  return 0;
+}
+
+static int reg_home_threshold_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] home_threshold: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_home_threshold_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  (void)val;
+  app_console_print("[MODBUS] home_threshold: not implemented\r\n");
+  return 0;
+}
+
+static int reg_load_offset_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] load_offset: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_load_offset_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  (void)val;
+  app_console_print("[MODBUS] load_offset: not implemented\r\n");
+  return 0;
+}
+
+static int reg_stall_threshold_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] stall_threshold: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_stall_threshold_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  (void)val;
+  app_console_print("[MODBUS] stall_threshold: not implemented\r\n");
+  return 0;
+}
+
+static int reg_patty1_thickness_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] patty1_thickness: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_patty1_thickness_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  (void)val;
+  app_console_print("[MODBUS] patty1_thickness: not implemented\r\n");
+  return 0;
+}
+
+static int reg_patty2_thickness_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] patty2_thickness: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_patty2_thickness_write(uint16_t reg, uint16_t val) {
+  (void)reg;
+  (void)val;
+  app_console_print("[MODBUS] patty2_thickness: not implemented\r\n");
+  return 0;
+}
+
+static int reg_cartridge1_status_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge1_status: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge2_status_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge2_status: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge3_status_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge3_status: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge4_status_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge4_status: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge1_remaining_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge1_remaining: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge2_remaining_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge2_remaining: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge3_remaining_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge3_remaining: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge4_remaining_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge4_remaining: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge1_queue_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge1_queue: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge2_queue_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge2_queue: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge3_queue_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge3_queue: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_cartridge4_queue_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] cartridge4_queue: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_door_switch_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] door_switch: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_door_lock_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] door_lock: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_temp_sensor1_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] temp_sensor1: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_temp_sensor2_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] temp_sensor2: not implemented\r\n");
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_error_bitmask_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  app_console_print("[MODBUS] error_bitmask: not implemented\r\n");
+  *val_ptr = 0U;
   return 0;
 }
