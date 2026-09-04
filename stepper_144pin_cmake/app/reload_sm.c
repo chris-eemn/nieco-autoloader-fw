@@ -373,6 +373,9 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
           app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_RECOUNT);
           /* All recounts landed — validate cartridge types before completing. */
           reload->state = RELOAD_VALIDATE;
+          
+          // must feed the loop to run the RELOAD_VALIDATE branch, which is synchronous and does not wait for any events
+          app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
         }
         else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_RECOUNT)) {
           app_console_print("[Reload SM] Recount timeout, pending mask 0x%02X\r\n", (unsigned int)reload->recount_pending_mask);

@@ -211,6 +211,19 @@ stepper_status_enum stepper_move_start(stepper_t* motor, uint32_t steps, uint32_
 uint8_t stepper_is_busy(stepper_t* motor);
 
 /**
+ * @brief  Snapshot the microstep count completed by the current (or most
+ *         recent) move.
+ *
+ *         Reads the ISR-maintained counter with a single-word load, so it is
+ *         safe to call from task context while a move is running. The value is
+ *         reset to 0 by stepper_move_start().
+ *
+ * @param  motor  Handle returned by stepper_init(). May be NULL.
+ * @return Microsteps completed so far, or 0 if motor is NULL.
+ */
+uint32_t stepper_get_steps_done(const stepper_t* motor);
+
+/**
  * @brief  Register a callback invoked from ISR context when a move completes.
  *         Pass NULL to clear a previously registered callback.
  *
