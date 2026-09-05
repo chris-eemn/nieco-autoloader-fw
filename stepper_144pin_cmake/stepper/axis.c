@@ -101,10 +101,10 @@ axis_t* axis_init(stepper_t* motor, encoder_t* encoder, hal_exti_handle_t* hexti
     axis->config.supervisor_period_ms = AXIS_DEFAULT_SUPERVISOR_PERIOD_MS;
   }
   if (axis->config.encoder_counts_numerator == 0U) {
-    axis->config.encoder_counts_numerator = AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR;
+    axis->config.encoder_counts_numerator = AXIS_ENCODER_COUNTS_NUMERATOR;
   }
   if (axis->config.encoder_counts_denominator == 0U) {
-    axis->config.encoder_counts_denominator = AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR;
+    axis->config.encoder_counts_denominator = AXIS_ENCODER_COUNTS_DENOMINATOR;
   }
   if (axis->config.stall_error_counts == 0U) {
     axis->config.stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS;
@@ -174,10 +174,10 @@ void axis_update_config(axis_t* axis, const axis_config_t* config) {
     axis->config.supervisor_period_ms = AXIS_DEFAULT_SUPERVISOR_PERIOD_MS;
   }
   if (axis->config.encoder_counts_numerator == 0U) {
-    axis->config.encoder_counts_numerator = AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR;
+    axis->config.encoder_counts_numerator = AXIS_ENCODER_COUNTS_NUMERATOR;
   }
   if (axis->config.encoder_counts_denominator == 0U) {
-    axis->config.encoder_counts_denominator = AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR;
+    axis->config.encoder_counts_denominator = AXIS_ENCODER_COUNTS_DENOMINATOR;
   }
   if (axis->config.stall_error_counts == 0U) {
     axis->config.stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS;

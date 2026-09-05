@@ -65,11 +65,12 @@
 /** Default supervisor task period in ms, applied when config.supervisor_period_ms == 0. */
 #define AXIS_DEFAULT_SUPERVISOR_PERIOD_MS 25U
 
-/** Bench encoder produces 2.5 counts per microstep at the current 8-microstep setting. */
-#define AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR 5U
-#define AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR 2U
-
-#define AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS 10U
+/** Bench encoder produces 2.5 counts per microstep at the current 8-microstep
+ *  setting. Compile-time on purpose: stored encoder-count parameters (thickness,
+ *  offsets) are meaningless if the ratio changes. Single source of truth for the
+ *  whole stepper stack. */
+#define AXIS_ENCODER_COUNTS_NUMERATOR 5U
+#define AXIS_ENCODER_COUNTS_DENOMINATOR 2U
 
 #define AXIS_DEFAULT_STALL_ERROR_COUNTS 10U
 #define AXIS_DEFAULT_HOME_ERROR_COUNTS 50U

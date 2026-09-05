@@ -93,14 +93,13 @@ static const stepper_gpio_config_t s_motor_pins[STEPPER_SYSTEM_MOTOR_COUNT] = {
     },
 };
 
+/* Compile-time encoder ratio (see axis.h); every other field comes from cal_data
+ * in stepper_system_update_configs(), whose defaults are the single source of
+ * truth. The zero-init here only feeds axis_init(), which runs immediately
+ * before that update. */
 static const axis_config_t s_axis_config = {
-    .supervisor_period_ms = 25U,
-    .encoder_counts_numerator = STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR,
-    .encoder_counts_denominator = STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR,
-    .stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS,
-    .home_error_counts = AXIS_DEFAULT_HOME_ERROR_COUNTS,
-    .backoff_steps = 200U,
-    .home_max_steps = 50000U,
+    .encoder_counts_numerator = AXIS_ENCODER_COUNTS_NUMERATOR,
+    .encoder_counts_denominator = AXIS_ENCODER_COUNTS_DENOMINATOR,
 };
 
 /*******************************************************************************
