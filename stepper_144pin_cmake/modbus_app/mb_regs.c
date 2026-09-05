@@ -25,6 +25,7 @@
 #include "autoloader_types.h"
 #include "cal_data.h"
 #include "cartridge.h"
+#include "stepper_system.h"
 
 /*******************************************************************************
  * Module Macros
@@ -37,6 +38,7 @@
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
+static bool reg_cal_u16_write(uint32_t* field, uint16_t val);
 static int reg_patty1_add_to_queue_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_patty1_add_to_queue_write(uint16_t reg, uint16_t val);
 static int reg_patty2_add_to_queue_read(uint16_t reg, uint16_t* val_ptr);
@@ -230,6 +232,8 @@ mb_holding_reg_array_t reg_array = {
     .max_length = REG_ARRAY_LENGTH,
 };
 
+// file scope to keep it off freertos task stack
+static cal_data_params_t* params = NULL;
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -261,6 +265,25 @@ void mb_regs_deinit(void) {
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
+/**
+ * @brief writes one cal_data u32 field from a u16 Modbus value and persists the whole block
+ * @note stepper_system_update_configs() applies the new value to the axes without a power cycle.
+ * @param field pointer to the cal_data_params_t field; must not be NULL
+ * @param val value received over Modbus
+ * @return bool true if the save was accepted into the w25q queue
+ */
+static bool reg_cal_u16_write(uint32_t* field, uint16_t val) {
+  bool queued = false;
+
+  if (field != NULL) {
+    *field = (uint32_t)val;
+    stepper_system_update_configs();
+    queued = cal_data_save();
+  }
+
+  return queued;
+}
+
 static int fw_ver_reg_read(uint16_t reg, uint16_t* val_ptr) {
   (void)reg;
   *val_ptr = 0x740a;
@@ -389,57 +412,45 @@ static int status_reg_read(uint16_t reg, uint16_t* val_ptr) {
 }
 
 static int reg_push_retract_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
   (void)reg;
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    *val_ptr = (uint16_t)params->push_retract_timeout_ms;
+
+  if (val_ptr == NULL) {
+    return -1;
   }
-  else {
-    *val_ptr = 3000;
-  }
+
+  *val_ptr = (uint16_t)params->push_retract_timeout_ms;
   return 0;
 }
 
 static int reg_push_retract_timeout_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
   (void)reg;
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    params->push_retract_timeout_ms = (uint32_t)val;
-    if (cal_data_save() == true) {
-      app_console_print("[MODBUS] push_retract_timeout_ms = %lu (saved)\r\n", (unsigned long)params->push_retract_timeout_ms);
-    }
-    else {
-      app_console_print("[MODBUS] push_retract_timeout_ms = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->push_retract_timeout_ms);
-    }
-  }
-  return 0;
+
+  return reg_cal_u16_write(&params->push_retract_timeout_ms, val) ? 0 : -1;
 }
 
 static int reg_lift_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
   (void)reg;
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    *val_ptr = (uint16_t)params->lift_timeout_ms;
+
+  if (val_ptr == NULL) {
+    return -1;
   }
-  else {
-    *val_ptr = 5000;
-  }
+
+  *val_ptr = (uint16_t)params->lift_timeout_ms;
   return 0;
 }
 
 static int reg_lift_timeout_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
   (void)reg;
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    params->lift_timeout_ms = (uint32_t)val;
-    if (cal_data_save() == true) {
-      app_console_print("[MODBUS] lift_timeout_ms = %lu (saved)\r\n", (unsigned long)params->lift_timeout_ms);
-    }
-    else {
-      app_console_print("[MODBUS] lift_timeout_ms = %lu -- FLASH SAVE FAILED\r\n", (unsigned long)params->lift_timeout_ms);
-    }
-  }
-  return 0;
+
+  return reg_cal_u16_write(&params->lift_timeout_ms, val) ? 0 : -1;
 }
 
 static int reg_lto_pause_read(uint16_t reg, uint16_t* val_ptr) {
@@ -460,88 +471,108 @@ static int reg_lto_pause_write(uint16_t reg, uint16_t val) {
 }
 
 static int reg_home_threshold_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
   (void)reg;
+
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] home_threshold: not implemented\r\n");
-  *val_ptr = 0U;
+
+  *val_ptr = (uint16_t)params->home_error_counts;
   return 0;
 }
 
 static int reg_home_threshold_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
   (void)reg;
-  (void)val;
-  app_console_print("[MODBUS] home_threshold: not implemented\r\n");
-  return 0;
+
+  return reg_cal_u16_write(&params->home_error_counts, val) ? 0 : -1;
 }
 
 static int reg_load_offset_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
   (void)reg;
+
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] load_offset: not implemented\r\n");
-  *val_ptr = 0U;
+
+  *val_ptr = (uint16_t)params->load_offset;
   return 0;
 }
 
 static int reg_load_offset_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
   (void)reg;
-  (void)val;
-  app_console_print("[MODBUS] load_offset: not implemented\r\n");
-  return 0;
+
+  return reg_cal_u16_write(&params->load_offset, val) ? 0 : -1;
 }
 
 static int reg_stall_threshold_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
   (void)reg;
+
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] stall_threshold: not implemented\r\n");
-  *val_ptr = 0U;
+
+  *val_ptr = (uint16_t)params->stall_error_counts;
   return 0;
 }
 
 static int reg_stall_threshold_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
   (void)reg;
-  (void)val;
-  app_console_print("[MODBUS] stall_threshold: not implemented\r\n");
-  return 0;
+
+  return reg_cal_u16_write(&params->stall_error_counts, val) ? 0 : -1;
 }
 
 static int reg_patty1_thickness_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
   (void)reg;
+
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] patty1_thickness: not implemented\r\n");
-  *val_ptr = 0U;
+
+  *val_ptr = (uint16_t)params->patty_thickness_counts;
   return 0;
 }
 
 static int reg_patty1_thickness_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
   (void)reg;
-  (void)val;
-  app_console_print("[MODBUS] patty1_thickness: not implemented\r\n");
-  return 0;
+
+  return reg_cal_u16_write(&params->patty_thickness_counts, val) ? 0 : -1;
 }
 
 static int reg_patty2_thickness_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
   (void)reg;
+
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] patty2_thickness: not implemented\r\n");
-  *val_ptr = 0U;
+
+  *val_ptr = (uint16_t)params->patty2_thickness_counts;
   return 0;
 }
 
 static int reg_patty2_thickness_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
   (void)reg;
-  (void)val;
-  app_console_print("[MODBUS] patty2_thickness: not implemented\r\n");
-  return 0;
+
+  return reg_cal_u16_write(&params->patty2_thickness_counts, val) ? 0 : -1;
 }
 
 static int reg_cartridge1_status_read(uint16_t reg, uint16_t* val_ptr) {
