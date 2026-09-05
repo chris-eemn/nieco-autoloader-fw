@@ -28,7 +28,6 @@
 /*******************************************************************************
  * Module Macros
  *******************************************************************************/
-#define LIFT_HOMING_SETTLE_DELAY_MS (250U)  // time to wait after lift homing before starting the next step.
 
 /*******************************************************************************
  * Module Typedefs
@@ -135,7 +134,7 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
 
           sm->state = STARTUP_LOCK_DOOR;
           app_sm_port_lock_door();
-          app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK, 5000U);
+          app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK, app_sm_port_get_lock_timeout_ms());
         }
       }
       break;
@@ -177,7 +176,7 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
       app_console_print(homing_cfg_lifter_down.success_log);
       sm->state = (startup_state_enum)homing_cfg_lifter_down.next_state;
       app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
-      app_sm_port_arm_timeout(APP_SM_TIMEOUT_STARTUP_DELAY, LIFT_HOMING_SETTLE_DELAY_MS);
+      app_sm_port_arm_timeout(APP_SM_TIMEOUT_STARTUP_DELAY, app_sm_port_get_startup_settle_delay_ms());
       break;
     }
 
@@ -317,7 +316,7 @@ static void startup_begin_lifter_homing(cartridge_t cartridges[APP_SLOT_COUNT], 
       else {
         app_sm_port_home_lift(&cartridges[i], DIR_LIFTER_UP);
       }
-      app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
+      app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, app_sm_port_get_motion_timeout_ms());
     }
   }
 }
@@ -344,6 +343,6 @@ static void startup_begin_homing(startup_sm_t* sm, cartridge_t cartridges[APP_SL
   sm->state = STARTUP_HOME_PUSHERS;
   for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
     app_sm_port_home_pusher(&cartridges[i]);
-    app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, 10000);
+    app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, app_sm_port_get_motion_timeout_ms());
   }
 }

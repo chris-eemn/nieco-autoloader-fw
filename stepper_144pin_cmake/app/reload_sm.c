@@ -57,15 +57,6 @@ static const homing_phase_cfg_t homing_cfg_lifter_down = {
     .timeout_log = "[Reload SM] Lift homing down timeout\r\n",
 };
 
-/** @brief Door lock/unlock actuator timeout, matching the startup lock scale. */
-#define RELOAD_LOCK_TIMEOUT_MS 30000U
-
-/** @brief Door open/close user-interaction timeout, matching the startup motion scale. */
-#define RELOAD_DOOR_TIMEOUT_MS 100000U
-
-/** @brief Homing motion timeout, matching the startup motion scale. */
-#define RELOAD_MOTION_TIMEOUT_MS 10000U
-
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -192,7 +183,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
             app_console_print("[Reload SM] Locking door\r\n");
             reload->state = RELOAD_LOCK_DOOR;
             app_sm_port_lock_door();
-            (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_LOCK, RELOAD_LOCK_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
+            (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_LOCK, app_sm_port_get_lock_timeout_ms(), APP_FAULT_CODE_RELOAD_FAILED);
           }
         }
         break;
@@ -237,7 +228,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
         for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
           app_sm_port_home_lift(&cartridges[slot], DIR_LIFTER_DOWN);
         }
-        (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_MOTION, RELOAD_MOTION_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
+        (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_MOTION, app_sm_port_get_motion_timeout_ms(), APP_FAULT_CODE_RELOAD_FAILED);
         break;
       }
 
@@ -250,7 +241,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
         reload->state = (reload_state_enum)homing_cfg_lifter_down.next_state;
         app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
         app_sm_port_unlock_door();
-        (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_UNLOCK, RELOAD_LOCK_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
+        (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_UNLOCK, app_sm_port_get_lock_timeout_ms(), APP_FAULT_CODE_RELOAD_FAILED);
         break;
       }
 
@@ -258,7 +249,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
         if (event->id == APP_EV_LOCK_RELEASED) {
           (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
           reload->state = RELOAD_WAIT_OPEN;
-          (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_UNLOCK, RELOAD_DOOR_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
+          (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_UNLOCK, app_sm_port_get_door_timeout_ms(), APP_FAULT_CODE_RELOAD_FAILED);
         }
         else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_UNLOCK)) {
           app_console_print("[Reload SM] Unlock door timeout\r\n");
@@ -272,7 +263,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
         if (event->id == APP_EV_DOOR_OPENED) {
           (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
           reload->state = RELOAD_WAIT_CLOSE;
-          (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_UNLOCK, RELOAD_DOOR_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
+          (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_UNLOCK, app_sm_port_get_door_timeout_ms(), APP_FAULT_CODE_RELOAD_FAILED);
         }
         else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_UNLOCK)) {
           app_console_print("[Reload SM] Wait door open timeout\r\n");
@@ -287,7 +278,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
           (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
           reload->state = RELOAD_LOCK_DOOR_RECOUNT;
           app_sm_port_lock_door();
-          (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_LOCK, RELOAD_LOCK_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
+          (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_LOCK, app_sm_port_get_lock_timeout_ms(), APP_FAULT_CODE_RELOAD_FAILED);
         }
         else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_UNLOCK)) {
           app_console_print("[Reload SM] Wait door close timeout\r\n");
@@ -328,7 +319,7 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
           (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
           reload->state = RELOAD_WAIT_CLOSE;
           app_sm_port_unlock_door();
-          (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_UNLOCK, RELOAD_DOOR_TIMEOUT_MS, APP_FAULT_CODE_RELOAD_FAILED);
+          (void)reload_arm_timeout(reload, &result, APP_SM_TIMEOUT_UNLOCK, app_sm_port_get_door_timeout_ms(), APP_FAULT_CODE_RELOAD_FAILED);
         }
         else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_LOCK)) {
           app_console_print("[Reload SM] Lock door timeout\r\n");
@@ -470,7 +461,7 @@ static homing_event_result_enum reload_handle_homing_event(reload_sm_t* reload, 
 }
 
 static bool reload_arm_recount_timeout(void) {
-  static const uint32_t default_recount_timeout_ms = 120000U;
+  static const uint32_t default_recount_timeout_ms = 120000U; /* = cal_data default */
   uint32_t timeout_ms = default_recount_timeout_ms;
   cal_data_params_t* params = cal_data_get();
 
@@ -491,7 +482,7 @@ static void reload_begin_homing(reload_sm_t* sm, cartridge_t cartridges[APP_SLOT
   /* A failed arm fails the reload before any homing event can arrive. Halt
    * the pusher moves just commanded — a move is demonstrably in flight, and
    * the arm failure means no watchdog will bound it. */
-  if (app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, RELOAD_MOTION_TIMEOUT_MS) == false) {
+  if (app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, app_sm_port_get_motion_timeout_ms()) == false) {
     app_console_print("[Reload SM] Failed to arm pusher homing timeout\r\n");
     app_sm_port_halt_all_motion(cartridges);
     sm->state = RELOAD_FAILED;
