@@ -71,6 +71,16 @@ bool app_task_post_from_isr(const app_event_t* event);
 void app_task_register_axis_event_cb(void);
 
 /**
+ * @brief Get the live cartridge array owned by the application state machine.
+ * @return Pointer to the first element of an APP_SLOT_COUNT-element array of
+ *         cartridges. The array is static storage and is never NULL. Read the
+ *         result as a read-only snapshot: the Control task owns the state
+ *         machine and mutates these fields between events, so a single field
+ *         read is atomic but a multi-field read can straddle a state change.
+ */
+const cartridge_t* app_task_get_cartridges(void);
+
+/**
  * @brief Convert an application event ID to a string for logging.
  * @param event_id Event ID to convert.
  * @return Pointer to a static string describing the event ID.
