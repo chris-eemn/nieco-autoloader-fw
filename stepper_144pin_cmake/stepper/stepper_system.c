@@ -36,12 +36,6 @@
 #define IO_EXPANDER_M0 (0x01U)
 #define IO_EXPANDER_M1 (0x02U)
 
-/* Bench hardware: 2.5 encoder counts per microstep. Production gearing and
- * encoder resolution will replace these values after mechanical integration. */
-#define STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR (5U)
-#define STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR (2U)
-#define STEPPER_SYSTEM_HOMING_SETTLING_DELAY_DEFAULT_MS (100)  // ms
-
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -152,38 +146,20 @@ void stepper_system_update_configs(void) {
 
   for (size_t i = 0U; i < STEPPER_SYSTEM_MOTOR_COUNT; i++) {
     if (s_axes[i] != NULL) {
-      axis_config_t axis_config = s_axis_config;
-      axis_config.backoff_steps = cal_params_ptr->home_backoff_steps;
-      axis_config.home_max_steps = cal_params_ptr->home_max_steps;
-      axis_config.stall_error_counts = cal_params_ptr->stall_error_counts;
-      axis_config.home_error_counts = cal_params_ptr->home_error_counts;
-      axis_config.supervisor_period_ms = cal_params_ptr->supervisor_period_ms;
-      axis_config.settle_delay_ms = cal_params_ptr->home_settle_delay_ms;
-
-      if (axis_config.supervisor_period_ms == 0U) {
-        axis_config.supervisor_period_ms = AXIS_DEFAULT_SUPERVISOR_PERIOD_MS;
-      }
-      if (axis_config.stall_error_counts == 0U) {
-        axis_config.stall_error_counts = AXIS_DEFAULT_STALL_ERROR_COUNTS;
-      }
-      if (axis_config.home_error_counts == 0U) {
-        axis_config.home_error_counts = AXIS_DEFAULT_HOME_ERROR_COUNTS;
-      }
-      if (axis_config.backoff_steps == 0U) {
-        axis_config.backoff_steps = 200U;
-      }
-      if (axis_config.home_max_steps == 0U) {
-        axis_config.home_max_steps = 5000U;
-      }
-      if (axis_config.encoder_counts_numerator == 0U) {
-        axis_config.encoder_counts_numerator = STEPPER_SYSTEM_ENCODER_COUNTS_NUMERATOR;
-      }
-      if (axis_config.encoder_counts_denominator == 0U) {
-        axis_config.encoder_counts_denominator = STEPPER_SYSTEM_ENCODER_COUNTS_DENOMINATOR;
-      }
-      if (axis_config.settle_delay_ms == 0U) {
-        axis_config.settle_delay_ms = STEPPER_SYSTEM_HOMING_SETTLING_DELAY_DEFAULT_MS;
-      }
+      /* cal_data defaults are the single source of truth: every field is taken
+       * verbatim, with no per-field fallback literals. axis_update_config()
+       * still substitutes the compile-time default for a zero-valued
+       * supervisor period. */
+      axis_config_t axis_config = {
+          .supervisor_period_ms = cal_params_ptr->supervisor_period_ms,
+          .encoder_counts_numerator = AXIS_ENCODER_COUNTS_NUMERATOR,
+          .encoder_counts_denominator = AXIS_ENCODER_COUNTS_DENOMINATOR,
+          .stall_error_counts = cal_params_ptr->stall_error_counts,
+          .home_error_counts = cal_params_ptr->home_error_counts,
+          .backoff_steps = cal_params_ptr->home_backoff_steps,
+          .home_max_steps = cal_params_ptr->home_max_steps,
+          .settle_delay_ms = cal_params_ptr->home_settle_delay_ms,
+      };
 
       axis_update_config(s_axes[i], &axis_config);
     }

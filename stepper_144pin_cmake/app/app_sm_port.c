@@ -92,54 +92,34 @@ void app_sm_port_unlock_door(void) {
 }
 
 /**
- * @brief Homing speed from cal_data, with the historical default as fallback.
- * @return Configured home_rpm, or 10 when cal_data is unavailable or unset.
+ * @brief Homing speed from cal_data.
+ * @return Configured home_rpm.
  */
 static uint32_t app_sm_port_get_home_rpm(void) {
-  static const uint32_t default_home_rpm = 10U;
-
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->home_rpm != 0U)) {
-    return params->home_rpm;
-  }
-
-  return default_home_rpm;
+  return cal_data_get()->home_rpm;
 }
 
 /**
- * @brief Pusher move speed from cal_data, falling back to the default move pair.
- * @return Configured pusher_rpm, or default_move_rpm when unset, or 5 when
- *         cal_data is unavailable or both are unset.
+ * @brief Pusher move speed from cal_data.
+ * @return Configured pusher_rpm, or default_move_rpm when pusher_rpm is unset.
+ *         cal_data_sanitize_zeros() keeps both non-zero.
  */
 static uint32_t app_sm_port_get_pusher_rpm(void) {
-  static const uint32_t default_rpm = 5U;
-
   cal_data_params_t* params = cal_data_get();
-  if (params != NULL) {
-    if (params->pusher_rpm != 0U) {
-      return params->pusher_rpm;
-    }
-    if (params->default_move_rpm != 0U) {
-      return params->default_move_rpm;
-    }
+
+  if (params->pusher_rpm != 0U) {
+    return params->pusher_rpm;
   }
 
-  return default_rpm;
+  return params->default_move_rpm;
 }
 
 /**
- * @brief Pusher move distance from cal_data, with the historical default as fallback.
- * @return Configured default_move_steps, or 800 when cal_data is unavailable or unset.
+ * @brief Pusher move distance from cal_data.
+ * @return Configured default_move_steps.
  */
 static uint32_t app_sm_port_get_default_move_steps(void) {
-  static const uint32_t default_steps = 800U;
-
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->default_move_steps != 0U)) {
-    return params->default_move_steps;
-  }
-
-  return default_steps;
+  return cal_data_get()->default_move_steps;
 }
 
 void app_sm_port_home_pusher(cartridge_t* slot) {
@@ -342,76 +322,33 @@ const char* app_sm_port_fault_code_to_str(app_fault_code_enum fault_code) {
   return app_fault_code_names[fault_code];
 }
 
+/* The getters below read cal_data_get() directly. Its pointer is static storage
+ * and never NULL, and cal_data_init() provisions the RAM copy with the factory
+ * defaults whenever flash holds nothing usable, so the defaults in cal_data.c
+ * are the single source of truth -- no fallback literals here. */
+
 uint32_t app_sm_port_get_push_retract_timeout_ms(void) {
-  static const uint32_t default_timeout_ms = 3000U;
-
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->push_retract_timeout_ms != 0U)) {
-    return params->push_retract_timeout_ms;
-  }
-
-  return default_timeout_ms;
+  return cal_data_get()->push_retract_timeout_ms;
 }
 
 uint32_t app_sm_port_get_lift_timeout_ms(void) {
-  static const uint32_t default_timeout_ms = 5000U;
-
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->lift_timeout_ms != 0U)) {
-    return params->lift_timeout_ms;
-  }
-
-  return default_timeout_ms;
+  return cal_data_get()->lift_timeout_ms;
 }
 
 uint32_t app_sm_port_get_lock_timeout_ms(void) {
-  static const uint32_t default_timeout_ms = 30000U;
-  uint32_t result = default_timeout_ms;
-
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->lock_timeout_ms != 0U)) {
-    result = params->lock_timeout_ms;
-  }
-
-  return result;
+  return cal_data_get()->lock_timeout_ms;
 }
 
 uint32_t app_sm_port_get_motion_timeout_ms(void) {
-  static const uint32_t default_timeout_ms = 10000U;
-  uint32_t result = default_timeout_ms;
-
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->motion_timeout_ms != 0U)) {
-    result = params->motion_timeout_ms;
-  }
-
-  return result;
+  return cal_data_get()->motion_timeout_ms;
 }
 
 uint32_t app_sm_port_get_door_timeout_ms(void) {
-  /* Matches the cal_data default (u16 Modbus ceiling); the u32 design value
-   * 100000 returns once unit scaling lands. */
-  static const uint32_t default_timeout_ms = 65535U;
-  uint32_t result = default_timeout_ms;
-
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->door_timeout_ms != 0U)) {
-    result = params->door_timeout_ms;
-  }
-
-  return result;
+  return cal_data_get()->door_timeout_ms;
 }
 
 uint32_t app_sm_port_get_startup_settle_delay_ms(void) {
-  static const uint32_t default_delay_ms = 250U;
-  uint32_t result = default_delay_ms;
-
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->startup_settle_delay_ms != 0U)) {
-    result = params->startup_settle_delay_ms;
-  }
-
-  return result;
+  return cal_data_get()->startup_settle_delay_ms;
 }
 
 /*******************************************************************************

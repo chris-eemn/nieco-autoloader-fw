@@ -461,15 +461,9 @@ static homing_event_result_enum reload_handle_homing_event(reload_sm_t* reload, 
 }
 
 static bool reload_arm_recount_timeout(void) {
-  static const uint32_t default_recount_timeout_ms = 120000U; /* = cal_data default */
-  uint32_t timeout_ms = default_recount_timeout_ms;
-  cal_data_params_t* params = cal_data_get();
-
-  if ((params != NULL) && (params->recount_timeout_ms != 0U)) {
-    timeout_ms = params->recount_timeout_ms;
-  }
-
-  return app_sm_port_arm_timeout(APP_SM_TIMEOUT_RECOUNT, timeout_ms);
+  /* cal_data is the single source of truth: cal_data_init() provisions the
+   * factory defaults whenever flash holds nothing usable. */
+  return app_sm_port_arm_timeout(APP_SM_TIMEOUT_RECOUNT, cal_data_get()->recount_timeout_ms);
 }
 
 static void reload_begin_homing(reload_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]) {

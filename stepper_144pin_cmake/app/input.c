@@ -31,8 +31,6 @@
  * Module Macros
  *******************************************************************************/
 
-#define DOOR_DEBOUNCE_DEFAULT_MS (50U)
-
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -41,10 +39,15 @@
  * Module Variable Definitions
  *******************************************************************************/
 
-/* Debounce window in milliseconds, sampled once from cal_data in input_init().
- * Debounce timing is poll-sensitive, so the value is latched at boot: a
- * runtime change to cal_data.door_debounce_ms takes effect on the next boot. */
-static uint32_t s_door_debounce_ms = DOOR_DEBOUNCE_DEFAULT_MS;
+/* Debounce window in milliseconds, latched from cal_data in input_init() before the
+ * input task is created -- the zero init is never read. Requires cal_data_init() to
+ * have run first (the bringup task orders them); a reordered boot would latch a zero
+ * debounce window. Debounce timing is poll-sensitive, so the value is sampled at
+ * boot: a runtime change to cal_data.door_debounce_ms takes effect on the next boot.
+ * cal_data is the single source of truth -- cal_data_init() provisions the factory
+ * defaults whenever flash holds nothing usable, and repairs a zero door_debounce_ms
+ * to its default. */
+static uint32_t s_door_debounce_ms;
 
 /* Binary semaphore: the door EXTI ISR gives this to wake the input task. */
 static SemaphoreHandle_t s_door_exti_sem = NULL;
@@ -89,16 +92,10 @@ void input_init(void) {
   configASSERT(s_door_exti_sem != NULL);
 
   /* Latch the debounce window from cal_data once, at boot. cal_data_init()
-   * runs before input_init() in the bringup task. Debounce timing is
-   * poll-sensitive, so a runtime change to cal_data.door_debounce_ms only
-   * takes effect on the next boot. */
-  cal_data_params_t* params = cal_data_get();
-  if ((params != NULL) && (params->door_debounce_ms != 0U)) {
-    s_door_debounce_ms = params->door_debounce_ms;
-  }
-  else {
-    s_door_debounce_ms = DOOR_DEBOUNCE_DEFAULT_MS;
-  }
+   * runs before input_init() in the bringup task, so the factory defaults are
+   * already provisioned. Debounce timing is poll-sensitive, so a runtime
+   * change to cal_data.door_debounce_ms only takes effect on the next boot. */
+  s_door_debounce_ms = cal_data_get()->door_debounce_ms;
 
   /* Seed the polled-pin debounce state from the actual levels so the first
    * poll is not treated as an edge against the zero-initialised defaults.
