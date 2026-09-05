@@ -25,6 +25,7 @@
 #include "autoloader_types.h"
 #include "cal_data.h"
 #include "cartridge.h"
+#include "input.h"
 #include "stepper_system.h"
 
 /*******************************************************************************
@@ -64,6 +65,9 @@ static int reg_patty1_thickness_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_patty1_thickness_write(uint16_t reg, uint16_t val);
 static int reg_patty2_thickness_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_patty2_thickness_write(uint16_t reg, uint16_t val);
+static int reg_cartridge_type_read(uint16_t reg, uint16_t* val_ptr, uint8_t slot_index);
+static int reg_cartridge_remaining_read(uint16_t reg, uint16_t* val_ptr, uint8_t slot_index);
+static int reg_cartridge_queue_read(uint16_t reg, uint16_t* val_ptr, uint8_t slot_index);
 static int reg_cartridge1_status_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_cartridge2_status_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_cartridge3_status_read(uint16_t reg, uint16_t* val_ptr);
@@ -680,124 +684,127 @@ static int reg_patty2_thickness_write(uint16_t reg, uint16_t val) {
   return reg_cal_u16_write(&params->patty2_thickness_counts, val) ? 0 : -1;
 }
 
-static int reg_cartridge1_status_read(uint16_t reg, uint16_t* val_ptr) {
+/**
+ * @brief Read one cartridge's type as a read-only snapshot from the Modbus context.
+ * @param reg Register id (unused — the slot is fixed by the per-register wrapper).
+ * @param val_ptr Output: cartridge_type_t value (0 = empty, 1 = whopper, 2 = whopper JR).
+ * @param slot_index Cartridge index into the app_task_get_cartridges() array (0-based).
+ * @return 0 on success, -1 on invalid output pointer or out-of-range slot.
+ */
+static int reg_cartridge_type_read(uint16_t reg, uint16_t* val_ptr, uint8_t slot_index) {
+  const cartridge_t* cartridges = NULL;
+
   (void)reg;
+
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] cartridge1_status: not implemented\r\n");
-  *val_ptr = 0U;
+
+  cartridges = app_task_get_cartridges();
+  if ((cartridges == NULL) || (slot_index >= APP_SLOT_COUNT)) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)cartridges[slot_index].type;
   return 0;
+}
+
+/**
+ * @brief Read one cartridge's remaining patty count as a read-only snapshot.
+ * @param reg Register id (unused — the slot is fixed by the per-register wrapper).
+ * @param val_ptr Output: cartridge_t.remaining.
+ * @param slot_index Cartridge index into the app_task_get_cartridges() array (0-based).
+ * @return 0 on success, -1 on invalid output pointer or out-of-range slot.
+ */
+static int reg_cartridge_remaining_read(uint16_t reg, uint16_t* val_ptr, uint8_t slot_index) {
+  const cartridge_t* cartridges = NULL;
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  cartridges = app_task_get_cartridges();
+  if ((cartridges == NULL) || (slot_index >= APP_SLOT_COUNT)) {
+    return -1;
+  }
+
+  *val_ptr = cartridges[slot_index].remaining;
+  return 0;
+}
+
+/**
+ * @brief Read one cartridge's dispense queue depth as a read-only snapshot.
+ * @param reg Register id (unused — the slot is fixed by the per-register wrapper).
+ * @param val_ptr Output: cartridge_t.pending.
+ * @param slot_index Cartridge index into the app_task_get_cartridges() array (0-based).
+ * @return 0 on success, -1 on invalid output pointer or out-of-range slot.
+ */
+static int reg_cartridge_queue_read(uint16_t reg, uint16_t* val_ptr, uint8_t slot_index) {
+  const cartridge_t* cartridges = NULL;
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  cartridges = app_task_get_cartridges();
+  if ((cartridges == NULL) || (slot_index >= APP_SLOT_COUNT)) {
+    return -1;
+  }
+
+  *val_ptr = cartridges[slot_index].pending;
+  return 0;
+}
+
+static int reg_cartridge1_status_read(uint16_t reg, uint16_t* val_ptr) {
+  return reg_cartridge_type_read(reg, val_ptr, 0U);
 }
 
 static int reg_cartridge2_status_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge2_status: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_type_read(reg, val_ptr, 1U);
 }
 
 static int reg_cartridge3_status_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge3_status: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_type_read(reg, val_ptr, 2U);
 }
 
 static int reg_cartridge4_status_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge4_status: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_type_read(reg, val_ptr, 3U);
 }
 
 static int reg_cartridge1_remaining_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge1_remaining: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_remaining_read(reg, val_ptr, 0U);
 }
 
 static int reg_cartridge2_remaining_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge2_remaining: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_remaining_read(reg, val_ptr, 1U);
 }
 
 static int reg_cartridge3_remaining_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge3_remaining: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_remaining_read(reg, val_ptr, 2U);
 }
 
 static int reg_cartridge4_remaining_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge4_remaining: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_remaining_read(reg, val_ptr, 3U);
 }
 
 static int reg_cartridge1_queue_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge1_queue: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_queue_read(reg, val_ptr, 0U);
 }
 
 static int reg_cartridge2_queue_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge2_queue: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_queue_read(reg, val_ptr, 1U);
 }
 
 static int reg_cartridge3_queue_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge3_queue: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_queue_read(reg, val_ptr, 2U);
 }
 
 static int reg_cartridge4_queue_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] cartridge4_queue: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_cartridge_queue_read(reg, val_ptr, 3U);
 }
 
 static int reg_door_switch_read(uint16_t reg, uint16_t* val_ptr) {
@@ -805,8 +812,8 @@ static int reg_door_switch_read(uint16_t reg, uint16_t* val_ptr) {
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] door_switch: not implemented\r\n");
-  *val_ptr = 0U;
+  /* Live door state (raw pin level captured on the last EXTI edge): 0 = open, 1 = closed. */
+  *val_ptr = (input_get_door_closed() == true) ? 1U : 0U;
   return 0;
 }
 
@@ -815,8 +822,8 @@ static int reg_door_lock_read(uint16_t reg, uint16_t* val_ptr) {
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] door_lock: not implemented\r\n");
-  *val_ptr = 0U;
+  /* Live lock state (raw pin level captured on the last poll): 0 = unlocked, 1 = locked. */
+  *val_ptr = (input_get_lock_confirmed() == true) ? 1U : 0U;
   return 0;
 }
 
@@ -1157,12 +1164,87 @@ static int reg_door_debounce_ms_write(uint16_t reg, uint16_t val) {
   return reg_cal_u16_write(&params->door_debounce_ms, val) ? 0 : -1;
 }
 
+/**
+ * @brief Read the error bitmask (sheet Register 18).
+ *
+ * Bits are LIVE, not latched: each bit reflects the current condition at read
+ * time. The sheet leaves latching unspecified and there is no acknowledge/clear
+ * register, so no bit is sticky.
+ *
+ * Bit layout (sheet bits b0-b3 kept as specified; undefined bits b4+ repurposed
+ * for app faults):
+ *   b0  Temp 1 Error          — 0: no sensor hardware/driver exists
+ *   b1  Temp 2 Error          — 0: same
+ *   b2  Cartridge 1&2 mismatch — lane type compare (cartridge_validate_lane_pairs logic)
+ *   b3  Cartridge 3&4 mismatch — same
+ *   b4  App fault active      — published app_sm_t.fault_code != 0
+ *   b5  Cartridge 1 faulted   — cartridge_t.faulted
+ *   b6  Cartridge 2 faulted   — same
+ *   b7  Cartridge 3 faulted   — same
+ *   b8  Cartridge 4 faulted   — same
+ *   b9  Door open             — !input_get_door_closed()
+ *   b10 Lock not confirmed    — !input_get_lock_confirmed()
+ *   b11-b15 Reserved          — read 0
+ *
+ * @param reg Register id (unused).
+ * @param val_ptr Output bitmask.
+ * @return 0 on success, -1 on invalid output pointer.
+ */
 static int reg_error_bitmask_read(uint16_t reg, uint16_t* val_ptr) {
+  const cartridge_t* cartridges = NULL;
+  uint16_t mask = 0U;
+
   (void)reg;
+
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] error_bitmask: not implemented\r\n");
-  *val_ptr = 0U;
+
+  /* b0/b1: no temperature sensor hardware or driver exists — always 0. */
+
+  /* b2/b3: lane type mismatch, same rule as cartridge_validate_lane_pairs():
+   * two non-empty cartridges in a lane with different types. Read-only here —
+   * the state machine owns faulting. The APP_SLOT_COUNT guards are compile-time:
+   * with the current single-slot build (APP_SLOT_COUNT == 1) the comparisons
+   * fold to false and both branches are optimized out; b3 additionally requires
+   * all four slots to exist. */
+  cartridges = app_task_get_cartridges();
+  if ((cartridges != NULL) && (APP_SLOT_COUNT >= 2U)) {
+    if ((cartridges[0].type != CARTRIDGE_TYPE_EMPTY) && (cartridges[1].type != CARTRIDGE_TYPE_EMPTY) &&
+        (cartridges[0].type != cartridges[1].type)) {
+      mask |= (1U << 2);
+    }
+    if ((APP_SLOT_COUNT >= 4U) && (cartridges[2].type != CARTRIDGE_TYPE_EMPTY) && (cartridges[3].type != CARTRIDGE_TYPE_EMPTY) &&
+        (cartridges[2].type != cartridges[3].type)) {
+      mask |= (1U << 3);
+    }
+  }
+
+  /* b4: app fault active — published fault code (cache updated by
+   * app_sm_port_publish_state on every state transition and dispatch). */
+  if (app_sm_port_get_fault_code() != (uint16_t)APP_FAULT_CODE_NONE) {
+    mask |= (1U << 4);
+  }
+
+  /* b5-b8: per-cartridge faulted flags. */
+  if (cartridges != NULL) {
+    for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+      if (cartridges[slot].faulted == true) {
+        mask |= (uint16_t)(1U << (5U + (uint16_t)slot));
+      }
+    }
+  }
+
+  /* b9/b10: live door and lock inputs. */
+  if (input_get_door_closed() == false) {
+    mask |= (1U << 9);
+  }
+  if (input_get_lock_confirmed() == false) {
+    mask |= (1U << 10);
+  }
+
+  /* b11-b15: reserved, read 0. */
+
+  *val_ptr = mask;
   return 0;
 }

@@ -51,24 +51,25 @@ typedef enum {
   REG_STALL_THRESHOLD = 10,     /* stall error threshold (cal_data.stall_error_counts) */
   REG_PATTY1_THICKNESS = 11,    /* per-patty travel for Patty 1 (cal_data.patty_thickness_counts) */
   REG_PATTY2_THICKNESS = 12,    /* per-patty travel for Patty 2 (cal_data.patty2_thickness_counts) */
-  REG_CARTRIDGE1_STATUS = 13,   /* cartridge 1 type (future: cartridge_read_type_sensors) */
-  REG_CARTRIDGE2_STATUS = 14,   /* cartridge 2 type (future: cartridge_read_type_sensors) */
-  REG_CARTRIDGE3_STATUS = 15,   /* cartridge 3 type (future: cartridge_read_type_sensors) */
-  REG_CARTRIDGE4_STATUS = 16,   /* cartridge 4 type (future: cartridge_read_type_sensors) */
-  REG_CARTRIDGE1_REMAINING = 17, /* cartridge 1 patty remaining (future: cartridge_t.remaining) */
-  REG_CARTRIDGE2_REMAINING = 18, /* cartridge 2 patty remaining (future: cartridge_t.remaining) */
-  REG_CARTRIDGE3_REMAINING = 19, /* cartridge 3 patty remaining (future: cartridge_t.remaining) */
-  REG_CARTRIDGE4_REMAINING = 20, /* cartridge 4 patty remaining (future: cartridge_t.remaining) */
-  REG_CARTRIDGE1_QUEUE = 21,    /* cartridge 1 dispense queue depth (future: cartridge_t.pending) */
-  REG_CARTRIDGE2_QUEUE = 22,    /* cartridge 2 dispense queue depth (future: cartridge_t.pending) */
-  REG_CARTRIDGE3_QUEUE = 23,    /* cartridge 3 dispense queue depth (future: cartridge_t.pending) */
-  REG_CARTRIDGE4_QUEUE = 24,    /* cartridge 4 dispense queue depth (future: cartridge_t.pending) */
-  REG_DOOR_SWITCH = 25,         /* 0 = open, 1 = closed (future: input_get_door_closed) */
-  REG_DOOR_LOCK = 26,           /* 0 = unlocked, 1 = locked (future: input_get_lock_confirmed) */
+  REG_CARTRIDGE1_STATUS = 13,   /* cartridge 1 type */
+  REG_CARTRIDGE2_STATUS = 14,   /* cartridge 2 type */
+  REG_CARTRIDGE3_STATUS = 15,   /* cartridge 3 type */
+  REG_CARTRIDGE4_STATUS = 16,   /* cartridge 4 type */
+  REG_CARTRIDGE1_REMAINING = 17, /* cartridge 1 patty remaining */
+  REG_CARTRIDGE2_REMAINING = 18, /* cartridge 2 patty remaining */
+  REG_CARTRIDGE3_REMAINING = 19, /* cartridge 3 patty remaining */
+  REG_CARTRIDGE4_REMAINING = 20, /* cartridge 4 patty remaining */
+  REG_CARTRIDGE1_QUEUE = 21,    /* cartridge 1 dispense queue depth */
+  REG_CARTRIDGE2_QUEUE = 22,    /* cartridge 2 dispense queue depth */
+  REG_CARTRIDGE3_QUEUE = 23,    /* cartridge 3 dispense queue depth */
+  REG_CARTRIDGE4_QUEUE = 24,    /* cartridge 4 dispense queue depth */
+  REG_DOOR_SWITCH = 25,         /* 0 = open, 1 = closed  */
+  REG_DOOR_LOCK = 26,           /* 0 = unlocked, 1 = locked  */
   REG_TEMP_SENSOR1 = 27,        /* 0.1 deg F signed (no sensor hardware/driver exists) */
   REG_TEMP_SENSOR2 = 28,        /* 0.1 deg F signed (no sensor hardware/driver exists) */
-  REG_ERROR_BITMASK = 29,       /* error bits (future: synthesize from app_sm_t.fault_code,
-                                 * cartridge_t.faulted, cartridge_validate_lane_pairs) */
+  REG_ERROR_BITMASK = 29,       /* live error bits: b2/b3 lane mismatch, b4 app fault,
+                                 * b5-b8 cartridge faulted, b9 door open, b10 lock not
+                                 * confirmed (see reg_error_bitmask_read for the full map) */
 
   // Cal-data backed registers.
   REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS = 75,
