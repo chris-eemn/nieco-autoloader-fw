@@ -377,6 +377,8 @@ void mb_regs_deinit(void) {
 /**
  * @brief writes one cal_data u32 field from a u16 Modbus value and persists the whole block
  * @note stepper_system_update_configs() applies the new value to the axes without a power cycle.
+ * @note a zero is repaired to its factory default by cal_data_sanitize_zeros() BEFORE the
+ *       block is staged, so a rejected zero is never persisted and the axes never run with it.
  * @param field pointer to the cal_data_params_t field; must not be NULL
  * @param val value received over Modbus
  * @return bool true if the save was accepted into the w25q queue
@@ -386,6 +388,7 @@ static bool reg_cal_u16_write(uint32_t* field, uint16_t val) {
 
   if (field != NULL) {
     *field = (uint32_t)val;
+    cal_data_sanitize_zeros();
     stepper_system_update_configs();
     queued = cal_data_save();
   }

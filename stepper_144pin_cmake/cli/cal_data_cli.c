@@ -110,8 +110,11 @@ void cal_data_cli_set_handler(char* param, int32_t val) {
       app_console_print("[PARAM] Unknown param: %s\r\n", param);
     }
     else {
-      /* No range or sign checking by design -- see the validation note in cal_data_cli.h. */
+      /* No range or sign checking by design -- see the validation note in cal_data_cli.h.
+       * A zero is repaired to its factory default by cal_data_sanitize_zeros() before the
+       * block is staged, so a rejected zero is never persisted. */
       *value = (uint32_t)val;
+      cal_data_sanitize_zeros();
 
       /* Persisted here rather than on a separate command: a set the operator has to remember to
        * follow with a save is a set that silently reverts on the next power cycle. On failure the
@@ -158,11 +161,19 @@ void cal_data_cli_reset_handler(void) {
     app_console_print("[PARAM] Factory defaults loaded and saved.\r\n");
   }
   else if (cal_data_save_status() == CAL_DATA_SAVE_PENDING) {
+    /* The save is queued and still running -- it may land after this message. Do not call
+     * it a failure; say it has not finished. */
     app_console_print("[PARAM] Factory defaults loaded -- SAVE STILL PENDING, check 'param list' next boot\r\n");
   }
   else {
     app_console_print("[PARAM] Factory defaults loaded -- FLASH SAVE FAILED, RAM only\r\n");
   }
+
+  /* Same as 'param set': the RAM copy changed, so the axes pick the new values up now
+   * rather than keeping the previous ones until the next boot. Runs on the console RX
+   * task, like the 'param set' path above -- the param commands are bench tools and
+   * assume the machine is idle while they run. */
+  stepper_system_update_configs();
 }
 
 /*******************************************************************************
