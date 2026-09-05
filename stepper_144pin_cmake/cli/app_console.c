@@ -65,6 +65,7 @@ static const console_command_t s_helpCmd = {
     .handler = console_cmd_help,
 };
 
+static tx_message_t msg;
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
@@ -83,7 +84,6 @@ void app_console_init(void) {
 }
 
 void app_console_print(const char* fmt, ...) {
-  tx_message_t msg;
   va_list args;
   int32_t n;
   int32_t prefix_len;
@@ -134,8 +134,6 @@ void app_console_register_command(const console_command_t* cmd) {
  */
 static void console_tx_task(void* arg) {
   (void)arg;
-  tx_message_t msg;
-
   for (;;) {
     if (xQueueReceive(s_txQueue, &msg, portMAX_DELAY) == pdTRUE) {
       console_port_transmit((uint8_t*)msg.data, msg.len, 1000);
