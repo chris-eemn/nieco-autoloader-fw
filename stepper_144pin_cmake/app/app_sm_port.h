@@ -156,6 +156,14 @@ void app_sm_port_publish_state(const app_sm_t* sm);
 app_sm_status_enum app_sm_port_get_status(void);
 
 /**
+ * @brief Get the last published application fault code.
+ * @return The app_sm_t.fault_code value maintained by
+ *         app_sm_port_publish_state (0 = APP_FAULT_CODE_NONE), safe to
+ *         read from the Modbus context.
+ */
+uint16_t app_sm_port_get_fault_code(void);
+
+/**
  * @brief Convert a timeout ID to a human-readable string.
  * @param timeout_id Timeout ID to convert.
  * @return Pointer to a constant string describing the timeout ID.
@@ -182,6 +190,35 @@ uint32_t app_sm_port_get_push_retract_timeout_ms(void);
  *         unavailable or the value is zero.
  */
 uint32_t app_sm_port_get_lift_timeout_ms(void);
+
+/**
+ * @brief Get the door-lock wait timeout from calibration data.
+ * @return Timeout in milliseconds. Falls back to 30000 if cal_data is
+ *         unavailable or the value is zero.
+ */
+uint32_t app_sm_port_get_lock_timeout_ms(void);
+
+/**
+ * @brief Get the motion/homing timeout from calibration data.
+ * @return Timeout in milliseconds. Falls back to 10000 if cal_data is
+ *         unavailable or the value is zero.
+ */
+uint32_t app_sm_port_get_motion_timeout_ms(void);
+
+/**
+ * @brief Get the door-interaction timeout from calibration data.
+ * @return Timeout in milliseconds. Falls back to 65535 (the cal_data default,
+ *         the u16 Modbus ceiling) if cal_data is unavailable or the value is
+ *         zero.
+ */
+uint32_t app_sm_port_get_door_timeout_ms(void);
+
+/**
+ * @brief Get the post-home startup settle delay from calibration data.
+ * @return Delay in milliseconds. Falls back to 250 if cal_data is
+ *         unavailable or the value is zero.
+ */
+uint32_t app_sm_port_get_startup_settle_delay_ms(void);
 
 /**
  * @brief Set the recount-active flag.

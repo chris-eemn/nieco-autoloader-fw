@@ -47,6 +47,7 @@ typedef struct {
 static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
 static volatile bool s_recount_active = false;
 static volatile app_sm_status_enum s_status = APP_SM_STATUS_STARTING;
+static volatile uint16_t s_fault_code = 0U;
 static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
     [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
@@ -289,6 +290,11 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout) {
 
 void app_sm_port_publish_state(const app_sm_t* sm) {
   if (sm != NULL) {
+    /* Cache the fault code for the Modbus error bitmask. Unlike the status
+     * below, this mirrors sm->fault_code exactly, so it is current at every
+     * publish (init, dispatch tail, and every state transition). */
+    s_fault_code = sm->fault_code;
+
     /* Map the main state to the Modbus status value. States without a
      * dedicated value retain the last published status. */
     switch (sm->state) {
@@ -316,6 +322,10 @@ app_sm_status_enum app_sm_port_get_status(void) {
   return s_status;
 }
 
+uint16_t app_sm_port_get_fault_code(void) {
+  return s_fault_code;
+}
+
 const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
   if ((size_t)timeout_id >= (sizeof(app_sm_timeout_id_names) / sizeof(app_sm_timeout_id_names[0]))) {
     return "APP_SM_TIMEOUT_UNKNOWN";
@@ -336,7 +346,7 @@ uint32_t app_sm_port_get_push_retract_timeout_ms(void) {
   static const uint32_t default_timeout_ms = 3000U;
 
   cal_data_params_t* params = cal_data_get();
-  if (params != NULL && params->push_retract_timeout_ms != 0U) {
+  if ((params != NULL) && (params->push_retract_timeout_ms != 0U)) {
     return params->push_retract_timeout_ms;
   }
 
@@ -347,11 +357,61 @@ uint32_t app_sm_port_get_lift_timeout_ms(void) {
   static const uint32_t default_timeout_ms = 5000U;
 
   cal_data_params_t* params = cal_data_get();
-  if (params != NULL && params->lift_timeout_ms != 0U) {
+  if ((params != NULL) && (params->lift_timeout_ms != 0U)) {
     return params->lift_timeout_ms;
   }
 
   return default_timeout_ms;
+}
+
+uint32_t app_sm_port_get_lock_timeout_ms(void) {
+  static const uint32_t default_timeout_ms = 30000U;
+  uint32_t result = default_timeout_ms;
+
+  cal_data_params_t* params = cal_data_get();
+  if ((params != NULL) && (params->lock_timeout_ms != 0U)) {
+    result = params->lock_timeout_ms;
+  }
+
+  return result;
+}
+
+uint32_t app_sm_port_get_motion_timeout_ms(void) {
+  static const uint32_t default_timeout_ms = 10000U;
+  uint32_t result = default_timeout_ms;
+
+  cal_data_params_t* params = cal_data_get();
+  if ((params != NULL) && (params->motion_timeout_ms != 0U)) {
+    result = params->motion_timeout_ms;
+  }
+
+  return result;
+}
+
+uint32_t app_sm_port_get_door_timeout_ms(void) {
+  /* Matches the cal_data default (u16 Modbus ceiling); the u32 design value
+   * 100000 returns once unit scaling lands. */
+  static const uint32_t default_timeout_ms = 65535U;
+  uint32_t result = default_timeout_ms;
+
+  cal_data_params_t* params = cal_data_get();
+  if ((params != NULL) && (params->door_timeout_ms != 0U)) {
+    result = params->door_timeout_ms;
+  }
+
+  return result;
+}
+
+uint32_t app_sm_port_get_startup_settle_delay_ms(void) {
+  static const uint32_t default_delay_ms = 250U;
+  uint32_t result = default_delay_ms;
+
+  cal_data_params_t* params = cal_data_get();
+  if ((params != NULL) && (params->startup_settle_delay_ms != 0U)) {
+    result = params->startup_settle_delay_ms;
+  }
+
+  return result;
 }
 
 /*******************************************************************************
