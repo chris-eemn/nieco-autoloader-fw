@@ -15,6 +15,7 @@
 #include "input.h"
 #include "app_task.h"
 #include "autoloader_types.h"
+#include "cal_data.h"
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -30,7 +31,7 @@
  * Module Macros
  *******************************************************************************/
 
-#define DOOR_DEBOUNCE_MS (50U)
+#define DOOR_DEBOUNCE_DEFAULT_MS (50U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -39,6 +40,11 @@
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
+
+/* Debounce window in milliseconds, sampled once from cal_data in input_init().
+ * Debounce timing is poll-sensitive, so the value is latched at boot: a
+ * runtime change to cal_data.door_debounce_ms takes effect on the next boot. */
+static uint32_t s_door_debounce_ms = DOOR_DEBOUNCE_DEFAULT_MS;
 
 /* Binary semaphore: the door EXTI ISR gives this to wake the input task. */
 static SemaphoreHandle_t s_door_exti_sem = NULL;
@@ -81,6 +87,18 @@ static void input_door_exti_cb(hal_exti_handle_t* hexti, hal_exti_trigger_t trig
 void input_init(void) {
   s_door_exti_sem = xSemaphoreCreateBinary();
   configASSERT(s_door_exti_sem != NULL);
+
+  /* Latch the debounce window from cal_data once, at boot. cal_data_init()
+   * runs before input_init() in the bringup task. Debounce timing is
+   * poll-sensitive, so a runtime change to cal_data.door_debounce_ms only
+   * takes effect on the next boot. */
+  cal_data_params_t* params = cal_data_get();
+  if ((params != NULL) && (params->door_debounce_ms != 0U)) {
+    s_door_debounce_ms = params->door_debounce_ms;
+  }
+  else {
+    s_door_debounce_ms = DOOR_DEBOUNCE_DEFAULT_MS;
+  }
 
   /* Seed the polled-pin debounce state from the actual levels so the first
    * poll is not treated as an edge against the zero-initialised defaults.
@@ -170,7 +188,7 @@ void input_door_exti_callback_from_isr(void) {
 /**
  * @brief Debounce the door pin and post events to the app queue.
  *
- *        If DOOR_DEBOUNCE_MS have elapsed since the last EXTI edge and the
+ *        If the cal_data debounce window have elapsed since the last EXTI edge and the
  *        pin state has changed, an APP_EV_DOOR_OPENED or APP_EV_DOOR_CLOSED
  *        event is posted to the application event queue.
  */
@@ -181,7 +199,7 @@ static void input_door_debounce(void) {
 
   elapsed = xTaskGetTickCount() - s_door_last_change_tick;
 
-  if (elapsed < pdMS_TO_TICKS(DOOR_DEBOUNCE_MS)) {
+  if (elapsed < pdMS_TO_TICKS(s_door_debounce_ms)) {
     return; /* Still debouncing */
   }
 
@@ -214,7 +232,7 @@ static void input_poll_lock_pin(void) {
 
   elapsed = xTaskGetTickCount() - s_lock_last_change_tick;
 
-  if (elapsed < pdMS_TO_TICKS(DOOR_DEBOUNCE_MS)) {
+  if (elapsed < pdMS_TO_TICKS(s_door_debounce_ms)) {
     return; /* Still debouncing */
   }
 
@@ -248,7 +266,7 @@ static void input_poll_reload_pin(void) {
 
   elapsed = xTaskGetTickCount() - s_reload_last_change_tick;
 
-  if (elapsed < pdMS_TO_TICKS(DOOR_DEBOUNCE_MS)) {
+  if (elapsed < pdMS_TO_TICKS(s_door_debounce_ms)) {
     return; /* Still debouncing */
   }
 
