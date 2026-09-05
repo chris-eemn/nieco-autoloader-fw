@@ -75,21 +75,11 @@ typedef struct {
   /** Encoder counts per Patty 2 patty; reserved for per-product thickness. Recount still uses
    * patty_thickness_counts for all slots. 0 = unconfigured. */
   uint32_t patty2_thickness_counts;
-  /** Lock-wait timeout, milliseconds. Replaces the duplicated startup (5000) / reload (30000)
-   * literals. The default is the plan's interim value; unifying on the reload 30000 is a
-   * Phase 5 consumer-side decision. Consumers adopt this field in a later phase. */
-  uint32_t lock_timeout_ms;
-  /** Motion/homing timeout, milliseconds. Shared by the startup and reload motion waits.
-   * Consumers adopt it in a later phase. */
-  uint32_t motion_timeout_ms;
-  /** Door-interaction timeout, milliseconds (reload unlock/door wait). Consumers adopt it in a
-   * later phase. */
-  uint32_t door_timeout_ms;
-  /** Post-home settle delay during startup, milliseconds. Consumers adopt it in a later phase. */
-  uint32_t startup_settle_delay_ms;
-  /** Door/lock/reload input debounce, milliseconds. Sampled once at input_init(); changing it
-   * at runtime takes effect on the next boot. Consumers adopt it in a later phase. */
-  uint32_t door_debounce_ms;
+  uint32_t lock_timeout_ms; /** Lock-wait timeout, milliseconds. */
+  uint32_t motion_timeout_ms; /** Motion/homing timeout, milliseconds. */
+  uint32_t door_timeout_ms; /** Door-interaction timeout, milliseconds */
+  uint32_t startup_settle_delay_ms; /** Post-home settle delay during startup, milliseconds. */
+  uint32_t door_debounce_ms; /** Door/lock/reload input debounce, milliseconds. */
 } cal_data_params_t;
 
 /*******************************************************************************
