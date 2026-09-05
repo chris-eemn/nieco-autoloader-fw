@@ -81,6 +81,36 @@ static int reg_door_lock_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_temp_sensor1_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_temp_sensor2_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_error_bitmask_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_pusher_rpm_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_pusher_rpm_write(uint16_t reg, uint16_t val);
+static int reg_lifter_rpm_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_lifter_rpm_write(uint16_t reg, uint16_t val);
+static int reg_home_rpm_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_home_rpm_write(uint16_t reg, uint16_t val);
+static int reg_home_backoff_steps_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_home_backoff_steps_write(uint16_t reg, uint16_t val);
+static int reg_home_settle_delay_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_home_settle_delay_ms_write(uint16_t reg, uint16_t val);
+static int reg_home_max_steps_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_home_max_steps_write(uint16_t reg, uint16_t val);
+static int reg_supervisor_period_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_supervisor_period_ms_write(uint16_t reg, uint16_t val);
+static int reg_default_move_rpm_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_default_move_rpm_write(uint16_t reg, uint16_t val);
+static int reg_default_move_steps_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_default_move_steps_write(uint16_t reg, uint16_t val);
+static int reg_recount_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_recount_timeout_ms_write(uint16_t reg, uint16_t val);
+static int reg_lock_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_lock_timeout_ms_write(uint16_t reg, uint16_t val);
+static int reg_motion_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_motion_timeout_ms_write(uint16_t reg, uint16_t val);
+static int reg_door_timeout_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_door_timeout_ms_write(uint16_t reg, uint16_t val);
+static int reg_startup_settle_delay_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_startup_settle_delay_ms_write(uint16_t reg, uint16_t val);
+static int reg_door_debounce_ms_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_door_debounce_ms_write(uint16_t reg, uint16_t val);
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -221,6 +251,81 @@ static mb_holding_reg_def_t regs_defines[] = {
      .reg_amount = 1,
      .read_callback = reg_error_bitmask_read,
      .name = "error_bitmask"},
+    {.reg_id = REG_CAL_DATA_PUSHER_RPM,
+     .reg_amount = 1,
+     .read_callback = reg_pusher_rpm_read,
+     .write_callback = reg_pusher_rpm_write,
+     .name = "pusher_rpm"},
+    {.reg_id = REG_CAL_DATA_LIFTER_RPM,
+     .reg_amount = 1,
+     .read_callback = reg_lifter_rpm_read,
+     .write_callback = reg_lifter_rpm_write,
+     .name = "lifter_rpm"},
+    {.reg_id = REG_CAL_DATA_HOME_RPM,
+     .reg_amount = 1,
+     .read_callback = reg_home_rpm_read,
+     .write_callback = reg_home_rpm_write,
+     .name = "home_rpm"},
+    {.reg_id = REG_CAL_DATA_HOME_BACKOFF_STEPS,
+     .reg_amount = 1,
+     .read_callback = reg_home_backoff_steps_read,
+     .write_callback = reg_home_backoff_steps_write,
+     .name = "home_backoff_steps"},
+    {.reg_id = REG_CAL_DATA_HOME_SETTLE_DELAY_MS,
+     .reg_amount = 1,
+     .read_callback = reg_home_settle_delay_ms_read,
+     .write_callback = reg_home_settle_delay_ms_write,
+     .name = "home_settle_delay_ms"},
+    {.reg_id = REG_CAL_DATA_HOME_MAX_STEPS,
+     .reg_amount = 1,
+     .read_callback = reg_home_max_steps_read,
+     .write_callback = reg_home_max_steps_write,
+     .name = "home_max_steps"},
+    {.reg_id = REG_CAL_DATA_SUPERVISOR_PERIOD_MS,
+     .reg_amount = 1,
+     .read_callback = reg_supervisor_period_ms_read,
+     .write_callback = reg_supervisor_period_ms_write,
+     .name = "supervisor_period_ms"},
+    {.reg_id = REG_CAL_DATA_DEFAULT_MOVE_RPM,
+     .reg_amount = 1,
+     .read_callback = reg_default_move_rpm_read,
+     .write_callback = reg_default_move_rpm_write,
+     .name = "default_move_rpm"},
+    {.reg_id = REG_CAL_DATA_DEFAULT_MOVE_STEPS,
+     .reg_amount = 1,
+     .read_callback = reg_default_move_steps_read,
+     .write_callback = reg_default_move_steps_write,
+     .name = "default_move_steps"},
+    {.reg_id = REG_CAL_DATA_RECOUNT_TIMEOUT_MS,
+     .reg_amount = 1,
+     .read_callback = reg_recount_timeout_ms_read,
+     .write_callback = reg_recount_timeout_ms_write,
+     .name = "recount_timeout_ms"},
+    {.reg_id = REG_CAL_DATA_LOCK_TIMEOUT_MS,
+     .reg_amount = 1,
+     .read_callback = reg_lock_timeout_ms_read,
+     .write_callback = reg_lock_timeout_ms_write,
+     .name = "lock_timeout_ms"},
+    {.reg_id = REG_CAL_DATA_MOTION_TIMEOUT_MS,
+     .reg_amount = 1,
+     .read_callback = reg_motion_timeout_ms_read,
+     .write_callback = reg_motion_timeout_ms_write,
+     .name = "motion_timeout_ms"},
+    {.reg_id = REG_CAL_DATA_DOOR_TIMEOUT_MS,
+     .reg_amount = 1,
+     .read_callback = reg_door_timeout_ms_read,
+     .write_callback = reg_door_timeout_ms_write,
+     .name = "door_timeout_ms"},
+    {.reg_id = REG_CAL_DATA_STARTUP_SETTLE_DELAY_MS,
+     .reg_amount = 1,
+     .read_callback = reg_startup_settle_delay_ms_read,
+     .write_callback = reg_startup_settle_delay_ms_write,
+     .name = "startup_settle_delay_ms"},
+    {.reg_id = REG_CAL_DATA_DOOR_DEBOUNCE_MS,
+     .reg_amount = 1,
+     .read_callback = reg_door_debounce_ms_read,
+     .write_callback = reg_door_debounce_ms_write,
+     .name = "door_debounce_ms"},
 };
 
 modbus_slave_t ui_slave = {0};
@@ -733,6 +838,323 @@ static int reg_temp_sensor2_read(uint16_t reg, uint16_t* val_ptr) {
   app_console_print("[MODBUS] temp_sensor2: not implemented\r\n");
   *val_ptr = 0U;
   return 0;
+}
+
+static int reg_pusher_rpm_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->pusher_rpm;
+  return 0;
+}
+
+static int reg_pusher_rpm_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->pusher_rpm, val) ? 0 : -1;
+}
+
+static int reg_lifter_rpm_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->lifter_rpm;
+  return 0;
+}
+
+static int reg_lifter_rpm_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->lifter_rpm, val) ? 0 : -1;
+}
+
+static int reg_home_rpm_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->home_rpm;
+  return 0;
+}
+
+static int reg_home_rpm_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->home_rpm, val) ? 0 : -1;
+}
+
+static int reg_home_backoff_steps_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->home_backoff_steps;
+  return 0;
+}
+
+static int reg_home_backoff_steps_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->home_backoff_steps, val) ? 0 : -1;
+}
+
+static int reg_home_settle_delay_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->home_settle_delay_ms;
+  return 0;
+}
+
+static int reg_home_settle_delay_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->home_settle_delay_ms, val) ? 0 : -1;
+}
+
+static int reg_home_max_steps_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->home_max_steps;
+  return 0;
+}
+
+static int reg_home_max_steps_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->home_max_steps, val) ? 0 : -1;
+}
+
+static int reg_supervisor_period_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->supervisor_period_ms;
+  return 0;
+}
+
+static int reg_supervisor_period_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->supervisor_period_ms, val) ? 0 : -1;
+}
+
+static int reg_default_move_rpm_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->default_move_rpm;
+  return 0;
+}
+
+static int reg_default_move_rpm_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->default_move_rpm, val) ? 0 : -1;
+}
+
+static int reg_default_move_steps_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->default_move_steps;
+  return 0;
+}
+
+static int reg_default_move_steps_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->default_move_steps, val) ? 0 : -1;
+}
+
+static int reg_recount_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  /* Default 120000 ms exceeds u16: reads back truncated until unit scaling lands. */
+  *val_ptr = (uint16_t)params->recount_timeout_ms;
+  return 0;
+}
+
+static int reg_recount_timeout_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->recount_timeout_ms, val) ? 0 : -1;
+}
+
+static int reg_lock_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->lock_timeout_ms;
+  return 0;
+}
+
+static int reg_lock_timeout_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->lock_timeout_ms, val) ? 0 : -1;
+}
+
+static int reg_motion_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->motion_timeout_ms;
+  return 0;
+}
+
+static int reg_motion_timeout_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->motion_timeout_ms, val) ? 0 : -1;
+}
+
+static int reg_door_timeout_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->door_timeout_ms;
+  return 0;
+}
+
+static int reg_door_timeout_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->door_timeout_ms, val) ? 0 : -1;
+}
+
+static int reg_startup_settle_delay_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->startup_settle_delay_ms;
+  return 0;
+}
+
+static int reg_startup_settle_delay_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  return reg_cal_u16_write(&params->startup_settle_delay_ms, val) ? 0 : -1;
+}
+
+static int reg_door_debounce_ms_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->door_debounce_ms;
+  return 0;
+}
+
+static int reg_door_debounce_ms_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  /* input.c samples this once in input_init(); the new value takes effect on the next boot. */
+  return reg_cal_u16_write(&params->door_debounce_ms, val) ? 0 : -1;
 }
 
 static int reg_error_bitmask_read(uint16_t reg, uint16_t* val_ptr) {

@@ -70,9 +70,27 @@ typedef enum {
   REG_ERROR_BITMASK = 29,       /* error bits (future: synthesize from app_sm_t.fault_code,
                                  * cartridge_t.faulted, cartridge_validate_lane_pairs) */
 
-  // Cal-data backed registers
+  // Cal-data backed registers.
   REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS = 75,
   REG_CAL_DATA_LIFT_TIMEOUT_MS = 76,
+  REG_CAL_DATA_PUSHER_RPM = 77,            /* cal_data.pusher_rpm */
+  REG_CAL_DATA_LIFTER_RPM = 78,            /* cal_data.lifter_rpm */
+  REG_CAL_DATA_HOME_RPM = 79,              /* cal_data.home_rpm */
+  REG_CAL_DATA_HOME_BACKOFF_STEPS = 80,    /* cal_data.home_backoff_steps (microsteps) */
+  REG_CAL_DATA_HOME_SETTLE_DELAY_MS = 81,  /* cal_data.home_settle_delay_ms */
+  REG_CAL_DATA_HOME_MAX_STEPS = 82,        /* cal_data.home_max_steps (microsteps) */
+  REG_CAL_DATA_SUPERVISOR_PERIOD_MS = 83,  /* cal_data.supervisor_period_ms */
+  REG_CAL_DATA_DEFAULT_MOVE_RPM = 84,      /* cal_data.default_move_rpm */
+  REG_CAL_DATA_DEFAULT_MOVE_STEPS = 85,    /* cal_data.default_move_steps (microsteps) */
+  REG_CAL_DATA_RECOUNT_TIMEOUT_MS = 86,
+
+  REG_CAL_DATA_LOCK_TIMEOUT_MS = 100,           /* cal_data.lock_timeout_ms */
+  REG_CAL_DATA_MOTION_TIMEOUT_MS = 101,         /* cal_data.motion_timeout_ms */
+  REG_CAL_DATA_DOOR_TIMEOUT_MS = 102,           /* cal_data.door_timeout_ms -- default 65535 is the u16 ceiling */
+  REG_CAL_DATA_STARTUP_SETTLE_DELAY_MS = 103,   /* cal_data.startup_settle_delay_ms */
+  /* cal_data.door_debounce_ms -- input.c samples it once at boot; runtime writes take
+   * effect on the next boot */
+  REG_CAL_DATA_DOOR_DEBOUNCE_MS = 104,
 
 } app_slave_regs_enum;
 
