@@ -5,3 +5,4 @@ mx.scratch
 .claude
 CLAUDE.md
 .venv
+compile_commands.json
