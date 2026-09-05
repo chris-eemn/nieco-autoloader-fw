@@ -18,6 +18,7 @@
 #include "app_console.h"
 #include "app_console_port.h"
 
+#include "stm32_hal.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
