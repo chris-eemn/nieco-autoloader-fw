@@ -103,8 +103,19 @@ void app_console_print(const char* fmt, ...) {
   n += prefix_len;
 
   msg.len = (uint16_t)(n < CONSOLE_TX_MSG_MAX_LEN ? n : CONSOLE_TX_MSG_MAX_LEN - 1);
+  int in_isr = (__get_IPSR() != 0U);
+  if (in_isr) {
+    BaseType_t higher_priority_task_woken = pdFALSE;
 
-  xQueueSend(s_txQueue, &msg, 0);
+    (void)xQueueSendFromISR(s_txQueue,
+                            &msg,
+                            &higher_priority_task_woken);
+
+    portYIELD_FROM_ISR(higher_priority_task_woken);
+  }
+  else {
+    xQueueSend(s_txQueue, &msg, 0);
+  }
 }
 
 void app_console_register_command(const console_command_t* cmd) {
