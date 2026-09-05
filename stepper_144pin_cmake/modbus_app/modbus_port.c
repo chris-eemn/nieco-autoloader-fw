@@ -1,7 +1,7 @@
 /**
  * @file modbus_port.c
  * @brief Modbus RTU portable layer for STM32C5A3ZG (CubeMX 2.0 HAL).
- *        Uses USART1 (label: mb_slave) for RS-485 half-duplex and TIM15 (label: MB_TIMER) as the inter-frame timeout timer.
+ *        Uses USART1 (label: mb_slave) for RS-485 half-duplex and MB Timer (label: MB_TIMER) as the inter-frame timeout timer.
  *
  * @copyright Copyright (c) 2022 Embedded Design Solutions, LLC.  All Rights Reserved.
  */
@@ -31,8 +31,8 @@
 #endif
 
 /*
- * TIM15 tick frequency in Hz after the CubeMX prescaler.
- * Set TIM15 Prescaler in CubeMX to: (APB2_TIMER_CLK_HZ / MODBUS_TIMER_CLK_HZ) - 1
+ * MB Timer tick frequency in Hz after the CubeMX prescaler.
+ * Set MB Timer Prescaler in CubeMX to: (APB2_TIMER_CLK_HZ / MODBUS_TIMER_CLK_HZ) - 1
  * Example: 64 MHz APB2 timer clock with Prescaler = 63 → MODBUS_TIMER_CLK_HZ = 1 000 000
  */
 #define MODBUS_TIMER_CLK_HZ 1000000UL
@@ -221,8 +221,8 @@ static void mb_uart_rx_cplt_cb(hal_uart_handle_t* huart, uint32_t size_byte, hal
 }
 
 /**
- * @brief TIM15 update callback registered on the mb_timer handle.
- *        Notifies the Modbus stack of a frame timeout when TIM15 expires.
+ * @brief MB Timer update callback registered on the mb_timer handle.
+ *        Notifies the Modbus stack of a frame timeout when MB Timer expires.
  * @param htim Handle of the timer peripheral that expired.
  */
 static void mb_timer_update_cb(hal_tim_handle_t* htim) {
