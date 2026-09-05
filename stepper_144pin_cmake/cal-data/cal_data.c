@@ -14,6 +14,7 @@
  * Includes
  *******************************************************************************/
 #include <stddef.h>
+#include <string.h>
 #include "cal_data.h"
 #include "cal_data_map.h"
 #include "spi_flash_io.h"
@@ -99,6 +100,9 @@ static const cal_data_params_t default_params = {
     .door_debounce_ms = 50U,
 };
 
+_Static_assert(sizeof(cal_data_params_t) == (CAL_DATA_PARAM_COUNT * sizeof(uint32_t)),
+               "cal_data_params_t is no longer a flat array of uint32_t fields -- cal_data_sanitize_zeros()'s field walk is invalid");
+
 /** Live RAM copy handed out by cal_data_get(). */
 static cal_data_params_t cal_params;
 
@@ -183,6 +187,18 @@ bool cal_data_init(void) {
     /* A record that passed the magic + version check is a usable record on flash -- the
      * same fact save_blocking() records after a verified write. */
     s_verified_on_flash = true;
+
+    /* The record was checked for magic and version only; repair any zero field so the
+     * live copy always holds usable values. Write the repaired copy back (blocking --
+     * the scheduler is not running yet) so the next boot reads the same values. A failed
+     * write-back is not escalated, same as the blank-flash branch below: the repaired
+     * values are live in RAM, the application runs correctly, and the repair is retried
+     * on the next boot. */
+    cal_data_sanitize_zeros();
+    if (memcmp(&cal_params, &record.params, sizeof(cal_params)) != 0) {
+      stage_record(&record);
+      (void)save_blocking(&record);
+    }
   }
   else {
     /* Nothing usable on flash -- provision the section so the next boot reads back cleanly.
@@ -267,6 +283,21 @@ cal_data_save_status_enum cal_data_save_status(void) {
 
 void cal_data_load_defaults(void) {
   cal_params = default_params;
+}
+
+void cal_data_sanitize_zeros(void) {
+  const uint32_t* defaults = (const uint32_t*)&default_params;
+  uint32_t* live = (uint32_t*)&cal_params;
+
+  /* The struct is a flat array of uint32_t by design (see cal_data.h); the assert above
+   * the defaults table guards that layout. Every parameter must be non-zero to be usable,
+   * so a zero field -- from a stored record, or from a rejected external write -- takes
+   * its factory default. */
+  for (uint32_t i = 0U; i < CAL_DATA_PARAM_COUNT; i++) {
+    if (live[i] == 0U) {
+      live[i] = defaults[i];
+    }
+  }
 }
 
 bool cal_data_is_valid(void) {

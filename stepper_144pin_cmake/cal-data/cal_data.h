@@ -45,6 +45,10 @@
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
 #define CAL_DATA_VERSION (10U)
 
+/** Number of uint32_t fields in cal_data_params_t. Kept in sync with the struct by the
+ *  _Static_assert in cal_data.c. */
+#define CAL_DATA_PARAM_COUNT (22U)
+
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -140,6 +144,20 @@ cal_data_save_status_enum cal_data_save_status(void);
  * @note follow with cal_data_save() to make the reset permanent
  */
 void cal_data_load_defaults(void);
+
+/**
+ * @brief replaces every zero-valued field of the RAM copy with its factory default
+ * @note every cal_data parameter must be non-zero to be usable -- a zero timeout arms a
+ *       timer that fires immediately, a zero rpm or step count makes a move fail or complete
+ *       instantly. The runtime consumers read the parameters verbatim (the defaults here are
+ *       the single source of truth), so a zero must never survive into the live copy.
+ *       cal_data_init() calls this after loading a stored record, which is checked only for
+ *       magic and version -- a record written by older firmware, or after a field was added,
+ *       can hold zeros. Callers that accept external writes (CLI, Modbus) apply this after
+ *       each write so the rejected zero is not persisted.
+ * @note RAM only; follow with cal_data_save() to persist the repaired values
+ */
+void cal_data_sanitize_zeros(void);
 
 /**
  * @brief reports whether the record currently in RAM came from flash or from the defaults
