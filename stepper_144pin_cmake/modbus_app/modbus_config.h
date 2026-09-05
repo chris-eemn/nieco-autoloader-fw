@@ -46,16 +46,11 @@ typedef enum {
                                  * values do not match the sheet's 1-5 codes yet) */
   REG_LTO_PAUSE = 7,            /* 1 = pause LTO dispense logic, 0 = resume
                                  * (future: patty_handler_set_lto_pause via event post) */
-  REG_HOME_THRESHOLD = 8,       /* home error threshold
-                                 * (future: cal_data.home_error_counts) */
-  REG_LOAD_OFFSET = 9,          /* load offset
-                                 * (future: cal_data.load_offset) */
-  REG_STALL_THRESHOLD = 10,     /* stall error threshold
-                                 * (future: cal_data.stall_error_counts) */
-  REG_PATTY1_THICKNESS = 11,    /* per-patty travel for Patty 1
-                                 * (future: cal_data.patty_thickness_counts) */
-  REG_PATTY2_THICKNESS = 12,    /* per-patty travel for Patty 2
-                                 * (future: cal_data.patty2_thickness_counts) */
+  REG_HOME_THRESHOLD = 8,       /* home error threshold (cal_data.home_error_counts) */
+  REG_LOAD_OFFSET = 9,          /* load offset (cal_data.load_offset) */
+  REG_STALL_THRESHOLD = 10,     /* stall error threshold (cal_data.stall_error_counts) */
+  REG_PATTY1_THICKNESS = 11,    /* per-patty travel for Patty 1 (cal_data.patty_thickness_counts) */
+  REG_PATTY2_THICKNESS = 12,    /* per-patty travel for Patty 2 (cal_data.patty2_thickness_counts) */
   REG_CARTRIDGE1_STATUS = 13,   /* cartridge 1 type (future: cartridge_read_type_sensors) */
   REG_CARTRIDGE2_STATUS = 14,   /* cartridge 2 type (future: cartridge_read_type_sensors) */
   REG_CARTRIDGE3_STATUS = 15,   /* cartridge 3 type (future: cartridge_read_type_sensors) */
