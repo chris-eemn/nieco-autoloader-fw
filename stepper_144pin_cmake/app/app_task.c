@@ -132,6 +132,10 @@ bool app_task_post_from_isr(const app_event_t* event) {
 void app_task_register_axis_event_cb(void) {
   stepper_system_register_axis_event_cb(on_axis_event, NULL);
 }
+
+const cartridge_t* app_task_get_cartridges(void) {
+  return &s_app_sm.cartridge[0];
+}
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/

@@ -30,7 +30,6 @@
  *   encoder_t  *enc   = encoder_init(htim);
  *
  *   axis_config_t cfg = {
- *     .home_rpm             = 10,
  *     .home_max_steps       = 50000,
  *     .backoff_steps        = 800,
  *     .stall_error_counts   = 10,
@@ -39,7 +38,7 @@
  *   axis_t *ax = axis_init(motor, enc, m1_fault_exti_gethandle(), &cfg);
  *   axis_register_event_cb(ax, on_axis_event, (void *)AXIS_ID_LIFT);
  *
- *   axis_home(ax, STEPPER_DIR_CW);
+ *   axis_home(ax, STEPPER_DIR_CW, 10);
  *   while (axis_get_status(ax) == AXIS_STATUS_HOMING) { vTaskDelay(10); }
  */
 
@@ -66,11 +65,12 @@
 /** Default supervisor task period in ms, applied when config.supervisor_period_ms == 0. */
 #define AXIS_DEFAULT_SUPERVISOR_PERIOD_MS 25U
 
-/** Bench encoder produces 2.5 counts per microstep at the current 8-microstep setting. */
-#define AXIS_DEFAULT_ENCODER_COUNTS_NUMERATOR 5U
-#define AXIS_DEFAULT_ENCODER_COUNTS_DENOMINATOR 2U
-
-#define AXIS_DEFAULT_MAX_SYNC_ERROR_COUNTS 10U
+/** Bench encoder produces 2.5 counts per microstep at the current 8-microstep
+ *  setting. Compile-time on purpose: stored encoder-count parameters (thickness,
+ *  offsets) are meaningless if the ratio changes. Single source of truth for the
+ *  whole stepper stack. */
+#define AXIS_ENCODER_COUNTS_NUMERATOR 5U
+#define AXIS_ENCODER_COUNTS_DENOMINATOR 2U
 
 #define AXIS_DEFAULT_STALL_ERROR_COUNTS 10U
 #define AXIS_DEFAULT_HOME_ERROR_COUNTS 50U
@@ -193,9 +193,6 @@ typedef struct {
   /** Back-off distance in microsteps after endstop is detected (no default — must be set). */
   uint32_t backoff_steps;
 
-  /** Speed for both the homing seek and back-off moves, in RPM (must be > 0). */
-  uint32_t home_rpm;
-
   /** Maximum microsteps allowed during the homing seek before declaring a timeout fault.
    *  The stepper enforces this limit automatically at the driver level (must be > 0). */
   uint32_t home_max_steps;
@@ -223,6 +220,10 @@ struct axis_s {
   homing_state_enum homing_substate;
   uint8_t home_direction; /**< Seek direction of the active homing sequence, captured from axis_home().
                            *!< The back-off move drives opposite to it.                                */
+
+  uint32_t home_rpm; /**< Speed of the active homing sequence, captured from axis_home().
+                      *!< The back-off move issued later by the supervisor uses the same
+                      *!< speed, so the value must outlive the axis_home() call.            */
 
   int32_t home_start_counts;  /**< Encoder count sampled when axis_home() accepted the sequence.       */
   int32_t home_travel_counts; /**< Net encoder displacement from the start of the seek to the end of
@@ -352,13 +353,15 @@ uint8_t axis_is_busy(const axis_t* axis);
  * @param  axis       Handle returned by axis_init(). Must not be NULL.
  * @param  direction  Seek direction: STEPPER_DIR_CW or STEPPER_DIR_CCW.
  *                    The back-off move drives the other way.
+ * @param  rpm        Speed for both the seek and the back-off move, in RPM.
+ *                    Must be > 0.
  * @return STEPPER_OK      if homing was started,
  *         STEPPER_BUSY    if homing or a move is already in progress,
  *         STEPPER_FAULT   if a fault is latched (clear it first),
- *         STEPPER_INVALID if axis is NULL or direction is not a valid
- *                         STEPPER_DIR_* value.
+ *         STEPPER_INVALID if axis is NULL, direction is not a valid
+ *                         STEPPER_DIR_* value, or rpm is 0.
  */
-stepper_status_enum axis_home(axis_t* axis, uint8_t direction);
+stepper_status_enum axis_home(axis_t* axis, uint8_t direction, uint32_t rpm);
 
 /**
  * @brief  Return how far the axis travelled during the last successful homing

@@ -47,6 +47,7 @@ typedef struct {
 static timeout_timer_t timeout_timers[MAX_PENDING_TIMER_EVENTS];
 static volatile bool s_recount_active = false;
 static volatile app_sm_status_enum s_status = APP_SM_STATUS_STARTING;
+static volatile uint16_t s_fault_code = 0U;
 static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_TIMEOUT_NONE] = "APP_SM_TIMEOUT_NONE",
     [APP_SM_TIMEOUT_LOCK] = "APP_SM_TIMEOUT_LOCK",
@@ -90,18 +91,53 @@ void app_sm_port_unlock_door(void) {
   input_unlock_door();
 }
 
+/**
+ * @brief Homing speed from cal_data.
+ * @return Configured home_rpm.
+ */
+static uint32_t app_sm_port_get_home_rpm(void) {
+  return cal_data_get()->home_rpm;
+}
+
+/**
+ * @brief Pusher move speed from cal_data.
+ * @return Configured pusher_rpm, or default_move_rpm when pusher_rpm is unset.
+ *         cal_data_sanitize_zeros() keeps both non-zero.
+ */
+static uint32_t app_sm_port_get_pusher_rpm(void) {
+  cal_data_params_t* params = cal_data_get();
+
+  if (params->pusher_rpm != 0U) {
+    return params->pusher_rpm;
+  }
+
+  return params->default_move_rpm;
+}
+
+/**
+ * @brief Pusher move distance from cal_data.
+ * @return Configured default_move_steps.
+ */
+static uint32_t app_sm_port_get_default_move_steps(void) {
+  return cal_data_get()->default_move_steps;
+}
+
 void app_sm_port_home_pusher(cartridge_t* slot) {
-  axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)), STEPPER_DIR_CW);
+  stepper_status_enum status = axis_home(stepper_ctrl_get_axis(cartridge_get_axis_num(slot, PUSHER)), STEPPER_DIR_CW, app_sm_port_get_home_rpm());
+  if (status != STEPPER_OK) {
+    app_console_print("[app_sm_port] Failed to home pusher for slot %d: %d\r\n", slot->num, (int)status);
+  }
 }
 
 stepper_status_enum app_sm_port_home_lift(cartridge_t* slot, cartridge_direction_t direction) {
   uint8_t axis_num = cartridge_get_axis_num(slot, LIFTER);
+  uint32_t home_rpm = app_sm_port_get_home_rpm();
 
   if (direction == DIR_LIFTER_DOWN) {
-    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CW);
+    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CW, home_rpm);
   }
   else if (direction == DIR_LIFTER_UP) {
-    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CCW);
+    return axis_home(stepper_ctrl_get_axis(axis_num), STEPPER_DIR_CCW, home_rpm);
   }
 
   app_console_print("[app_sm_port] Invalid direction for lift homing\r\n");
@@ -113,23 +149,21 @@ void app_sm_port_count_cartridges(cartridge_t* slot) {
 }
 
 void app_sm_port_push_extend(cartridge_t* slot) {
-#define FAKE_PUSH_EXTEND_COUNTS (1000U)
-#define FAKE_PUSH_EXTEND_RPM 15
-#define FAKE_PUSH_EXTEND_DIR STEPPER_DIR_CCW
+#define PUSH_EXTEND_DIR STEPPER_DIR_CCW
 
   uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
-  stepper_status_enum status = axis_move(stepper_ctrl_get_axis(axis_num), FAKE_PUSH_EXTEND_COUNTS, FAKE_PUSH_EXTEND_RPM, FAKE_PUSH_EXTEND_DIR);
+  stepper_status_enum status =
+      axis_move(stepper_ctrl_get_axis(axis_num), app_sm_port_get_default_move_steps(), app_sm_port_get_pusher_rpm(), PUSH_EXTEND_DIR);
   if (status != STEPPER_OK) {
     app_console_print("[app_sm_port] Failed to extend pusher for slot %d: %d\r\n", slot->num, (int)status);
   }
 }
 
 void app_sm_port_push_retract(cartridge_t* slot) {
-#define FAKE_PUSH_RETRACT_COUNTS (1000U)
-#define FAKE_PUSH_RETRACT_RPM 20
-#define FAKE_PUSH_RETRACT_DIR STEPPER_DIR_CW
+#define PUSH_RETRACT_DIR STEPPER_DIR_CW
   uint8_t axis_num = cartridge_get_axis_num(slot, PUSHER);
-  stepper_status_enum status = axis_move(stepper_ctrl_get_axis(axis_num), FAKE_PUSH_RETRACT_COUNTS, FAKE_PUSH_RETRACT_RPM, FAKE_PUSH_RETRACT_DIR);
+  stepper_status_enum status =
+      axis_move(stepper_ctrl_get_axis(axis_num), app_sm_port_get_default_move_steps(), app_sm_port_get_pusher_rpm(), PUSH_RETRACT_DIR);
   if (status != STEPPER_OK) {
     app_console_print("[app_sm_port] Failed to retract pusher for slot %d: %d\r\n", slot->num, (int)status);
   }
@@ -236,6 +270,11 @@ bool app_sm_port_cancel_timeout_id(app_sm_timeout_id_enum timeout) {
 
 void app_sm_port_publish_state(const app_sm_t* sm) {
   if (sm != NULL) {
+    /* Cache the fault code for the Modbus error bitmask. Unlike the status
+     * below, this mirrors sm->fault_code exactly, so it is current at every
+     * publish (init, dispatch tail, and every state transition). */
+    s_fault_code = sm->fault_code;
+
     /* Map the main state to the Modbus status value. States without a
      * dedicated value retain the last published status. */
     switch (sm->state) {
@@ -263,6 +302,10 @@ app_sm_status_enum app_sm_port_get_status(void) {
   return s_status;
 }
 
+uint16_t app_sm_port_get_fault_code(void) {
+  return s_fault_code;
+}
+
 const char* app_sm_port_timeout_id_to_str(app_sm_timeout_id_enum timeout_id) {
   if ((size_t)timeout_id >= (sizeof(app_sm_timeout_id_names) / sizeof(app_sm_timeout_id_names[0]))) {
     return "APP_SM_TIMEOUT_UNKNOWN";
@@ -279,26 +322,33 @@ const char* app_sm_port_fault_code_to_str(app_fault_code_enum fault_code) {
   return app_fault_code_names[fault_code];
 }
 
+/* The getters below read cal_data_get() directly. Its pointer is static storage
+ * and never NULL, and cal_data_init() provisions the RAM copy with the factory
+ * defaults whenever flash holds nothing usable, so the defaults in cal_data.c
+ * are the single source of truth -- no fallback literals here. */
+
 uint32_t app_sm_port_get_push_retract_timeout_ms(void) {
-  static const uint32_t default_timeout_ms = 3000U;
-
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL && params->push_retract_timeout_ms != 0U) {
-    return params->push_retract_timeout_ms;
-  }
-
-  return default_timeout_ms;
+  return cal_data_get()->push_retract_timeout_ms;
 }
 
 uint32_t app_sm_port_get_lift_timeout_ms(void) {
-  static const uint32_t default_timeout_ms = 5000U;
+  return cal_data_get()->lift_timeout_ms;
+}
 
-  cal_data_params_t* params = cal_data_get();
-  if (params != NULL && params->lift_timeout_ms != 0U) {
-    return params->lift_timeout_ms;
-  }
+uint32_t app_sm_port_get_lock_timeout_ms(void) {
+  return cal_data_get()->lock_timeout_ms;
+}
 
-  return default_timeout_ms;
+uint32_t app_sm_port_get_motion_timeout_ms(void) {
+  return cal_data_get()->motion_timeout_ms;
+}
+
+uint32_t app_sm_port_get_door_timeout_ms(void) {
+  return cal_data_get()->door_timeout_ms;
+}
+
+uint32_t app_sm_port_get_startup_settle_delay_ms(void) {
+  return cal_data_get()->startup_settle_delay_ms;
 }
 
 /*******************************************************************************

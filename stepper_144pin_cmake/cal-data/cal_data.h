@@ -35,6 +35,7 @@
  *******************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
+#include "cal_data_save.h"
 
 /*******************************************************************************
  * Module Macros
@@ -42,7 +43,11 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (8U)
+#define CAL_DATA_VERSION (10U)
+
+/** Number of uint32_t fields in cal_data_params_t. Kept in sync with the struct by the
+ *  _Static_assert in cal_data.c. */
+#define CAL_DATA_PARAM_COUNT (22U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -71,6 +76,14 @@ typedef struct {
   uint32_t lift_timeout_ms;       /**< Lift seek timeout, milliseconds. */
   uint32_t patty_thickness_counts;  /**< Encoder counts per patty, for recount. 0 = unconfigured. */
   uint32_t recount_timeout_ms;      /**< Timeout for the recount lift-to-stall move, milliseconds. */
+  /** Encoder counts per Patty 2 patty; reserved for per-product thickness. Recount still uses
+   * patty_thickness_counts for all slots. 0 = unconfigured. */
+  uint32_t patty2_thickness_counts;
+  uint32_t lock_timeout_ms; /** Lock-wait timeout, milliseconds. */
+  uint32_t motion_timeout_ms; /** Motion/homing timeout, milliseconds. */
+  uint32_t door_timeout_ms; /** Door-interaction timeout, milliseconds */
+  uint32_t startup_settle_delay_ms; /** Post-home settle delay during startup, milliseconds. */
+  uint32_t door_debounce_ms; /** Door/lock/reload input debounce, milliseconds. */
 } cal_data_params_t;
 
 /*******************************************************************************
@@ -100,17 +113,51 @@ bool cal_data_init(void);
 cal_data_params_t* cal_data_get(void);
 
 /**
- * @brief writes the RAM copy of the parameters to flash
+ * @brief stages the RAM copy and queues the erase and write that store it
+ * @note returns as soon as the commands are queued -- the data is not on the chip yet. The
+ *       payload is copied into a module-owned staging buffer that the driver reads from during
+ *       the write, so the RAM copy does not need to outlive the call. Poll
+ *       cal_data_save_status() for completion
  * @note erases and rewrites the general section only; stepper position sections are untouched
- * @return bool true if the record was written and verified
+ * @note fails while a previous save is still in flight (the staging buffer is in use), when the
+ *       w25q queue cannot hold all five commands, or when the driver is already in an error
+ *       state. The erases are never queued unless the write can be queued behind them, so a
+ *       rejected save leaves the stored record intact
+ * @return bool true if all commands were accepted into the w25q queue
  */
 bool cal_data_save(void);
+
+/**
+ * @brief reports how far the most recent cal_data_save() has got
+ * @note the w25q driver exposes no per-command completion, so this resolves to IDLE once the
+ *       command queue has drained and the driver is no longer busy -- which also means any
+ *       other module's queued traffic delays the transition to IDLE
+ * @note CAL_DATA_SAVE_ERROR is sticky until the next save is queued. The driver has no reset
+ *       entry point; its error state clears when the next direct (non-queued) w25q operation
+ *       runs, such as the boot-path save in cal_data_init()
+ * @return cal_data_save_status_enum progress of the last save issued
+ */
+cal_data_save_status_enum cal_data_save_status(void);
 
 /**
  * @brief overwrites the RAM copy with the factory defaults, without touching flash
  * @note follow with cal_data_save() to make the reset permanent
  */
 void cal_data_load_defaults(void);
+
+/**
+ * @brief replaces every zero-valued field of the RAM copy with its factory default
+ * @note every cal_data parameter must be non-zero to be usable -- a zero timeout arms a
+ *       timer that fires immediately, a zero rpm or step count makes a move fail or complete
+ *       instantly. The runtime consumers read the parameters verbatim (the defaults here are
+ *       the single source of truth), so a zero must never survive into the live copy.
+ *       cal_data_init() calls this after loading a stored record, which is checked only for
+ *       magic and version -- a record written by older firmware, or after a field was added,
+ *       can hold zeros. Callers that accept external writes (CLI, Modbus) apply this after
+ *       each write so the rejected zero is not persisted.
+ * @note RAM only; follow with cal_data_save() to persist the repaired values
+ */
+void cal_data_sanitize_zeros(void);
 
 /**
  * @brief reports whether the record currently in RAM came from flash or from the defaults
