@@ -98,10 +98,15 @@ static const cal_data_params_t default_params = {
     .door_timeout_ms = 65535,
     .startup_settle_delay_ms = 250U,
     .door_debounce_ms = 50U,
+    .auto_clear_faults = 0U, /* off by default */
+    .auto_clear_delay_ms = 5000U,
 };
 
 _Static_assert(sizeof(cal_data_params_t) == (CAL_DATA_PARAM_COUNT * sizeof(uint32_t)),
                "cal_data_params_t is no longer a flat array of uint32_t fields -- cal_data_sanitize_zeros()'s field walk is invalid");
+
+/** Index of a uint32_t params field, for the zero-repair walk in cal_data_sanitize_zeros(). */
+#define CAL_DATA_PARAM_INDEX(field) (offsetof(cal_data_params_t, field) / sizeof(uint32_t))
 
 /** Live RAM copy handed out by cal_data_get(). */
 static cal_data_params_t cal_params;
@@ -294,7 +299,10 @@ void cal_data_sanitize_zeros(void) {
    * so a zero field -- from a stored record, or from a rejected external write -- takes
    * its factory default. */
   for (uint32_t i = 0U; i < CAL_DATA_PARAM_COUNT; i++) {
-    if (live[i] == 0U) {
+    /* auto_clear_faults is a boolean: 0 = off is a valid stored value, so it
+     * is exempt from zero-repair. auto_clear_delay_ms is NOT exempt -- a zero
+     * delay takes its 5000 ms default. */
+    if ((live[i] == 0U) && (i != CAL_DATA_PARAM_INDEX(auto_clear_faults))) {
       live[i] = defaults[i];
     }
   }
