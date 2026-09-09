@@ -70,6 +70,7 @@ typedef enum {
   REG_ERROR_BITMASK = 29,       /* live error bits: b2/b3 lane mismatch, b4 app fault,
                                  * b5-b8 cartridge faulted, b9 door open, b10 lock not
                                  * confirmed (see reg_error_bitmask_read for the full map) */
+  REG_CLEAR_FAULTS = 30,        /* write non-zero: clear all faults, same as CLI 'test set clear 1' */
 
   // Cal-data backed registers.
   REG_CAL_DATA_PUSH_RETRACT_TIMEOUT_MS = 75,
