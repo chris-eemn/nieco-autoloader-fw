@@ -22,6 +22,7 @@
 #include "app_sm_port.h"
 #include "autoloader_types.h"
 #include "axis.h"
+#include "cal_data.h"
 #include "stepper_ctrl.h"
 #include "cartridge.h"  // only need for my simulated type hack
 #include "patty_handler.h"
@@ -48,6 +49,7 @@
 
 static void app_sm_enter_state(app_sm_t* sm, app_state_enum next);
 static void app_sm_enter_sequence_fault(app_sm_t* sm);
+static void app_sm_clear_fault(app_sm_t* sm);
 static void handle_patty_request(app_sm_t* sm, const app_event_t* event);
 const char* app_event_id_to_str(app_event_id_enum event_id);
 const char* app_sm_timeout_id_to_str(app_sm_timeout_id_enum timeout_id);
@@ -219,25 +221,22 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     case APP_FAULT:
       app_console_print("[Main SM] Fault state: fault_code=%d\r\n", sm->fault_code);
       if (event->id == APP_EV_FAULT_CLEARED) {
-        sm->fault_code = 0U;
-        app_console_print("[Main SM] Fault cleared, returning to startup\r\n");
-        // this is a hack so do not have to power cycle machine to dispense again
-        clear_all_axis_faults();
-        patty_handler_init(&sm->patty_handler, sm->cartridge);
-        patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
-        for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
-          sm->cartridge[slot].faulted = false;
-        }
-        app_sm_enter_state(sm, APP_STARTUP);
+        app_sm_clear_fault(sm);
       }
       else if (event->id == APP_EV_DOOR_CLOSED) {
         if (sm->fault_code == APP_FAULT_CODE_DOOR_OPENED) {
           app_console_print("[Main SM] Door closed, returning to startup\r\n");
+          /* Belt-and-braces against the blanket cancel, same as app_sm_clear_fault. */
+          (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_AUTO_CLEAR_FAULT);
           sm->fault_code = 0U;
           patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
           app_sm_enter_state(sm, APP_STARTUP);
           app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
         }
+      }
+      else if ((event->id == APP_EV_TIMEOUT) && ((app_sm_timeout_id_enum)event->value == APP_SM_TIMEOUT_AUTO_CLEAR_FAULT)) {
+        app_console_print("[Main SM] Auto-clear fault timer expired\r\n");
+        app_sm_clear_fault(sm);
       }
       break;
 
@@ -292,6 +291,14 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
       case APP_FAULT:
         reload_sm_abort(&sm->reload);
         app_sm_port_halt_all_motion(sm->cartridge);
+        /* Auto-clear stopgap: arm on every fault entry, reading cal-data live so a
+         * 'param set' takes effect on the next fault. The blanket
+         * app_sm_port_cancel_timeout() at the top of this function cancels it on
+         * the next transition, so a fault that clears early never leaves a
+         * pending auto-clear timer. */
+        if (cal_data_get()->auto_clear_faults != 0U) {
+          (void)app_sm_port_arm_timeout(APP_SM_TIMEOUT_AUTO_CLEAR_FAULT, cal_data_get()->auto_clear_delay_ms);
+        }
         break;
 
       case APP_SHUTDOWN:
@@ -320,6 +327,34 @@ static void app_sm_enter_sequence_fault(app_sm_t* sm) {
     }
     app_sm_enter_state(sm, APP_FAULT);
   }
+}
+
+/**
+ * @brief Clear the active fault and return the machine to startup.
+ *
+ * Shared by the manual clear (APP_EV_FAULT_CLEARED, posted by the CLI
+ * 'test set clear 1' and the Modbus clear_faults register) and the
+ * auto-clear timer. The state machine owns the axis reset and the
+ * per-cartridge faulted-flag reset, so callers post only the event.
+ *
+ * @param sm Application state model.
+ */
+static void app_sm_clear_fault(app_sm_t* sm) {
+  /* Belt-and-braces against the blanket cancel: the timer is normally cancelled
+   * by app_sm_enter_state's app_sm_port_cancel_timeout() on the transition out
+   * of APP_FAULT, but cancel it here too so a clear can never leave a pending
+   * auto-clear behind even if the blanket cancel changes again. */
+  (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_AUTO_CLEAR_FAULT);
+  sm->fault_code = 0U;
+  app_console_print("[Main SM] Fault cleared, returning to startup\r\n");
+  // this is a hack so do not have to power cycle machine to dispense again
+  clear_all_axis_faults();
+  patty_handler_init(&sm->patty_handler, sm->cartridge);
+  patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
+  for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+    sm->cartridge[slot].faulted = false;
+  }
+  app_sm_enter_state(sm, APP_STARTUP);
 }
 
 /**

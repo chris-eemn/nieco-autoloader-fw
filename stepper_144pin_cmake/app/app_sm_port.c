@@ -30,7 +30,11 @@
 /*******************************************************************************
  * Module Macros
  *******************************************************************************/
-#define MAX_PENDING_TIMER_EVENTS (4U)
+/* Sized for the worst concurrent set: one per cartridge dispense timeout
+ * (APP_SLOT_COUNT) plus the startup/reload sequence timeouts. The sequence
+ * timeouts never overlap (each phase cancels before arming the next), so
+ * 4 dispense + 1 sequence + the fault auto-clear timer fit with margin. */
+#define MAX_PENDING_TIMER_EVENTS (8U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -57,6 +61,7 @@ static const char* const app_sm_timeout_id_names[] = {
     [APP_SM_TIMEOUT_STARTUP_DELAY] = "APP_SM_TIMEOUT_STARTUP_DELAY",
     [APP_SM_TIMEOUT_MOTION] = "APP_SM_TIMEOUT_MOTION",
     [APP_SM_TIMEOUT_RECOUNT] = "APP_SM_TIMEOUT_RECOUNT",
+    [APP_SM_TIMEOUT_AUTO_CLEAR_FAULT] = "APP_SM_TIMEOUT_AUTO_CLEAR_FAULT",
     [APP_SM_CART1_DISPENSE] = "APP_SM_CART1_DISPENSE",
     [APP_SM_CART2_DISPENSE] = "APP_SM_CART2_DISPENSE",
     [APP_SM_CART3_DISPENSE] = "APP_SM_CART3_DISPENSE",
@@ -248,9 +253,8 @@ bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout_id, uint32_t delay_m
  * @brief Cancel every pending timeout.
  */
 void app_sm_port_cancel_timeout(void) {
-  // TODO: this is broken. timeout=0 means timer_id 0
   for (uint32_t i = 0U; i < MAX_PENDING_TIMER_EVENTS; i++) {
-    (void)cancel_timer(&timeout_timers[i], true, (app_sm_timeout_id_enum)0);
+    (void)cancel_timer(&timeout_timers[i], false, APP_SM_TIMEOUT_NONE);
   }
 }
 

@@ -115,6 +115,8 @@ static int reg_startup_settle_delay_ms_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_startup_settle_delay_ms_write(uint16_t reg, uint16_t val);
 static int reg_door_debounce_ms_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_door_debounce_ms_write(uint16_t reg, uint16_t val);
+static int reg_clear_faults_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_clear_faults_write(uint16_t reg, uint16_t val);
 
 /*******************************************************************************
  * Module Variable Definitions
@@ -255,6 +257,11 @@ static mb_holding_reg_def_t regs_defines[] = {
      .reg_amount = 1,
      .read_callback = reg_error_bitmask_read,
      .name = "error_bitmask"},
+    {.reg_id = REG_CLEAR_FAULTS,
+     .reg_amount = 1,
+     .read_callback = reg_clear_faults_read,
+     .write_callback = reg_clear_faults_write,
+     .name = "clear_faults"},
     {.reg_id = REG_CAL_DATA_PUSHER_RPM,
      .reg_amount = 1,
      .read_callback = reg_pusher_rpm_read,
@@ -1249,5 +1256,46 @@ static int reg_error_bitmask_read(uint16_t reg, uint16_t* val_ptr) {
   /* b11-b15: reserved, read 0. */
 
   *val_ptr = mask;
+  return 0;
+}
+
+static int reg_clear_faults_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  /* Write-trigger register: reads always return 0. */
+  if (val_ptr == NULL) {
+    return -1;
+  }
+  *val_ptr = 0U;
+  return 0;
+}
+
+static int reg_clear_faults_write(uint16_t reg, uint16_t val) {
+  app_event_t clear_event;
+  bool queued;
+
+  (void)reg;
+
+  if (val == 0U) {
+    return 0;
+  }
+
+  /* Same clear as CLI 'test set clear 1': the state machine owns the axis
+   * reset and cartridge flag reset. Callbacks run from the Modbus timer ISR,
+   * so the ISR-safe post is required and no console logging is allowed.
+   * APP_EV_FAULT_CLEARED is handled only in APP_FAULT; a write while healthy
+   * is consumed and ignored by the other states, same as the CLI today. */
+  clear_event.id = APP_EV_FAULT_CLEARED;
+  clear_event.slot = APP_NO_SLOT;
+  clear_event.product_type = 0U;
+  clear_event.value = 0U;
+  clear_event.axis_num = 0U;
+
+  queued = app_task_post_from_isr(&clear_event);
+
+  if (queued == false) {
+    /* Event queue full or not yet created: the request was dropped. */
+    return -1;
+  }
+
   return 0;
 }
