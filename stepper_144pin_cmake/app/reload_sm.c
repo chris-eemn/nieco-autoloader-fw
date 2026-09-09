@@ -424,7 +424,9 @@ reload_result_t reload_sm_dispatch(reload_sm_t* reload, cartridge_t cartridges[A
 
 void reload_sm_abort(reload_sm_t* reload) {
   if (reload != NULL) {
-    /* Cancel only the timeouts reload owns; dispense timers must survive. */
+    /* Cancel the timeouts reload owns. The blanket cancel in app_sm_enter_state
+     * now clears every pending timer, so these by-id cancels are belt-and-braces
+     * for callers that abort without a state transition. */
     (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
     (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
     (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
