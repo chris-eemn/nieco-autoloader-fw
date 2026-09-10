@@ -41,6 +41,7 @@ typedef enum {
   APP_EV_FAULT,
   APP_EV_FAULT_CLEARED,
   APP_EV_SHUTDOWN_REQUEST,
+  APP_EV_SHUTDOWN_END,
   APP_EV_TIMEOUT,
   APP_EV_CONTINUE,
 #if 0
@@ -100,6 +101,15 @@ typedef enum {
   RELOAD_WAIT_DOOR,         /* Entry wait for door closed + lock confirmed. */
   RELOAD_LOCK_DOOR_RECOUNT, /* Post-reload re-lock before recount. */
 } reload_state_enum;
+
+typedef enum {
+  SHUTDOWN_WAIT_DISPENSES = 0, /* Let active cycles finish; block new ones. */
+  SHUTDOWN_HOME_PUSHERS,       /* Retract all pushers. */
+  SHUTDOWN_HOME_LIFTS_DOWN,    /* Home all lifters down. */
+  SHUTDOWN_UNLOCK_DOOR,        /* Drive unlock, no door-open wait. */
+  SHUTDOWN_HOLD,               /* Sit until APP_EV_SHUTDOWN_END. */
+} shutdown_state_enum;
+
 typedef enum { PATTY_REQUEST_SOURCE_QUEUE = 0, PATTY_REQUEST_SOURCE_MANUAL } patty_request_source_enum;
 
 typedef enum {

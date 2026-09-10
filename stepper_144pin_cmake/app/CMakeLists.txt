@@ -10,6 +10,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   main_sm.c
   patty_handler.c
   reload_sm.c
+  shutdown_sm.c
   startup_sm.c
   input.c
 )

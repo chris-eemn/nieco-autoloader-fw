@@ -25,8 +25,10 @@
 #include "cal_data.h"
 #include "stepper_ctrl.h"
 #include "cartridge.h"  // only need for my simulated type hack
+#include "input.h"
 #include "patty_handler.h"
 #include "reload_sm.h"
+#include "shutdown_sm.h"
 #include "startup_sm.h"
 #include "app_task.h"
 
@@ -86,23 +88,45 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
     app_console_print("[Main SM] Event received: id=%s, slot=%d, value=%d\r\n", app_event_id_to_str(event->id), event->slot, event->value);
   }
 
-  if (event->id == APP_EV_SHUTDOWN_REQUEST) {
-    app_sm_enter_state(sm, APP_SHUTDOWN);
-    return;
+  if (event->id == APP_EV_FAULT) {
+    /* Shutdown owns the machine until the switch releases: a raw axis fault
+     * event must not divert it to APP_FAULT with the door locked (plan
+     * decision — faults during shutdown skip and continue). The event still
+     * reaches the shutdown SM through the state switch below, where the
+     * wait and homing states absorb it. */
+    if (sm->state == APP_SHUTDOWN) {
+      app_console_print("[Main SM] Fault event absorbed during shutdown\r\n");
+    }
+    else {
+      app_console_print("[Main SM] Fault event received: fault_code=%d\r\n", event->value);
+      sm->fault_code = event->value;
+      app_sm_enter_state(sm, APP_FAULT);
+      // app_console_print("[Main SM] Simulating fault cleared event in 100ms for testing purposes\r\n");
+      // app_simulate_event(100, APP_EV_FAULT_CLEARED);
+      return;
+    }
   }
 
-  if (event->id == APP_EV_FAULT) {
-    app_console_print("[Main SM] Fault event received: fault_code=%d\r\n", event->value);
-    sm->fault_code = event->value;
-    app_sm_enter_state(sm, APP_FAULT);
-    // app_console_print("[Main SM] Simulating fault cleared event in 100ms for testing purposes\r\n");
-    // app_simulate_event(100, APP_EV_FAULT_CLEARED);
+  /* The shutdown switch is edge-driven: a release outside APP_SHUTDOWN is
+   * nothing to do (the switch was already inactive, or the machine already
+   * left shutdown). Filter it here so it never reaches a sub-SM, whose
+   * unexpected-event arms would fault the sequence. */
+  if ((event->id == APP_EV_SHUTDOWN_END) && (sm->state != APP_SHUTDOWN)) {
+    app_console_print("[Main SM] Shutdown-end event ignored in state %d\r\n", sm->state);
+    app_sm_port_publish_state(sm);
     return;
   }
 
   switch (sm->state) {
     case APP_INIT:
-      if (event->id == APP_EV_START) {
+      if (event->id == APP_EV_SHUTDOWN_REQUEST) {
+        /* Plan: any state except APP_SHUTDOWN enters shutdown. The switch
+         * posts only on edges, so a press before APP_EV_START must not be
+         * dropped. */
+        app_console_print("[Main SM] Shutdown request received during init\r\n");
+        app_sm_enter_state(sm, APP_SHUTDOWN);
+      }
+      else if (event->id == APP_EV_START) {
         // TODO: put back to startup
 
 #if 0
@@ -119,7 +143,22 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case APP_STARTUP: {
       startup_result_t result;
-      if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
+      if ((event->id == APP_EV_CONTINUE) && (input_get_shutdown_requested() == true)) {
+        /* The switch posts only on edges: if it was already held active when
+         * startup began (e.g. after a door-closed fault recovery), no
+         * SHUTDOWN_REQUEST edge will ever arrive. Poll the debounced level
+         * on startup's own entry pump so the machine cannot dispense with
+         * the switch engaged. */
+        app_console_print("[Main SM] Shutdown switch held active at startup, entering shutdown\r\n");
+        startup_sm_abort(&sm->startup);
+        app_sm_enter_state(sm, APP_SHUTDOWN);
+      }
+      else if (event->id == APP_EV_SHUTDOWN_REQUEST) {
+        app_console_print("[Main SM] Shutdown requested during startup\r\n");
+        startup_sm_abort(&sm->startup);
+        app_sm_enter_state(sm, APP_SHUTDOWN);
+      }
+      else if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_LOCK_RELEASED)) {
         startup_sm_abort(&sm->startup);
         sm->fault_code = APP_FAULT_CODE_DOOR_OPENED;
         app_sm_enter_state(sm, APP_FAULT);
@@ -155,6 +194,10 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
         app_console_print("[Main SM] Reload request received\r\n");
         app_sm_enter_state(sm, APP_RELOAD);
       }
+      else if (event->id == APP_EV_SHUTDOWN_REQUEST) {
+        app_console_print("[Main SM] Shutdown request received\r\n");
+        app_sm_enter_state(sm, APP_SHUTDOWN);
+      }
       break;
 
     case APP_DISPENSE:
@@ -178,6 +221,15 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
            */
           patty_handler_set_dispensing_enabled(&sm->patty_handler, false);
         }
+        else if (event->id == APP_EV_SHUTDOWN_REQUEST) {
+          /*
+           * Enter APP_SHUTDOWN directly. The shutdown SM disables dispensing
+           * again at entry; already-active cartridge cycles finish first in
+           * SHUTDOWN_WAIT_DISPENSES.
+           */
+          app_console_print("[Main SM] Shutdown request received during dispense\r\n");
+          app_sm_enter_state(sm, APP_SHUTDOWN);
+        }
         else {
           patty_handler_result_enum result;
           result = patty_handler_dispatch_event(&sm->patty_handler, event);
@@ -196,31 +248,49 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       break;
 
     case APP_RELOAD:
-      reload_result_t reload_result = reload_sm_dispatch(&sm->reload, sm->cartridge, event);
-      if (reload_result.status == RELOAD_STATUS_DONE) {
-        /*
-         * Reload disabled dispensing when it was requested. Re-enable it now that
-         * the reload completed and the door is closed and locked. The handler
-         * refuses enable unless door_closed && door_locked, so a false return
-         * means the safety state has not been applied yet.
-         */
-        if (patty_handler_set_dispensing_enabled(&sm->patty_handler, true) == false) {
-          app_console_print("[Main SM] WARNING: reload done but dispensing re-enable refused (safety state not applied)\r\n");
-        }
+      if (event->id == APP_EV_SHUTDOWN_REQUEST) {
+        /* Reload owns the door/lock sequence; shutdown takes over instead.
+         * The blanket cancel in app_sm_enter_state clears reload's timers.
+         * reload_pending clears with the abandoned sequence: the shutdown
+         * drains the dispense queue, so a later reload request must come
+         * from a fresh APP_EV_RELOAD_REQUEST, not a stale flag. */
+        app_console_print("[Main SM] Shutdown requested during reload\r\n");
         sm->reload_pending = false;
-        app_sm_enter_state(sm, APP_READY);
+        app_sm_enter_state(sm, APP_SHUTDOWN);
       }
-      else if (reload_result.status == RELOAD_STATUS_FAILED) {
-        /* Reload owns the fault code for this transition; a stale code from a
-         * prior state must not survive into APP_FAULT. */
-        sm->fault_code = reload_result.fault_code;
-        app_sm_enter_sequence_fault(sm);
+      else {
+        reload_result_t reload_result = reload_sm_dispatch(&sm->reload, sm->cartridge, event);
+        if (reload_result.status == RELOAD_STATUS_DONE) {
+          /*
+           * Reload disabled dispensing when it was requested. Re-enable it now that
+           * the reload completed and the door is closed and locked. The handler
+           * refuses enable unless door_closed && door_locked, so a false return
+           * means the safety state has not been applied yet.
+           */
+          if (patty_handler_set_dispensing_enabled(&sm->patty_handler, true) == false) {
+            app_console_print("[Main SM] WARNING: reload done but dispensing re-enable refused (safety state not applied)\r\n");
+          }
+          sm->reload_pending = false;
+          app_sm_enter_state(sm, APP_READY);
+        }
+        else if (reload_result.status == RELOAD_STATUS_FAILED) {
+          /* Reload owns the fault code for this transition; a stale code from a
+           * prior state must not survive into APP_FAULT. */
+          sm->fault_code = reload_result.fault_code;
+          app_sm_enter_sequence_fault(sm);
+        }
       }
       break;
 
     case APP_FAULT:
       app_console_print("[Main SM] Fault state: fault_code=%d\r\n", sm->fault_code);
-      if (event->id == APP_EV_FAULT_CLEARED) {
+      if (event->id == APP_EV_SHUTDOWN_REQUEST) {
+        /* Remember the request; app_sm_clear_fault runs the shutdown sequence
+         * instead of startup once the fault is cleared. */
+        app_console_print("[Main SM] Shutdown requested during fault, pending fault clear\r\n");
+        sm->shutdown_pending = true;
+      }
+      else if (event->id == APP_EV_FAULT_CLEARED) {
         app_sm_clear_fault(sm);
       }
       else if (event->id == APP_EV_DOOR_CLOSED) {
@@ -229,6 +299,10 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
           /* Belt-and-braces against the blanket cancel, same as app_sm_clear_fault. */
           (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_AUTO_CLEAR_FAULT);
           sm->fault_code = 0U;
+          /* The machine is recovering to startup, not to a shutdown the
+           * switch asked for while faulted — a shutdown request arriving
+           * after this point re-enters APP_SHUTDOWN from startup anyway. */
+          sm->shutdown_pending = false;
           patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
           app_sm_enter_state(sm, APP_STARTUP);
           app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
@@ -240,8 +314,23 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       }
       break;
 
-    case APP_SHUTDOWN:
-      break;
+    case APP_SHUTDOWN: {
+      shutdown_result_t shutdown_result = shutdown_sm_dispatch(&sm->shutdown, sm->cartridge, &sm->patty_handler, event);
+      if (shutdown_result.status == SHUTDOWN_STATUS_DONE) {
+        /* Switch went inactive in SHUTDOWN_HOLD. Startup re-homes, re-counts,
+         * and gates dispensing on door-closed + locked. */
+        app_sm_enter_state(sm, APP_STARTUP);
+        app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
+      }
+      else if (shutdown_result.status == SHUTDOWN_STATUS_FAILED) {
+        /* Internal error only (NULL args): the shutdown sequence itself never
+         * fails. The blanket cancel in app_sm_enter_state clears shutdown's
+         * timers on the transition. */
+        app_console_print("[Main SM] Shutdown sequence internal error\r\n");
+        sm->fault_code = APP_FAULT_CODE_SEQUENCE_ERROR;
+        app_sm_enter_state(sm, APP_FAULT);
+      }
+    } break;
 
     default:
       sm->fault_code = APP_FAULT_CODE_INVALID_STATE;
@@ -302,14 +391,30 @@ static void app_sm_enter_state(app_sm_t* sm, app_state_enum next) {
         break;
 
       case APP_SHUTDOWN:
-        app_sm_port_halt_all_motion(sm->cartridge);
-        app_sm_port_save_state();
+        /* Graceful shutdown: let in-flight dispenses finish, retract pushers,
+         * home lifters down, unlock the door, then park. save_state() runs on
+         * SHUTDOWN_HOLD entry, once the mechanics are parked. shutdown_sm_start
+         * disables dispensing on the handler itself. */
+        shutdown_sm_start(&sm->shutdown, &sm->patty_handler);
         break;
 
       case APP_INIT:
       case APP_READY:
       default:
         break;
+    }
+
+    /* Cancel the per-slot dispense watchdogs after the state-specific entry
+     * actions above: while APP_SHUTDOWN is active the shutdown SM owns the
+     * event feed, and it forwards these slot timeouts to the dispense SMs
+     * from SHUTDOWN_WAIT_DISPENSES, so a cycle whose motion event was in
+     * flight when shutdown began can still settle. The dispense SMs
+     * themselves are left untouched — their active states are exactly what
+     * SHUTDOWN_WAIT_DISPENSES polls. */
+    if (next == APP_SHUTDOWN) {
+      for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+        (void)app_sm_port_cancel_timeout_id((app_sm_timeout_id_enum)(APP_SM_CART1_DISPENSE + slot));
+      }
     }
 
     app_sm_port_publish_state(sm);
@@ -346,6 +451,23 @@ static void app_sm_clear_fault(app_sm_t* sm) {
    * auto-clear behind even if the blanket cancel changes again. */
   (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_AUTO_CLEAR_FAULT);
   sm->fault_code = 0U;
+  if (sm->shutdown_pending == true) {
+    /* The shutdown switch was toggled while faulted: run the graceful
+     * shutdown sequence instead of returning to startup. Reset the axis
+     * faults first: axis_home refuses to start on a faulted or stalled
+     * axis, and a rejected homing command would divert the shutdown to
+     * APP_FAULT with the door locked. The patty handler re-init below is
+     * skipped: shutdown disables dispensing anyway, and startup re-inits
+     * it when the machine returns. */
+    sm->shutdown_pending = false;
+    app_console_print("[Main SM] Fault cleared with shutdown pending, entering shutdown\r\n");
+    clear_all_axis_faults();
+    for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+      sm->cartridge[slot].faulted = false;
+    }
+    app_sm_enter_state(sm, APP_SHUTDOWN);
+    return;
+  }
   app_console_print("[Main SM] Fault cleared, returning to startup\r\n");
   // this is a hack so do not have to power cycle machine to dispense again
   clear_all_axis_faults();

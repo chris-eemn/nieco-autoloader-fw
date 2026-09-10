@@ -290,11 +290,14 @@ void app_sm_port_publish_state(const app_sm_t* sm) {
         s_status = APP_SM_STATUS_RELOAD;
         break;
 
+      case APP_SHUTDOWN:
+        s_status = APP_SM_STATUS_SHUTDOWN;
+        break;
+
       case APP_INIT:
       case APP_STARTUP:
       case APP_DISPENSE:
       case APP_FAULT:
-      case APP_SHUTDOWN:
       default:
         /* Retain the last published status. */
         break;
