@@ -143,12 +143,14 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
 
     case APP_STARTUP: {
       startup_result_t result;
+
       if ((event->id == APP_EV_CONTINUE) && (input_get_shutdown_requested() == true)) {
         /* The switch posts only on edges: if it was already held active when
          * startup began (e.g. after a door-closed fault recovery), no
          * SHUTDOWN_REQUEST edge will ever arrive. Poll the debounced level
          * on startup's own entry pump so the machine cannot dispense with
-         * the switch engaged. */
+         * the switch engaged. The door poll timer armed by startup_sm_start
+         * re-enters this arm, so the abort below cannot strand the sequence. */
         app_console_print("[Main SM] Shutdown switch held active at startup, entering shutdown\r\n");
         startup_sm_abort(&sm->startup);
         app_sm_enter_state(sm, APP_SHUTDOWN);
@@ -305,7 +307,6 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
           sm->shutdown_pending = false;
           patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
           app_sm_enter_state(sm, APP_STARTUP);
-          app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
         }
       }
       else if ((event->id == APP_EV_TIMEOUT) && ((app_sm_timeout_id_enum)event->value == APP_SM_TIMEOUT_AUTO_CLEAR_FAULT)) {
@@ -318,9 +319,9 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       shutdown_result_t shutdown_result = shutdown_sm_dispatch(&sm->shutdown, sm->cartridge, &sm->patty_handler, event);
       if (shutdown_result.status == SHUTDOWN_STATUS_DONE) {
         /* Switch went inactive in SHUTDOWN_HOLD. Startup re-homes, re-counts,
-         * and gates dispensing on door-closed + locked. */
+         * and gates dispensing on door-closed + locked. startup_sm_start arms
+         * the door poll timer, so no entry pump is posted here. */
         app_sm_enter_state(sm, APP_STARTUP);
-        app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
       }
       else if (shutdown_result.status == SHUTDOWN_STATUS_FAILED) {
         /* Internal error only (NULL args): the shutdown sequence itself never
