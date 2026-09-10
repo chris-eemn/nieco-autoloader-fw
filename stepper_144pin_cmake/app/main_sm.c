@@ -320,7 +320,16 @@ void app_sm_dispatch(app_sm_t* sm, const app_event_t* event) {
       if (shutdown_result.status == SHUTDOWN_STATUS_DONE) {
         /* Switch went inactive in SHUTDOWN_HOLD. Startup re-homes, re-counts,
          * and gates dispensing on door-closed + locked. startup_sm_start arms
-         * the door poll timer, so no entry pump is posted here. */
+         * the door poll timer, so no entry pump is posted here.
+         *
+         * shutdown_sm_start disabled dispensing on the handler at entry, and
+         * unlike the fault path in app_sm_clear_fault, nothing re-inits the
+         * handler on this return, so the flag would stay false and every
+         * request after shutdown would be rejected. Re-apply the safety state
+         * the same way the fault recovery does; the door was unlocked during
+         * shutdown, so the handler's cached door flags are stale and must be
+         * reset alongside the enable. */
+        patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
         app_sm_enter_state(sm, APP_STARTUP);
       }
       else if (shutdown_result.status == SHUTDOWN_STATUS_FAILED) {

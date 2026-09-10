@@ -298,8 +298,7 @@ static void input_poll_reload_pin(void) {
  * @brief Poll and debounce the active-low shutdown switch.
  *
  *        Posts APP_EV_SHUTDOWN_REQUEST when the switch transitions from
- *        inactive to active.  The release transition updates the stored
- *        state without posting an event.
+ *        inactive to active, and APP_EV_SHUTDOWN_END on the release edge.
  */
 static void input_poll_shutdown_pin(void) {
   TickType_t elapsed;
@@ -323,6 +322,14 @@ static void input_poll_shutdown_pin(void) {
 
   if (raw == 0U) {
     shutdown_event.id = APP_EV_SHUTDOWN_REQUEST;
+    shutdown_event.slot = APP_NO_SLOT;
+    shutdown_event.value = 0U;
+    shutdown_event.axis_num = 0U;
+
+    app_task_post(&shutdown_event);
+  }
+  else {
+    shutdown_event.id = APP_EV_SHUTDOWN_END;
     shutdown_event.slot = APP_NO_SLOT;
     shutdown_event.value = 0U;
     shutdown_event.axis_num = 0U;

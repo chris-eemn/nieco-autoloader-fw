@@ -200,10 +200,6 @@ void app_sm_port_halt_all_motion(cartridge_t cartridges[APP_SLOT_COUNT]) {
   }
 }
 
-void app_sm_port_save_state(void) {
-  /* TODO: Queue the required nonvolatile records through the existing W25Q stack. */
-}
-
 bool app_sm_port_arm_timeout(app_sm_timeout_id_enum timeout_id, uint32_t delay_ms) {
   TickType_t period = pdMS_TO_TICKS(delay_ms);
   bool armed = false;

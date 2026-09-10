@@ -351,7 +351,6 @@ static void shutdown_skip_to_next_phase(shutdown_sm_t* sm, cartridge_t cartridge
 static void shutdown_enter_unlock(shutdown_sm_t* sm) {
   app_sm_port_unlock_door();
   sm->state = SHUTDOWN_HOLD;
-  app_sm_port_save_state();
 
   /* The switch may have been released partway through the sequence. The
    * sequence is complete at this point, so the latched release is honored
