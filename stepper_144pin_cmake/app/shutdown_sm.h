@@ -15,6 +15,7 @@
 /*******************************************************************************
  * Includes
  *******************************************************************************/
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "autoloader_types.h"
@@ -32,7 +33,7 @@
 typedef enum {
   SHUTDOWN_STATUS_OK = 0,
   SHUTDOWN_STATUS_IN_PROGRESS = 1,
-  SHUTDOWN_STATUS_DONE = 2,  // success, switch went inactive in SHUTDOWN_HOLD
+  SHUTDOWN_STATUS_DONE = 2, /* Success: sequence finished and switch released. */
   SHUTDOWN_STATUS_FAILED = 3,
 } shutdown_status_enum;
 
@@ -43,6 +44,7 @@ typedef struct {
 
 typedef struct {
   shutdown_state_enum state;
+  bool release_seen; /* APP_EV_SHUTDOWN_END arrived before the sequence finished. */
 } shutdown_sm_t;
 
 /*******************************************************************************

@@ -125,6 +125,7 @@ void shutdown_sm_start(shutdown_sm_t* sm, patty_handler_t* patty_handler) {
      * every phase ends by watchdog-skip with the axes left unhomed. */
     app_sm_port_set_recount_active(false);
     sm->state = SHUTDOWN_WAIT_DISPENSES;
+    sm->release_seen = false;
     /* Block new dispense cycles here rather than relying on the caller:
      * the setter's door gate keeps the flag false whenever the door is not
      * closed and locked, so this call is safe from every entry state. */
@@ -146,6 +147,19 @@ shutdown_result_t shutdown_sm_dispatch(shutdown_sm_t* shutdown, cartridge_t cart
   }
   else {
     app_console_print("[Shutdown SM] dispatch event %s slot %u value 0x%04X\r\n", app_event_id_to_str(event->id), event->slot, event->value);
+
+    /* The switch is edge-driven and may be released while the sequence is
+     * still running. The sequence must still complete — mechanics parked,
+     * door unlocked, state saved — so the release edge is latched here and
+     * honored at the point SHUTDOWN_HOLD would otherwise park. */
+    if (event->id == APP_EV_SHUTDOWN_END) {
+      shutdown->release_seen = true;
+    }
+    // if the shutdown switch is pressed, clear the release_seen flag
+    else if (event->id == APP_EV_SHUTDOWN_REQUEST) {
+      shutdown->release_seen = false;
+    }
+
     switch (shutdown->state) {
       case SHUTDOWN_WAIT_DISPENSES:
         /* Dispensing was disabled at entry, so queued-but-unstarted requests
@@ -253,7 +267,7 @@ shutdown_result_t shutdown_sm_dispatch(shutdown_sm_t* shutdown, cartridge_t cart
         break;
 
       case SHUTDOWN_HOLD:
-        if (event->id == APP_EV_SHUTDOWN_END) {
+        if (shutdown->release_seen == true) {
           app_console_print("[Shutdown SM] Shutdown switch released, returning to startup\r\n");
           result.status = SHUTDOWN_STATUS_DONE;
         }
@@ -275,6 +289,7 @@ void shutdown_sm_abort(shutdown_sm_t* shutdown) {
     (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
     (void)app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_UNLOCK);
     shutdown->state = SHUTDOWN_WAIT_DISPENSES;
+    shutdown->release_seen = false;
   }
 }
 
@@ -337,4 +352,12 @@ static void shutdown_enter_unlock(shutdown_sm_t* sm) {
   app_sm_port_unlock_door();
   sm->state = SHUTDOWN_HOLD;
   app_sm_port_save_state();
+
+  /* The switch may have been released partway through the sequence. The
+   * sequence is complete at this point, so the latched release is honored
+   * immediately: the dispatch returns DONE and the main SM returns to
+   * startup without waiting for a release edge that already happened. */
+  if (sm->release_seen == true) {
+    app_console_print("[Shutdown SM] Shutdown switch released during sequence, returning to startup\r\n");
+  }
 }
