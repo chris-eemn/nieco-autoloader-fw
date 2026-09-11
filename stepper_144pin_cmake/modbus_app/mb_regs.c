@@ -118,6 +118,8 @@ static int reg_door_debounce_ms_write(uint16_t reg, uint16_t val);
 static int reg_clear_faults_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_clear_faults_write(uint16_t reg, uint16_t val);
 
+
+static uint8_t get_mb_address(void);
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
@@ -362,7 +364,7 @@ mb_holding_reg_array_t* get_reg_array(void) {
 }
 
 void mb_regs_init(void) {
-  slave_params.slave_address = MB_SLAVE_ADDR;
+  slave_params.slave_address = get_mb_address();
   slave_params.slave_id = "stepper-tester";
   slave_params.baud = 57600;
   slave_params.response_delay_us = 5000;
@@ -381,6 +383,28 @@ void mb_regs_deinit(void) {
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
+
+/**
+ * @brief Reads the Modbus slave address selected by the board address pins.
+ * @note The address is calculated as 15 minus the pin states
+ *        Possible combinations:
+ *        addr0 = 0, addr1 = 0 -> address = 15
+ *        addr0 = 1, addr1 = 0 -> address = 14
+ *        addr0 = 0, addr1 = 1 -> address = 13
+ *        addr0 = 1, addr1 = 1 -> address = 12
+ * @param none
+ * @retval uint8_t Modbus slave address currently selected for this node.
+ * @return uint8_t configured Modbus slave address.
+ */
+static uint8_t get_mb_address(void) {
+  // uint8_t addr0 = (uint8_t)HAL_GPIO_ReadPin(MBADDR0_PORT, MBADDR0_PIN);
+  // uint8_t addr1 = (uint8_t)HAL_GPIO_ReadPin(MBADDR1_PORT, MBADDR1_PIN);
+  // TODO: use actual pin readings once we have actual hardware
+  uint8_t addr0 = 0;
+  uint8_t addr1 = 0;
+  uint8_t address = 15 - (addr0 + (addr1 << 1));
+  return address;
+}
 /**
  * @brief writes one cal_data u32 field from a u16 Modbus value and persists the whole block
  * @note stepper_system_update_configs() applies the new value to the axes without a power cycle.

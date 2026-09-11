@@ -24,7 +24,6 @@
 #define MB_BAUD_RATE 57600
 #define MB_RESPONSE_DELAY_US 500
 #define MB_REG_ARRAY_SIZE (128)
-#define MB_SLAVE_ADDR (15)
 
 /*******************************************************************************
  * Module Typedefs
