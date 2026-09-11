@@ -14,6 +14,7 @@
  *******************************************************************************/
 #include "mb_regs.h"
 
+#include <limits.h>
 #include <stdint.h>
 
 #include "modbus_config.h"
@@ -27,6 +28,7 @@
 #include "cartridge.h"
 #include "input.h"
 #include "stepper_system.h"
+#include "temp_layer.h"
 
 /*******************************************************************************
  * Module Macros
@@ -115,6 +117,8 @@ static int reg_startup_settle_delay_ms_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_startup_settle_delay_ms_write(uint16_t reg, uint16_t val);
 static int reg_door_debounce_ms_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_door_debounce_ms_write(uint16_t reg, uint16_t val);
+static int reg_temp_max_f_read(uint16_t reg, uint16_t* val_ptr);
+static int reg_temp_max_f_write(uint16_t reg, uint16_t val);
 static int reg_clear_faults_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_clear_faults_write(uint16_t reg, uint16_t val);
 
@@ -337,6 +341,11 @@ static mb_holding_reg_def_t regs_defines[] = {
      .read_callback = reg_door_debounce_ms_read,
      .write_callback = reg_door_debounce_ms_write,
      .name = "door_debounce_ms"},
+    {.reg_id = REG_CAL_DATA_TEMP_MAX_F,
+     .reg_amount = 1,
+     .read_callback = reg_temp_max_f_read,
+     .write_callback = reg_temp_max_f_write,
+     .name = "temp_max_f"},
 };
 
 modbus_slave_t ui_slave = {0};
@@ -837,24 +846,40 @@ static int reg_door_lock_read(uint16_t reg, uint16_t* val_ptr) {
   return 0;
 }
 
-static int reg_temp_sensor1_read(uint16_t reg, uint16_t* val_ptr) {
-  (void)reg;
+/**
+ * @brief Read a channel temperature as whole degrees F (signed).
+ *
+ * The temp_layer performs the C-to-F conversion; the value is already clamped
+ * to the int16_t range there.
+ *
+ * @param ch Channel index (0-based).
+ * @param val_ptr Receives the temperature in whole degrees F.
+ * @return int 0 on success, -1 on invalid argument or no reading yet.
+ */
+static int reg_temp_sensor_read(uint8_t ch, uint16_t* val_ptr) {
+  int16_t temp_f;
+
   if (val_ptr == NULL) {
     return -1;
   }
-  app_console_print("[MODBUS] temp_sensor1: not implemented\r\n");
-  *val_ptr = 0U;
+
+  temp_f = temp_layer_get_temp_f(ch);
+  if (temp_f == INT16_MIN) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)temp_f;
   return 0;
+}
+
+static int reg_temp_sensor1_read(uint16_t reg, uint16_t* val_ptr) {
+  (void)reg;
+  return reg_temp_sensor_read(0U, val_ptr);
 }
 
 static int reg_temp_sensor2_read(uint16_t reg, uint16_t* val_ptr) {
   (void)reg;
-  if (val_ptr == NULL) {
-    return -1;
-  }
-  app_console_print("[MODBUS] temp_sensor2: not implemented\r\n");
-  *val_ptr = 0U;
-  return 0;
+  return reg_temp_sensor_read(1U, val_ptr);
 }
 
 static int reg_pusher_rpm_read(uint16_t reg, uint16_t* val_ptr) {
@@ -1172,6 +1197,29 @@ static int reg_door_debounce_ms_write(uint16_t reg, uint16_t val) {
 
   /* input.c samples this once in input_init(); the new value takes effect on the next boot. */
   return reg_cal_u16_write(&params->door_debounce_ms, val) ? 0 : -1;
+}
+
+static int reg_temp_max_f_read(uint16_t reg, uint16_t* val_ptr) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  if (val_ptr == NULL) {
+    return -1;
+  }
+
+  *val_ptr = (uint16_t)params->temp_max_f;
+  return 0;
+}
+
+static int reg_temp_max_f_write(uint16_t reg, uint16_t val) {
+  params = cal_data_get();
+
+  (void)reg;
+
+  /* The TempSense task re-reads the threshold every cycle; the new value
+   * takes effect on the next reading. */
+  return reg_cal_u16_write(&params->temp_max_f, val) ? 0 : -1;
 }
 
 /**

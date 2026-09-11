@@ -64,7 +64,8 @@ static const char* s_param_names[CAL_DATA_CLI_NUM_PARAMS] = {[CAL_DATA_CLI_PARAM
                                                                [CAL_DATA_CLI_RECOUNT_TIMEOUT_MS] = "recount_timeout_ms",
                                                                [CAL_DATA_CLI_PATTY2_THICKNESS_COUNTS] = "patty2_thickness_counts",
                                                                [CAL_DATA_CLI_AUTO_CLEAR_FAULTS] = "auto_clear_faults",
-                                                               [CAL_DATA_CLI_AUTO_CLEAR_DELAY_MS] = "auto_clear_delay_ms"};
+                                                               [CAL_DATA_CLI_AUTO_CLEAR_DELAY_MS] = "auto_clear_delay_ms",
+                                                               [CAL_DATA_CLI_TEMP_MAX_F] = "temp_max_f"};
 
 /*******************************************************************************
  * Function Prototypes
@@ -298,6 +299,10 @@ static uint32_t* param_value_ptr(cal_data_cli_param_enum param) {
 
       case CAL_DATA_CLI_AUTO_CLEAR_DELAY_MS:
         value = &params->auto_clear_delay_ms;
+        break;
+
+      case CAL_DATA_CLI_TEMP_MAX_F:
+        value = &params->temp_max_f;
         break;
 
       default:
