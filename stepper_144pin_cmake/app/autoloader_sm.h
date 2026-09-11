@@ -19,6 +19,7 @@
 #include "patty_handler.h"
 #include "autoloader_types.h"
 #include "reload_sm.h"
+#include "shutdown_sm.h"
 #include "startup_sm.h"
 #include <stdint.h>
 
@@ -34,11 +35,13 @@ typedef struct app_sm {
   app_state_enum state;
   startup_sm_t startup;
   reload_sm_t reload;
+  shutdown_sm_t shutdown;
   patty_handler_t patty_handler;
   cartridge_t cartridge[APP_SLOT_COUNT];
   uint8_t active_slot;
   uint16_t fault_code;
   bool reload_pending;
+  bool shutdown_pending; /* Shutdown requested while in APP_FAULT; honored on fault clear. */
 } app_sm_t;
 
 /*******************************************************************************

@@ -67,12 +67,40 @@ static const homing_phase_cfg_t homing_cfg_lifter_up = {
     .timeout_log = "[Startup SM] Lifts home up timeout\r\n",
 };
 
+/** @brief Poll period for the door/lock levels while waiting to start, milliseconds. */
+#define STARTUP_WAIT_POLL_MS (200U)
+
 /*******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 static void startup_begin_homing(startup_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]);
 static void startup_begin_lifter_homing(cartridge_t cartridges[APP_SLOT_COUNT], homing_target_enum target);
 static void startup_post_home_done(void);
+
+/**
+ * @brief Evaluate the door and lock levels and advance out of STARTUP_WAIT_DOOR.
+ *
+ * The door and lock switches post events only on edges, so a state machine that
+ * enters this state after the fact can never see the transition it is waiting
+ * for. Every entry into and poll of STARTUP_WAIT_DOOR reads the debounced levels
+ * through this helper instead of trusting the event that woke it.
+ *
+ * @param sm Application state model.
+ * @param cartridges Array of cartridges.
+ */
+static void startup_evaluate_door(startup_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]);
+
+/**
+ * @brief Evaluate the lock-detect level and advance out of STARTUP_LOCK_DOOR.
+ *
+ * The lock detect posts only on edges: when the lock control output is already
+ * energized and the detect pin is already high, no APP_EV_LOCK_CONFIRMED will
+ * ever arrive. The lock watchdog armed by the caller bounds the wait.
+ *
+ * @param sm Application state model.
+ * @param cartridges Array of cartridges.
+ */
+static void startup_evaluate_lock(startup_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]);
 
 /**
  * @brief Handle a generic homing-phase event for the startup sequence.
@@ -98,6 +126,12 @@ static homing_event_result_enum startup_handle_homing_event(startup_sm_t* sm, ca
 void startup_sm_start(startup_sm_t* sm) {
   if (sm != NULL) {
     sm->state = STARTUP_WAIT_DOOR;
+    sm->lift_homing_end_time_ms = 0U;
+    sm->lift_homing_timeout_ms = 0U;
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_STARTUP_DELAY);
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_DOOR);
     // feed dispatcher to check door and lock status, and to start the sequence if both are satisfied
     app_task_post(&(app_event_t){.id = APP_EV_CONTINUE, .slot = APP_NO_SLOT, .value = 0U});
   }
@@ -111,6 +145,7 @@ void startup_sm_abort(startup_sm_t* sm) {
     app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
     app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_STARTUP_DELAY);
     app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_MOTION);
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_DOOR);
   }
 }
 
@@ -123,33 +158,32 @@ startup_result_t startup_sm_dispatch(startup_sm_t* sm, cartridge_t cartridges[AP
 
   switch (sm->state) {
     case STARTUP_WAIT_DOOR:
-      if ((input_get_door_closed() == true) || (event->id == APP_EV_DOOR_CLOSED)) {
-        if (input_get_lock_confirmed() == true) {
-          app_console_print("[Startup SM] Door already locked\r\n");
-          startup_begin_homing(sm, cartridges);
-          sm->state = STARTUP_HOME_PUSHERS;
-        }
-        else {
-          app_console_print("[Startup SM] Locking door\r\n");
-
-          sm->state = STARTUP_LOCK_DOOR;
-          app_sm_port_lock_door();
-          app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK, app_sm_port_get_lock_timeout_ms());
-        }
-      }
+      startup_evaluate_door(sm, cartridges);
       break;
 
     case STARTUP_LOCK_DOOR:
       if (event->id == APP_EV_LOCK_CONFIRMED) {
         app_console_print("[Startup SM] Door locked\r\n");
         app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
+        app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_DOOR);
         sm->state = STARTUP_HOME_PUSHERS;
         startup_begin_homing(sm, cartridges);
       }
       else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_LOCK)) {
+        app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_DOOR);
         result.status = STARTUP_STATUS_FAILED;
         result.fault_code = APP_FAULT_CODE_STARTUP_FAILED;
         sm->state = STARTUP_FAILED;
+      }
+      else if ((event->id == APP_EV_TIMEOUT) && (event->value == APP_SM_TIMEOUT_DOOR)) {
+        /* Poll tick: the lock detect may already be high without ever having
+         * posted an edge. */
+        startup_evaluate_lock(sm, cartridges);
+      }
+      else if ((event->id == APP_EV_DOOR_OPENED) || (event->id == APP_EV_DOOR_CLOSED)) {
+        /* The door level changed under the lock attempt: re-evaluate from the
+         * top instead of waiting for the lock watchdog. */
+        startup_evaluate_door(sm, cartridges);
       }
       else {
         app_console_print("[Startup SM] Unexpected event in STARTUP_LOCK_DOOR: id=%d, value=%d\r\n", event->id, event->value);
@@ -344,5 +378,57 @@ static void startup_begin_homing(startup_sm_t* sm, cartridge_t cartridges[APP_SL
   for (uint8_t i = 0U; i < APP_SLOT_COUNT; i++) {
     app_sm_port_home_pusher(&cartridges[i]);
     app_sm_port_arm_timeout(APP_SM_TIMEOUT_MOTION, app_sm_port_get_motion_timeout_ms());
+  }
+}
+
+/**
+ * @brief Evaluate the door and lock levels and advance out of STARTUP_WAIT_DOOR.
+ * @param sm Application state model.
+ * @param cartridges Array of cartridges.
+ */
+static void startup_evaluate_door(startup_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]) {
+  if (input_get_door_closed() == true) {
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_DOOR);
+    if (input_get_lock_confirmed() == true) {
+      app_console_print("[Startup SM] Door already locked\r\n");
+      startup_begin_homing(sm, cartridges);
+      sm->state = STARTUP_HOME_PUSHERS;
+    }
+    else {
+      app_console_print("[Startup SM] Locking door\r\n");
+      sm->state = STARTUP_LOCK_DOOR;
+      app_sm_port_lock_door();
+      app_sm_port_arm_timeout(APP_SM_TIMEOUT_LOCK, app_sm_port_get_lock_timeout_ms());
+      startup_evaluate_lock(sm, cartridges);
+    }
+  }
+  else {
+    /* The door is open and its switch posts only on edges: nothing will ever
+     * wake this state without the poll timer. */
+    if (app_sm_port_arm_timeout(APP_SM_TIMEOUT_DOOR, STARTUP_WAIT_POLL_MS) == false) {
+      app_console_print("[Startup SM] Failed to arm door poll timer, startup will not start on its own\r\n");
+    }
+  }
+}
+
+/**
+ * @brief Evaluate the lock-detect level and advance out of STARTUP_LOCK_DOOR.
+ * @param sm Application state model.
+ * @param cartridges Array of cartridges.
+ */
+static void startup_evaluate_lock(startup_sm_t* sm, cartridge_t cartridges[APP_SLOT_COUNT]) {
+  if (input_get_lock_confirmed() == true) {
+    app_console_print("[Startup SM] Door locked\r\n");
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_LOCK);
+    app_sm_port_cancel_timeout_id(APP_SM_TIMEOUT_DOOR);
+    sm->state = STARTUP_HOME_PUSHERS;
+    startup_begin_homing(sm, cartridges);
+    return;
+  }
+
+  /* Not confirmed yet and the detect posts only on edges: keep polling the
+   * level. The lock watchdog armed by the caller bounds the wait. */
+  if (app_sm_port_arm_timeout(APP_SM_TIMEOUT_DOOR, STARTUP_WAIT_POLL_MS) == false) {
+    app_console_print("[Startup SM] Failed to arm lock poll timer, startup will not start on its own\r\n");
   }
 }

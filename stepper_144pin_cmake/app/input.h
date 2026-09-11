@@ -131,4 +131,12 @@ bool input_get_lock_cmd_locked(void);
  */
 bool input_get_reload_requested(void);
 
+/**
+ * @brief Get the current shutdown-switch state.
+ *
+ *        Returns the last-known shutdown-switch pin value read by the input task.
+ * @return true if shutdown is currently requested; otherwise false.
+ */
+bool input_get_shutdown_requested(void);
+
 #endif /* INPUT_H_ */

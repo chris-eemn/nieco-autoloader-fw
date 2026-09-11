@@ -40,6 +40,7 @@
 typedef enum {
   APP_SM_STATUS_STARTING = 0,  ///< Startup not complete (power-on default).
   APP_SM_STATUS_READY = 1,     ///< Machine is ready (APP_READY).
+  APP_SM_STATUS_SHUTDOWN = 2,  ///< Shutdown sequence running or parked (APP_SHUTDOWN).
   APP_SM_STATUS_RELOAD = 4,    ///< Reload in progress (APP_RELOAD).
 } app_sm_status_enum;
 

@@ -16,6 +16,7 @@
 #include "app_task.h"
 #include "autoloader_types.h"
 #include "cal_data.h"
+#include "app_console.h"
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -64,6 +65,10 @@ static volatile uint32_t s_lock_last_change_tick = 0U;
 static volatile uint8_t s_reload_last_raw = 1U;
 static volatile uint32_t s_reload_last_change_tick = 0U;
 
+/* Shutdown-switch state — read by the task thread on every poll. */
+static volatile uint8_t s_shutdown_last_raw = 1U;
+static volatile uint32_t s_shutdown_last_change_tick = 0U;
+
 /* Lock-control output state — last commanded lock state (false = unlocked). */
 static volatile bool s_lock_cmd_locked = false;
 
@@ -74,6 +79,7 @@ static volatile bool s_lock_cmd_locked = false;
 static void input_door_debounce(void);
 static void input_poll_lock_pin(void);
 static void input_poll_reload_pin(void);
+static void input_poll_shutdown_pin(void);
 static void input_poll_inputs(void);
 static void input_door_exti_cb(hal_exti_handle_t* hexti, hal_exti_trigger_t trigger);
 
@@ -107,6 +113,8 @@ void input_init(void) {
   s_lock_last_change_tick = 0U;
   s_reload_last_raw = HAL_GPIO_ReadPin(RELOAD_SW_PORT, RELOAD_SW_PIN);
   s_reload_last_change_tick = 0U;
+  s_shutdown_last_raw = HAL_GPIO_ReadPin(SHUTDOWN_SW_PORT, SHUTDOWN_SW_PIN);
+  s_shutdown_last_change_tick = 0U;
 
   xTaskCreate(input_task_run, "Input", INPUT_TASK_STACK_DEPTH, NULL, INPUT_TASK_PRIORITY, NULL);
 }
@@ -286,9 +294,54 @@ static void input_poll_reload_pin(void) {
   }
 }
 
+/**
+ * @brief Poll and debounce the active-low shutdown switch.
+ *
+ *        Posts APP_EV_SHUTDOWN_REQUEST when the switch transitions from
+ *        inactive to active, and APP_EV_SHUTDOWN_END on the release edge.
+ */
+static void input_poll_shutdown_pin(void) {
+  TickType_t elapsed;
+  uint8_t raw;
+  app_event_t shutdown_event;
+
+  elapsed = xTaskGetTickCount() - s_shutdown_last_change_tick;
+
+  if (elapsed < pdMS_TO_TICKS(s_door_debounce_ms)) {
+    return; /* Still debouncing */
+  }
+
+  raw = HAL_GPIO_ReadPin(SHUTDOWN_SW_PORT, SHUTDOWN_SW_PIN);
+
+  if (raw == s_shutdown_last_raw) {
+    return; /* No state change */
+  }
+
+  s_shutdown_last_raw = raw;
+  s_shutdown_last_change_tick = xTaskGetTickCount();
+
+  if (raw == 0U) {
+    shutdown_event.id = APP_EV_SHUTDOWN_REQUEST;
+    shutdown_event.slot = APP_NO_SLOT;
+    shutdown_event.value = 0U;
+    shutdown_event.axis_num = 0U;
+
+    app_task_post(&shutdown_event);
+  }
+  else {
+    shutdown_event.id = APP_EV_SHUTDOWN_END;
+    shutdown_event.slot = APP_NO_SLOT;
+    shutdown_event.value = 0U;
+    shutdown_event.axis_num = 0U;
+
+    app_task_post(&shutdown_event);
+  }
+}
+
 static void input_poll_inputs(void) {
   input_poll_lock_pin();
   input_poll_reload_pin();
+  input_poll_shutdown_pin();
 }
 
 /**
@@ -337,4 +390,12 @@ bool input_get_lock_cmd_locked(void) {
  */
 bool input_get_reload_requested(void) {
   return (s_reload_last_raw == 0U);
+}
+
+/**
+ * @brief Get the current shutdown-switch state.
+ * @return true if shutdown is currently requested; otherwise false.
+ */
+bool input_get_shutdown_requested(void) {
+  return (s_shutdown_last_raw == 0U);
 }
