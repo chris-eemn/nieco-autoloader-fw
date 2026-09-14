@@ -20,6 +20,7 @@
 #include "app_task.h"
 #include "app_version_git.h"
 #include "cal_data.h"
+#include "ext_adc_i2c_service.h"
 #include "input.h"
 #include "stepper_auto_task.h"
 #include "stepper_system.h"
@@ -83,6 +84,10 @@ static void app_bringup_task_run(void* parameters) {
   else if (stepper_auto_task_start() == false) {
     app_console_print("[ERROR] Stepper auto-test task start failed.\r\n");
     initialized = false;
+  }
+  else {
+    // TODO: enable once we have the actual board with I2C adc
+    // ext_adc_i2c_init();
   }
   vTaskDelay(pdMS_TO_TICKS(10U));  // give the console time to flush before starting the stepper system
 

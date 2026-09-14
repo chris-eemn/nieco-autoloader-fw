@@ -77,6 +77,7 @@ static const char* const app_fault_code_names[] = {
     [APP_FAULT_CODE_STARTUP_FAILED] = "APP_FAULT_CODE_STARTUP_FAILED",
     [APP_FAULT_CODE_RELOAD_FAILED] = "APP_FAULT_CODE_RELOAD_FAILED",
     [APP_FAULT_CODE_CAL_MISSING] = "APP_FAULT_CODE_CAL_MISSING",
+    [APP_FAULT_CODE_TEMP_HIGH] = "APP_FAULT_CODE_TEMP_HIGH",
 };
 /*******************************************************************************
  * Function Prototypes

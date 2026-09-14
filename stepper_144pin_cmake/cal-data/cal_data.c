@@ -100,6 +100,7 @@ static const cal_data_params_t default_params = {
     .door_debounce_ms = 50U,
     .auto_clear_faults = 0U, /* off by default */
     .auto_clear_delay_ms = 5000U,
+    .temp_max_f = 30U, /* 30 deg F over-temp fault threshold */
 };
 
 _Static_assert(sizeof(cal_data_params_t) == (CAL_DATA_PARAM_COUNT * sizeof(uint32_t)),

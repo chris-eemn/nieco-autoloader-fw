@@ -7,3 +7,6 @@
 [submodule "stepper_144pin_cmake/stm32c5-bootloader"]
 	path = stepper_144pin_cmake/stm32c5-bootloader
 	url = git@github.com:Embedded-Design-Solutions/stm32c5-bootloader.git
+[submodule "stepper_144pin_cmake/ede-mcp342x"]
+	path = stepper_144pin_cmake/ede-mcp342x
+	url = git@github.com:Embedded-Design-Solutions/ede-mcp342x.git

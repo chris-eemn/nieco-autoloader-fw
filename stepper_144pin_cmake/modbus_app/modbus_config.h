@@ -64,8 +64,8 @@ typedef enum {
   REG_CARTRIDGE4_QUEUE = 24,    /* cartridge 4 dispense queue depth */
   REG_DOOR_SWITCH = 25,         /* 0 = open, 1 = closed  */
   REG_DOOR_LOCK = 26,           /* 0 = unlocked, 1 = locked  */
-  REG_TEMP_SENSOR1 = 27,        /* 0.1 deg F signed (no sensor hardware/driver exists) */
-  REG_TEMP_SENSOR2 = 28,        /* 0.1 deg F signed (no sensor hardware/driver exists) */
+  REG_TEMP_SENSOR1 = 27,        /* whole deg F signed (thermocouple CH1 via temp_layer) */
+  REG_TEMP_SENSOR2 = 28,        /* whole deg F signed (thermocouple CH2 via temp_layer) */
   REG_ERROR_BITMASK = 29,       /* live error bits: b2/b3 lane mismatch, b4 app fault,
                                  * b5-b8 cartridge faulted, b9 door open, b10 lock not
                                  * confirmed (see reg_error_bitmask_read for the full map) */
@@ -92,6 +92,8 @@ typedef enum {
   /* cal_data.door_debounce_ms -- input.c samples it once at boot; runtime writes take
    * effect on the next boot */
   REG_CAL_DATA_DOOR_DEBOUNCE_MS = 104,
+
+  REG_CAL_DATA_TEMP_MAX_F = 105, /* cal_data.temp_max_f -- over-temp fault threshold, whole deg F */
 
 } app_slave_regs_enum;
 

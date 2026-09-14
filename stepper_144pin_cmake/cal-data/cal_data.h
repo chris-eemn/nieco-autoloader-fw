@@ -43,11 +43,11 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (11U)
+#define CAL_DATA_VERSION (12U)
 
 /** Number of uint32_t fields in cal_data_params_t. Kept in sync with the struct by the
  *  _Static_assert in cal_data.c. */
-#define CAL_DATA_PARAM_COUNT (24U)
+#define CAL_DATA_PARAM_COUNT (25U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -86,6 +86,9 @@ typedef struct {
   uint32_t door_debounce_ms; /** Door/lock/reload input debounce, milliseconds. */
   uint32_t auto_clear_faults;   /** 1 = auto-clear faults after auto_clear_delay_ms, 0 = off. */
   uint32_t auto_clear_delay_ms; /** Auto-clear delay in milliseconds. Default 5000. */
+  /** Over-temperature fault threshold, whole degrees F. A channel reading
+   * above this value faults the machine. 0 is repaired to the default by sanitize_zeros. */
+  uint32_t temp_max_f;
 } cal_data_params_t;
 
 /*******************************************************************************
