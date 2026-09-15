@@ -191,6 +191,35 @@ bool patty_handler_has_work(const patty_handler_t* handler);
 void patty_handler_abort_all(patty_handler_t* handler);
 
 /**
+ * @brief Clears one slot's rolling patty-thickness ring buffer and average.
+ *
+ *        Intended for the console "thickness reset <slot>" command. Refuses
+ *        when the slot's dispense state machine is observed active at check
+ *        time. Runs on the caller's task, not the Control task: the check and
+ *        the clear are not atomic against the Control task, so a dispense that
+ *        starts immediately after the check can still add a sample to the
+ *        freshly cleared ring (same snapshot caveat as app_task_get_cartridges).
+ *
+ * @param handler Initialized handler instance. NULL is ignored.
+ * @param slot_index Zero-based slot index. Out-of-range is ignored.
+ * @return True when the ring buffer was cleared; false on bad arguments or an
+ *         active dispense observed on that slot.
+ */
+bool patty_handler_reset_thickness(patty_handler_t* handler, uint8_t slot_index);
+
+/**
+ * @brief Returns a read-only view of one slot's dispense state machine.
+ *
+ *        Intended for the console "thickness get <slot>" command, which reads
+ *        the raw captured lift travel through dispense_sm accessors.
+ *
+ * @param handler Initialized handler instance. NULL returns NULL.
+ * @param slot_index Zero-based slot index. Out-of-range returns NULL.
+ * @return const dispense_sm_t* Live state-machine context, or NULL.
+ */
+const dispense_sm_t* patty_handler_get_dispense_sm(const patty_handler_t* handler, uint8_t slot_index);
+
+/**
  * @brief Converts a patty_handler_result_enum value to a string.
  *
  * @param result Result value to convert.
