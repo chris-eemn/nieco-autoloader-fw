@@ -512,4 +512,14 @@ static void reload_fail_recount(reload_sm_t* reload, cartridge_t cartridges[APP_
   reload->state = RELOAD_FAILED;
   result->status = RELOAD_STATUS_FAILED;
   result->fault_code = fault_code;
+
+  /* A failed reload aborts before the per-slot recount applies land for every
+   * slot. Slots that already landed keep their new remaining but their thickness
+   * history belongs to the stack that was just physically changed; slots that
+   * never landed are about to be recounted on the retry. Clearing every slot
+   * matches the halt-all breadth above and the reset inside
+   * cartridge_recount_apply(). */
+  for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
+    cartridge_reset_thickness(&cartridges[slot]);
+  }
 }

@@ -118,6 +118,9 @@ bool cartridge_recount_apply(cartridge_t* slot, uint32_t* fault_out) {
 
   slot->remaining = (uint16_t)remaining;
 
+  // remaining was just reinitialized from scratch: drop any stale thickness history
+  cartridge_reset_thickness(slot);
+
   app_console_print("[Recount] Slot %d: travel=%ld counts, thickness=%lu, remaining=%u\r\n", slot->num, (long)travel,
                     (unsigned long)thickness, (unsigned)slot->remaining);
 

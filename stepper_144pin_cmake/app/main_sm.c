@@ -474,6 +474,8 @@ static void app_sm_clear_fault(app_sm_t* sm) {
     clear_all_axis_faults();
     for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
       sm->cartridge[slot].faulted = false;
+      // inventory is re-established by the next startup recount: drop thickness history now
+      cartridge_reset_thickness(&sm->cartridge[slot]);
     }
     app_sm_enter_state(sm, APP_SHUTDOWN);
     return;
@@ -485,6 +487,8 @@ static void app_sm_clear_fault(app_sm_t* sm) {
   patty_handler_set_safety_state(&sm->patty_handler, true, true, true);
   for (uint8_t slot = 0U; slot < APP_SLOT_COUNT; slot++) {
     sm->cartridge[slot].faulted = false;
+    // slot fault clear re-inits inventory via startup recount: drop stale thickness history
+    cartridge_reset_thickness(&sm->cartridge[slot]);
   }
   app_sm_enter_state(sm, APP_STARTUP);
 }
