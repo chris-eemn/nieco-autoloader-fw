@@ -18,6 +18,7 @@
 #include <stdbool.h>
 
 #include "autoloader_sm.h"
+#include "dispense_sm.h"
 
 /*******************************************************************************
  * Module Macros
@@ -79,6 +80,23 @@ void app_task_register_axis_event_cb(void);
  *         read is atomic but a multi-field read can straddle a state change.
  */
 const cartridge_t* app_task_get_cartridges(void);
+
+/**
+ * @brief Get a read-only view of one slot's dispense state machine.
+ * @param slot_index Zero-based slot index. Out-of-range returns NULL.
+ * @return const dispense_sm_t* Live state-machine context owned by the Control
+ *         task, or NULL. Read it as a read-only snapshot, same caveat as
+ *         app_task_get_cartridges().
+ */
+const dispense_sm_t* app_task_get_dispense_sm(uint8_t slot_index);
+
+/**
+ * @brief Clear one slot's rolling patty-thickness ring buffer and average.
+ * @param slot_index Zero-based slot index. Out-of-range is ignored.
+ * @return true when the ring buffer was cleared; false on a bad index or an
+ *         active dispense on that slot.
+ */
+bool app_task_reset_thickness(uint8_t slot_index);
 
 /**
  * @brief Convert an application event ID to a string for logging.
