@@ -16,7 +16,9 @@
 #include "axis.h"
 #include "app_console.h"
 #include "app_sm_port.h"
+#include "cal_data.h"
 #include "patty_handler.h"
+#include "stepper_ctrl.h"
 
 #include <stddef.h>
 
@@ -138,8 +140,24 @@ patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const
             if (event->id == APP_EV_MOTION_DONE) {
               // todo: implement
               app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
-              // dispense_sm->measured_lift_travel_counts = event->measured_lift_travel_counts;
               // lift home also will backoff automatically
+              // Capture the ceiling-contact travel (net seek minus back-off, latched
+              // by the axis layer before the encoder zero). 0 means no valid sample.
+              axis_t* lifter_axis = stepper_ctrl_get_axis(cartridge_get_axis_num(dispense_sm->cartridge, LIFTER));
+
+              if (lifter_axis != NULL) {
+                int32_t travel = axis_get_home_travel_counts(lifter_axis);
+
+                if (travel < 0) {
+                  travel = -travel;
+                }
+
+                dispense_sm->measured_lift_travel_counts = (uint32_t)travel;
+              }
+              else {
+                dispense_sm->measured_lift_travel_counts = 0U;
+              }
+
               dispense_sm->state = DISPENSE_COMPLETE;
               result = PATTY_HANDLER_RESULT_OK;
             }
@@ -180,9 +198,35 @@ void dispense_sm_abort(dispense_sm_t* dispense_sm) {
     app_sm_port_cancel_timeout_id(dispense_sm->timeout_id);
     dispense_sm->state = DISPENSE_IDLE;
     dispense_sm->fault_code = DISPENSE_FAULT_NONE;
+    // clear any captured travel so a stale sample can never reach a later commit
+    dispense_sm->measured_lift_travel_counts = 0U;
     // can halt here but should already be halted by main_sm
     halt_motion(dispense_sm->cartridge);
   }
+}
+
+uint32_t dispense_sm_last_patty_thickness_counts(const dispense_sm_t* dispense_sm) {
+  uint32_t sample = 0U;
+
+  if (dispense_sm != NULL) {
+    const uint32_t raw    = dispense_sm->measured_lift_travel_counts;
+    const uint32_t offset = cal_data_get()->thickness_offset_counts;
+
+    // single offset hook: subtract the cal-data offset, clamp to 0 = invalid sample
+    sample = (raw > offset) ? (raw - offset) : 0U;
+  }
+
+  return sample;
+}
+
+uint32_t dispense_sm_get_measured_lift_travel_counts(const dispense_sm_t* dispense_sm) {
+  uint32_t raw = 0U;
+
+  if (dispense_sm != NULL) {
+    raw = dispense_sm->measured_lift_travel_counts;
+  }
+
+  return raw;
 }
 /*******************************************************************************
  * Private Function Definitions
@@ -239,6 +283,8 @@ static patty_handler_result_enum dispense_fail(dispense_sm_t* dispense_sm, uint1
                     dispense_sm_fault_to_str(fault_code));
   halt_motion(dispense_sm->cartridge);
   dispense_sm->fault_code = fault_code;
+  // a failed cycle produces no valid sample: keep the 0 = "no valid sample" invariant
+  dispense_sm->measured_lift_travel_counts = 0U;
 
   dispense_sm->state = DISPENSE_FAILED;
   app_console_print("[Dispense SM] Dispense failed for slot %d, state=%d, fault_code=(%d) %s\r\n", dispense_sm->slot_index + 1U, dispense_sm->state,

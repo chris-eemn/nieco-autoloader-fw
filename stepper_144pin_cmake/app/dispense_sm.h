@@ -109,6 +109,32 @@ void dispense_sm_abort(dispense_sm_t* dispense_sm);
  */
 patty_handler_result_enum dispense_sm_dispatch(dispense_sm_t* dispense_sm, const app_event_t* event);
 
+/**
+ * @brief Converts the last completed dispense cycle's captured lift travel into a thickness sample.
+ *
+ *        Applies the cal-data offset hook: sample = raw - thickness_offset_counts, clamped to
+ *        0. A 0 return means "no valid sample" (no capture, or the offset consumed the whole
+ *        travel). Unit is encoder counts, the same unit as patty_thickness_counts -- no inch
+ *        conversion happens anywhere in this path.
+ *
+ * @param dispense_sm State-machine context whose measured_lift_travel_counts was captured by
+ *                    the completed DISPENSE_LIFT_SEEK. NULL returns 0.
+ * @return uint32_t Thickness sample in encoder counts, 0 = invalid.
+ */
+uint32_t dispense_sm_last_patty_thickness_counts(const dispense_sm_t* dispense_sm);
+
+/**
+ * @brief Returns the raw lift-seek home travel captured by the last completed dispense cycle.
+ *
+ *        The value is the net seek-minus-backoff travel latched by the axis layer at ceiling
+ *        contact, BEFORE the cal-data thickness offset is applied. 0 means no valid capture
+ *        (idle, failed, or aborted cycle).
+ *
+ * @param dispense_sm State-machine context to read. NULL returns 0.
+ * @return uint32_t Raw captured travel in encoder counts, 0 = no valid capture.
+ */
+uint32_t dispense_sm_get_measured_lift_travel_counts(const dispense_sm_t* dispense_sm);
+
 const char* dispense_sm_fault_to_str(uint8_t fault);
 
 #endif /* DISPENSE_SM_H_ */
