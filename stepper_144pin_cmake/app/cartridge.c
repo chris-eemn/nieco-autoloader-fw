@@ -13,6 +13,7 @@
  * Includes
  *******************************************************************************/
 #include <stdint.h>
+#include <stddef.h>
 #include "autoloader_sm.h"
 #include "cartridge.h"
 #include "mx_gpio_default.h"
@@ -125,6 +126,44 @@ const char* cartridge_type_to_string(cartridge_type_t type) {
   }
 
   return type_str;
+}
+
+void cartridge_add_thickness_sample(cartridge_t* slot, uint32_t sample_counts) {
+  if ((slot != NULL) && (sample_counts != 0U)) {
+    // defensive clamp: the write index is only ever advanced modulo the ring size
+    if (slot->thickness_sample_next >= CARTRIDGE_THICKNESS_RING_SIZE) {
+      slot->thickness_sample_next = 0U;
+    }
+
+    // ring-insert the sample; count saturates at the ring size once it is full
+    slot->thickness_samples[slot->thickness_sample_next] = sample_counts;
+    slot->thickness_sample_next = (uint8_t)((slot->thickness_sample_next + 1U) % CARTRIDGE_THICKNESS_RING_SIZE);
+
+    if (slot->thickness_sample_count < CARTRIDGE_THICKNESS_RING_SIZE) {
+      slot->thickness_sample_count++;
+    }
+
+    // recompute the plain mean over all stored samples, rounded to nearest
+    uint64_t sum = 0U;
+
+    for (uint8_t i = 0U; i < slot->thickness_sample_count; i++) {
+      sum += (uint64_t)slot->thickness_samples[i];
+    }
+
+    slot->thickness_avg_counts = (uint32_t)((sum + ((uint64_t)slot->thickness_sample_count / 2U)) / (uint64_t)slot->thickness_sample_count);
+  }
+}
+
+void cartridge_reset_thickness(cartridge_t* slot) {
+  if (slot != NULL) {
+    for (uint8_t i = 0U; i < CARTRIDGE_THICKNESS_RING_SIZE; i++) {
+      slot->thickness_samples[i] = 0U;
+    }
+
+    slot->thickness_sample_count = 0U;
+    slot->thickness_sample_next = 0U;
+    slot->thickness_avg_counts = 0U;
+  }
 }
 
 /*******************************************************************************
