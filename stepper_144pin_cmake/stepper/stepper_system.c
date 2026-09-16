@@ -155,7 +155,7 @@ void stepper_system_update_configs(void) {
           .encoder_counts_denominator = AXIS_ENCODER_COUNTS_DENOMINATOR,
           .stall_error_counts = cal_params_ptr->stall_error_counts,
           .home_error_counts = cal_params_ptr->home_error_counts,
-          .backoff_steps = cal_params_ptr->home_backoff_steps,
+          .backoff_steps = cal_params_ptr->load_offset,
           .home_max_steps = cal_params_ptr->home_max_steps,
           .settle_delay_ms = cal_params_ptr->home_settle_delay_ms,
       };

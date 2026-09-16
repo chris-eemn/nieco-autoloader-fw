@@ -93,8 +93,6 @@ static int reg_lifter_rpm_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_lifter_rpm_write(uint16_t reg, uint16_t val);
 static int reg_home_rpm_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_home_rpm_write(uint16_t reg, uint16_t val);
-static int reg_home_backoff_steps_read(uint16_t reg, uint16_t* val_ptr);
-static int reg_home_backoff_steps_write(uint16_t reg, uint16_t val);
 static int reg_home_settle_delay_ms_read(uint16_t reg, uint16_t* val_ptr);
 static int reg_home_settle_delay_ms_write(uint16_t reg, uint16_t val);
 static int reg_home_max_steps_read(uint16_t reg, uint16_t* val_ptr);
@@ -283,11 +281,6 @@ static mb_holding_reg_def_t regs_defines[] = {
      .read_callback = reg_home_rpm_read,
      .write_callback = reg_home_rpm_write,
      .name = "home_rpm"},
-    {.reg_id = REG_CAL_DATA_HOME_BACKOFF_STEPS,
-     .reg_amount = 1,
-     .read_callback = reg_home_backoff_steps_read,
-     .write_callback = reg_home_backoff_steps_write,
-     .name = "home_backoff_steps"},
     {.reg_id = REG_CAL_DATA_HOME_SETTLE_DELAY_MS,
      .reg_amount = 1,
      .read_callback = reg_home_settle_delay_ms_read,
@@ -967,27 +960,6 @@ static int reg_home_rpm_write(uint16_t reg, uint16_t val) {
   (void)reg;
 
   return reg_cal_u16_write(&params->home_rpm, val) ? 0 : -1;
-}
-
-static int reg_home_backoff_steps_read(uint16_t reg, uint16_t* val_ptr) {
-  params = cal_data_get();
-
-  (void)reg;
-
-  if (val_ptr == NULL) {
-    return -1;
-  }
-
-  *val_ptr = (uint16_t)params->home_backoff_steps;
-  return 0;
-}
-
-static int reg_home_backoff_steps_write(uint16_t reg, uint16_t val) {
-  params = cal_data_get();
-
-  (void)reg;
-
-  return reg_cal_u16_write(&params->home_backoff_steps, val) ? 0 : -1;
 }
 
 static int reg_home_settle_delay_ms_read(uint16_t reg, uint16_t* val_ptr) {

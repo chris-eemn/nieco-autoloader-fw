@@ -43,11 +43,11 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (13U)
+#define CAL_DATA_VERSION (14U)
 
 /** Number of uint32_t fields in cal_data_params_t. Kept in sync with the struct by the
  *  _Static_assert in cal_data.c. */
-#define CAL_DATA_PARAM_COUNT (27U)
+#define CAL_DATA_PARAM_COUNT (26U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -66,12 +66,14 @@ typedef struct {
   uint32_t home_error_counts;     /**< Encoder following-error threshold used during homing (endstop detection). Maps to axis_config_t.home_error_counts. Both in encoder ticks. */
   uint32_t home_rpm;              /**< Speed of the homing seek and back-off moves, RPM. */
   uint32_t home_settle_delay_ms;  /**< Time to wait after hitting the endstop before starting the back-off move. */
-  uint32_t home_backoff_steps;    /**< Back-off distance in microsteps after the endstop is hit. */
   uint32_t home_max_steps;        /**< Homing seek limit in microsteps before a timeout fault. */
   uint32_t supervisor_period_ms;  /**< Axis supervisor tick period. */
   uint32_t default_move_rpm;      /**< Speed used for a move when none is specified. */
   uint32_t default_move_steps;    /**< Microsteps used for a move when none is specified. */
-  uint32_t load_offset;           /**< Microstep backup after lifters hit the top during startup homing. */
+  /** Back-off distance in microsteps after the endstop is hit. Wired into every axis as
+   * axis_config_t.backoff_steps (stepper_system.c); the top-level name for this value is
+   * "load offset" (Modbus REG_LOAD_OFFSET, CLI param "load_offset"). */
+  uint32_t load_offset;
   uint32_t push_retract_timeout_ms; /**< Push retract timeout, milliseconds. */
   uint32_t lift_timeout_ms;       /**< Lift seek timeout, milliseconds. */
   uint32_t patty_thickness_counts;  /**< Encoder counts per patty, for recount. 0 = unconfigured. */

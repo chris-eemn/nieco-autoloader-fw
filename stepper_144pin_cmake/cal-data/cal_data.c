@@ -72,22 +72,21 @@ _Static_assert(CAL_DATA_QUEUE_CAPACITY >= CAL_DATA_QUEUE_SLOTS_PER_SAVE,
 /*******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
-/** Factory defaults, applied when flash holds nothing usable. Mirrors the values currently
- * configured in stepper_system.c and stepper_ctrl.h so that provisioning a blank chip
- * reproduces today's behaviour rather than changing it. */
+/** Factory defaults, applied when flash holds nothing usable. These are the single source of
+ * truth for the axis configuration (stepper_system_update_configs() copies them verbatim), so
+ * that provisioning a blank chip reproduces today's behaviour rather than changing it. */
 static const cal_data_params_t default_params = {
     .pusher_rpm = 30U,
     .lifter_rpm = 30U,
     .stall_error_counts = 10U,
     .home_error_counts = 50U,
     .home_rpm = 10U,
-    .home_backoff_steps = 100U,
     .home_settle_delay_ms = 100U,
     .home_max_steps = 2000U,
     .supervisor_period_ms = 25U,
     .default_move_rpm = 5U,
     .default_move_steps = 800U,
-    .load_offset = 200U,
+    .load_offset = 100U, /* homing back-off distance, microsteps */
     .push_retract_timeout_ms = 3000U,
     .lift_timeout_ms = 5000U,
     .patty_thickness_counts = 50U,
