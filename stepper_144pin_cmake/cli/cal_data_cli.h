@@ -15,6 +15,13 @@
  *          param set  <name|id> <value>  -- update the value and write it to flash
  *          param reset                   -- load factory defaults and write them to flash
  *
+ *        Two pseudo-params act on RAM-only dispense state instead of the
+ *        cal-data store (they are never saved to flash and are excluded from
+ *        "param list"):
+ *          param get thickness           -- per-slot thickness report: last raw lift travel,
+ *                                           last stored sample, sample count, rolling average
+ *          param set reset_thickness <n> -- clear slot <n>'s thickness ring buffer and average
+ *
  * @version 0.1
  * @date 2026-07-27
  *
@@ -68,6 +75,12 @@ typedef enum {
   CAL_DATA_CLI_AUTO_CLEAR_FAULTS,
   CAL_DATA_CLI_AUTO_CLEAR_DELAY_MS,
   CAL_DATA_CLI_TEMP_MAX_F,
+  CAL_DATA_CLI_THICKNESS_OFFSET_COUNTS,
+  CAL_DATA_CLI_USE_MEASURED_THICKNESS,
+  /* Action-only parameters have command handlers instead of cal_data_params_t
+   * fields. They remain after the stored parameters to preserve existing ids. */
+  CAL_DATA_CLI_THICKNESS,        /* "param get thickness" -- per-slot thickness report. */
+  CAL_DATA_CLI_RESET_THICKNESS,  /* "param set reset_thickness <slot>" -- clear a slot's ring. */
   CAL_DATA_CLI_NUM_PARAMS,
 } cal_data_cli_param_enum;
 

@@ -17,7 +17,11 @@
 #include "app_console.h"
 #include "patty_handler.h"
 
+#include "axis.h"
+#include "cal_data.h"
+
 #include <stddef.h>
+#include <stdint.h>
 
 /*******************************************************************************
  * Module Macros
@@ -53,6 +57,7 @@ static uint8_t patty_handler_select_allocation_slot(const patty_handler_t* handl
 static bool patty_handler_slot_can_start(const patty_handler_t* handler, uint8_t slot_index);
 static void patty_handler_publish_slot(const patty_handler_t* handler, uint8_t slot_index);
 static patty_handler_result_enum patty_handler_commit_dispense(patty_handler_t* handler, uint8_t slot_index);
+static void patty_handler_recalc_remaining(cartridge_t* cartridge, const dispense_sm_t* dispense_sm, uint8_t slot_index, uint32_t sample_counts);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -304,6 +309,29 @@ void patty_handler_abort_all(patty_handler_t* handler) {
   }
 }
 
+bool patty_handler_reset_thickness(patty_handler_t* handler, uint8_t slot_index) {
+  bool reset_done = false;
+
+  if ((handler != NULL) && (slot_index < PATTY_HANDLER_SLOT_COUNT)) {
+    if (handler->dispense_sm[slot_index].state == DISPENSE_IDLE) {
+      cartridge_reset_thickness(&handler->cartridge[slot_index]);
+      reset_done = true;
+    }
+  }
+
+  return reset_done;
+}
+
+const dispense_sm_t* patty_handler_get_dispense_sm(const patty_handler_t* handler, uint8_t slot_index) {
+  const dispense_sm_t* dispense_sm = NULL;
+
+  if ((handler != NULL) && (slot_index < PATTY_HANDLER_SLOT_COUNT)) {
+    dispense_sm = &handler->dispense_sm[slot_index];
+  }
+
+  return dispense_sm;
+}
+
 const char* patty_handler_result_enum_to_str(patty_handler_result_enum result) {
   const uint32_t index = (uint32_t)result;
   if ((index < (uint32_t)(sizeof(result_str) / sizeof(result_str[0]))) && (result_str[index] != NULL)) {
@@ -467,12 +495,13 @@ static patty_handler_result_enum patty_handler_commit_dispense(patty_handler_t* 
     cartridge->remaining--;
     cartridge->pending--;
 
-    /*
-     * TODO: Feed dispense_sm->measured_lift_travel_counts into the
-     * application's patty-thickness average and remaining-stack recalculation.
-     * TODO: Save counts to nonvolatile storage if the final persistence policy
-     * requires it.
-     */
+    /* Feed the completed lift-seek travel into the slot's rolling thickness
+     * average, then (when enabled) recompute remaining from the measured
+     * stack height. Persistence of the average is out of scope: RAM-only. */
+    const uint32_t sample_counts = dispense_sm_last_patty_thickness_counts(dispense_sm);
+    cartridge_add_thickness_sample(cartridge, sample_counts);
+    patty_handler_recalc_remaining(cartridge, dispense_sm, slot_index, sample_counts);
+
     dispense_sm->state = DISPENSE_IDLE;
     dispense_sm->fault_code = 0U;
     dispense_sm->product_may_have_dispensed = false;
@@ -487,4 +516,89 @@ static patty_handler_result_enum patty_handler_commit_dispense(patty_handler_t* 
   }
 
   return result;
+}
+
+/**
+ * @brief Latches the dynamic stack count every commit and recomputes remaining when enabled.
+ *
+ *        The stack height above the bottom home is the ceiling-contact position
+ *        relative to the pre-lift position. The axis latches home_travel_counts
+ *        as NET seek-minus-backoff travel and then zeroes the encoder AFTER the
+ *        back-off completes (axis.c handle_homing_tick HOMING_BACKOFF), so the
+ *        encoder reads ~0 at commit time and the back-off distance is only
+ *        recoverable from the configured home_backoff_steps (converted to
+ *        encoder counts).
+ *
+ *        Whenever this cycle has a valid capture and the slot has a valid
+ *        rolling average, the pre-clamp count is latched into
+ *        cartridge->thickness_shadow_remaining regardless of the
+ *        use_measured_thickness switch, so the customer can compare the dynamic
+ *        count against remaining (shadow mode). Only when the switch is set is
+ *        the count clamped and written to remaining: the result may never exceed
+ *        the already-decremented cartridge->remaining, so the recalculation may
+ *        correct a count downward but never raise it after a dispense.
+ *
+ * @param cartridge Slot whose shadow count is latched and (when enabled) whose
+ *                  remaining count is updated.
+ * @param dispense_sm State-machine context holding this cycle's captured travel.
+ * @param slot_index Zero-based slot index, for the console print.
+ * @param sample_counts Thickness sample added to the ring for this cycle, for the console print.
+ */
+static void patty_handler_recalc_remaining(cartridge_t* cartridge, const dispense_sm_t* dispense_sm, uint8_t slot_index, uint32_t sample_counts) {
+  const uint32_t avg = cartridge->thickness_avg_counts;
+
+  if (avg == 0U) {
+    // no valid rolling average yet: nothing to compute, shadow stays at its last value
+    return;
+  }
+
+  if (dispense_sm->measured_lift_travel_counts == 0U) {
+    // no valid capture this cycle (failed/aborted seek): keep the decremented remaining
+    app_console_print("[Thickness] Slot %d: no valid lift travel, keeping decremented remaining\r\n", slot_index + 1U);
+    return;
+  }
+
+  // ceiling contact relative to the pre-lift (bottom-home) position: net seek travel + back-off distance.
+  // home_backoff_steps is in microsteps; the axis layer converts it to encoder counts with the
+  // configured counts-per-microstep ratio (AXIS_ENCODER_COUNTS_NUMERATOR/DENOMINATOR).
+  const uint32_t backoff_counts =
+      (cal_data_get()->home_backoff_steps * AXIS_ENCODER_COUNTS_NUMERATOR) / AXIS_ENCODER_COUNTS_DENOMINATOR;
+  const uint32_t stack_height = dispense_sm->measured_lift_travel_counts + backoff_counts;
+
+  // shadow latch: the raw dynamic answer, before any clamps, regardless of the switch
+  cartridge->thickness_shadow_remaining = cartridge_stack_count(stack_height, avg);
+
+  if (cal_data_get()->use_measured_thickness == 0U) {
+    // shadow mode: the customer-specified thickness still drives remaining
+    return;
+  }
+
+  // round to nearest, then apply the same clamps as cartridge_recount_apply
+  uint32_t remaining = cartridge_stack_count(stack_height, avg);
+  bool clamped       = false;
+
+  /* One patty left the stack this cycle, so the recomputed count may never
+   * exceed the decremented value: a low average or an inflated stack height
+   * must not make inventory visibly grow after a dispense. */
+  if (remaining > (uint32_t)cartridge->remaining) {
+    remaining = (uint32_t)cartridge->remaining;
+    clamped   = true;
+  }
+
+  /* In-flight dispenses are tracked in pending; remaining must never drop below it. */
+  if (remaining < (uint32_t)cartridge->pending) {
+    remaining = (uint32_t)cartridge->pending;
+    clamped   = true;
+  }
+
+  if (remaining > (uint32_t)UINT16_MAX) {
+    remaining = (uint32_t)UINT16_MAX;
+    clamped   = true;
+  }
+
+  cartridge->remaining = (uint16_t)remaining;
+
+  app_console_print("[Thickness] Slot %d: travel=%lu sample=%lu avg=%lu stack=%lu remaining=%u%s\r\n", slot_index + 1U,
+                    (unsigned long)dispense_sm->measured_lift_travel_counts, (unsigned long)sample_counts, (unsigned long)avg,
+                    (unsigned long)stack_height, (unsigned)cartridge->remaining, clamped ? " (clamped)" : "");
 }

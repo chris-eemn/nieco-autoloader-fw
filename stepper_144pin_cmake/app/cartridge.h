@@ -20,6 +20,8 @@
 /*******************************************************************************
  * Module Macros
  *******************************************************************************/
+/** Number of thickness samples kept in each slot's rolling-average ring buffer. */
+#define CARTRIDGE_THICKNESS_RING_SIZE (8U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -47,6 +49,18 @@ typedef struct {
   bool pusher_homed;
   bool lifter_homed_down;
   bool lifter_homed_up;
+  /* Per-slot rolling patty-thickness average, measured during dispense lift seeks.
+   * RAM-only: cleared on recount/reload and fault clear, never persisted. */
+  uint32_t thickness_samples[CARTRIDGE_THICKNESS_RING_SIZE];  // ring buffer of valid samples (encoder counts)
+  uint8_t thickness_sample_count;                             // samples valid so far, saturates at CARTRIDGE_THICKNESS_RING_SIZE
+  uint8_t thickness_sample_next;                              // ring write index
+  uint32_t thickness_avg_counts;                              // mean of stored samples, 0 = no valid average yet
+  /* Dynamic stack count computed from the measured stack height and the rolling
+   * average at the last dispense commit, BEFORE the inventory clamps. Latched
+   * every commit even when use_measured_thickness is off (shadow mode), so the
+   * customer can compare it against remaining. It may exceed remaining by
+   * design: it is a comparison number, not inventory. 0 = never computed. */
+  uint32_t thickness_shadow_remaining;
 } cartridge_t;
 /*******************************************************************************
  * Module Variable Definitions
@@ -62,7 +76,7 @@ typedef struct {
  * @param type Actuator type (pusher or lifter).
  * @return uint8_t Axis number associated with the specified slot and actuator.
  */
-uint8_t cartridge_get_axis_num(cartridge_t* slot, cartridge_actuator_type_t type);
+uint8_t cartridge_get_axis_num(const cartridge_t* slot, cartridge_actuator_type_t type);
 
 /**
  * @brief Gets the cartridge slot identifier from an axis number and actuator type.
@@ -96,4 +110,42 @@ void cartridge_determine_type(cartridge_t* cartridge);
  * @return const char* Pointer to a null-terminated string representing the cartridge type.
  */
 const char* cartridge_type_to_string(cartridge_type_t type);
+
+/**
+ * @brief Adds one measured patty-thickness sample to the slot's rolling average.
+ *
+ *        Ring-inserts the sample (CARTRIDGE_THICKNESS_RING_SIZE entries) and
+ *        recomputes thickness_avg_counts as the plain mean of the stored
+ *        samples. A sample_counts value of 0 means "no valid sample" (no
+ *        capture, or the offset consumed the whole travel) and is ignored.
+ *        Unit is encoder counts, the same unit as patty_thickness_counts.
+ *
+ * @param slot Cartridge slot receiving the sample. NULL is ignored.
+ * @param sample_counts Thickness sample in encoder counts; 0 is ignored.
+ */
+void cartridge_add_thickness_sample(cartridge_t* slot, uint32_t sample_counts);
+
+/**
+ * @brief Converts a measured stack height into a patty count using a thickness average.
+ *
+ *        Single shared formula for the authoritative remaining recalculation and
+ *        the shadow comparison count: round-to-nearest division
+ *        (stack_height + avg/2) / avg.
+ *
+ * @param stack_height Stack height in encoder counts.
+ * @param avg Thickness average in encoder counts; 0 returns 0.
+ * @return uint32_t Patty count, 0 when avg is 0.
+ */
+uint32_t cartridge_stack_count(uint32_t stack_height, uint32_t avg);
+
+/**
+ * @brief Clears the slot's thickness ring buffer and rolling average.
+ *
+ *        Call wherever slot->remaining is (re)initialized: cartridge reload /
+ *        recount completion and slot fault clear.
+ *
+ * @param slot Cartridge slot to reset. NULL is ignored.
+ */
+void cartridge_reset_thickness(cartridge_t* slot);
+
 #endif /* CARTRIDGE_H_ */

@@ -6,3 +6,4 @@ mx.scratch
 CLAUDE.md
 .venv
 compile_commands.json
+.cache

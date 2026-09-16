@@ -53,7 +53,7 @@ static void cmd_dispatch(console_command_get_fn_t get_fn, console_command_set_fn
 
 static const console_command_t s_paramCmd = {
     .name = "param",
-    .help = "[set/get/list/reset] [param] [value]\t get/set/list/reset cal-data parameters",
+    .help = "[set/get/list/reset] [param] [value]\t get/set/list/reset cal-data params (+ get thickness, set reset_thickness <slot>)",
     .handler = cmd_param_handler,
     .get_fn = cal_data_cli_get_handler,
     .set_fn = cal_data_cli_set_handler,

@@ -43,11 +43,11 @@
 /** Layout version of cal_data_params_t. Bump this whenever a field is added, removed, moved or
  * changes meaning -- a stored record whose version does not match is rejected and the factory
  * defaults are loaded instead, rather than being reinterpreted under the new layout. */
-#define CAL_DATA_VERSION (12U)
+#define CAL_DATA_VERSION (13U)
 
 /** Number of uint32_t fields in cal_data_params_t. Kept in sync with the struct by the
  *  _Static_assert in cal_data.c. */
-#define CAL_DATA_PARAM_COUNT (25U)
+#define CAL_DATA_PARAM_COUNT (27U)
 
 /*******************************************************************************
  * Module Typedefs
@@ -89,6 +89,9 @@ typedef struct {
   /** Over-temperature fault threshold, whole degrees F. A channel reading
    * above this value faults the machine. 0 is repaired to the default by sanitize_zeros. */
   uint32_t temp_max_f;
+  uint32_t thickness_offset_counts; /** Encoder counts subtracted from the raw lift-seek home travel before it becomes a */
+                                    /*  thickness sample. Default 0 (no offset).*/
+  uint32_t use_measured_thickness;  /** 1 = measured thickness drives remaining on dispense commit, 0 = off (decrement-only). */
 } cal_data_params_t;
 
 /*******************************************************************************

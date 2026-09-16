@@ -1,2 +1,10 @@
+# Point at the repo-root compile_commands.json emitted by refresh_ccdb.py,
+# NOT build/debug_GCC_NUCLEO-C5A3ZG. The build-tree database is raw ST GCC
+# output (--specs=, -fstack-usage, -Wl,...) and carries no system include
+# paths; refresh_ccdb.py strips those flags and injects --target=arm-none-eabi
+# plus the newlib/GCC -isystem paths that clang needs to resolve stdint.h etc.
 CompileFlags:
-  CompilationDatabase: build/debug_GCC_NUCLEO-C5A3ZG
+  CompilationDatabase: .
+
+Diagnostics:
+  UnusedIncludes: None

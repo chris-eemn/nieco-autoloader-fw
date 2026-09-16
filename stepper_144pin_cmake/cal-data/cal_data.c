@@ -101,6 +101,8 @@ static const cal_data_params_t default_params = {
     .auto_clear_faults = 0U, /* off by default */
     .auto_clear_delay_ms = 5000U,
     .temp_max_f = 30U, /* 30 deg F over-temp fault threshold */
+    .thickness_offset_counts = 0U, /* no offset by default */
+    .use_measured_thickness = 0U,  /* off by default: remaining stays decrement-only */
 };
 
 _Static_assert(sizeof(cal_data_params_t) == (CAL_DATA_PARAM_COUNT * sizeof(uint32_t)),
@@ -301,9 +303,13 @@ void cal_data_sanitize_zeros(void) {
    * its factory default. */
   for (uint32_t i = 0U; i < CAL_DATA_PARAM_COUNT; i++) {
     /* auto_clear_faults is a boolean: 0 = off is a valid stored value, so it
-     * is exempt from zero-repair. auto_clear_delay_ms is NOT exempt -- a zero
+     * is exempt from zero-repair. thickness_offset_counts is exempt for the
+     * same reason -- 0 means "no offset" and is a valid value.
+     * use_measured_thickness is exempt for the same reason -- 0 means "off".
+     * auto_clear_delay_ms is NOT exempt -- a zero
      * delay takes its 5000 ms default. */
-    if ((live[i] == 0U) && (i != CAL_DATA_PARAM_INDEX(auto_clear_faults))) {
+    if ((live[i] == 0U) && (i != CAL_DATA_PARAM_INDEX(auto_clear_faults)) && (i != CAL_DATA_PARAM_INDEX(thickness_offset_counts)) &&
+        (i != CAL_DATA_PARAM_INDEX(use_measured_thickness))) {
       live[i] = defaults[i];
     }
   }

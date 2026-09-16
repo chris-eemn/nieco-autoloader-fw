@@ -137,6 +137,14 @@ void app_task_register_axis_event_cb(void) {
 const cartridge_t* app_task_get_cartridges(void) {
   return &s_app_sm.cartridge[0];
 }
+
+const dispense_sm_t* app_task_get_dispense_sm(uint8_t slot_index) {
+  return patty_handler_get_dispense_sm(&s_app_sm.patty_handler, slot_index);
+}
+
+bool app_task_reset_thickness(uint8_t slot_index) {
+  return patty_handler_reset_thickness(&s_app_sm.patty_handler, slot_index);
+}
 /*******************************************************************************
  * Private Function Definitions
  *******************************************************************************/
