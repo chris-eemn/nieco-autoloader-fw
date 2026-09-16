@@ -526,7 +526,7 @@ static patty_handler_result_enum patty_handler_commit_dispense(patty_handler_t* 
  *        as NET seek-minus-backoff travel and then zeroes the encoder AFTER the
  *        back-off completes (axis.c handle_homing_tick HOMING_BACKOFF), so the
  *        encoder reads ~0 at commit time and the back-off distance is only
- *        recoverable from the configured home_backoff_steps (converted to
+ *        recoverable from the configured load_offset (converted to
  *        encoder counts).
  *
  *        Whenever this cycle has a valid capture and the slot has a valid
@@ -559,10 +559,10 @@ static void patty_handler_recalc_remaining(cartridge_t* cartridge, const dispens
   }
 
   // ceiling contact relative to the pre-lift (bottom-home) position: net seek travel + back-off distance.
-  // home_backoff_steps is in microsteps; the axis layer converts it to encoder counts with the
+  // load_offset is in microsteps; the axis layer converts it to encoder counts with the
   // configured counts-per-microstep ratio (AXIS_ENCODER_COUNTS_NUMERATOR/DENOMINATOR).
   const uint32_t backoff_counts =
-      (cal_data_get()->home_backoff_steps * AXIS_ENCODER_COUNTS_NUMERATOR) / AXIS_ENCODER_COUNTS_DENOMINATOR;
+      (cal_data_get()->load_offset * AXIS_ENCODER_COUNTS_NUMERATOR) / AXIS_ENCODER_COUNTS_DENOMINATOR;
   const uint32_t stack_height = dispense_sm->measured_lift_travel_counts + backoff_counts;
 
   // shadow latch: the raw dynamic answer, before any clamps, regardless of the switch

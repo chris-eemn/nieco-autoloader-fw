@@ -88,13 +88,12 @@ static const cal_data_cli_param_entry_t s_params[CAL_DATA_CLI_NUM_PARAMS] = {
     [CAL_DATA_CLI_STALL_ERROR_COUNTS] = CAL_DATA_CLI_STORED_PARAM("stall_error_counts", stall_error_counts),
     [CAL_DATA_CLI_HOME_ERROR_COUNTS] = CAL_DATA_CLI_STORED_PARAM("home_error_counts", home_error_counts),
     [CAL_DATA_CLI_HOME_RPM] = CAL_DATA_CLI_STORED_PARAM("home_rpm", home_rpm),
-    [CAL_DATA_CLI_HOME_BACKOFF_STEPS] = CAL_DATA_CLI_STORED_PARAM("home_backoff_steps", home_backoff_steps),
+    [CAL_DATA_CLI_LOAD_OFFSET] = CAL_DATA_CLI_STORED_PARAM("load_offset", load_offset),
     [CAL_DATA_CLI_HOME_SETTLE_DELAY_MS] = CAL_DATA_CLI_STORED_PARAM("home_settle_delay_ms", home_settle_delay_ms),
     [CAL_DATA_CLI_HOME_MAX_STEPS] = CAL_DATA_CLI_STORED_PARAM("home_max_steps", home_max_steps),
     [CAL_DATA_CLI_SUPERVISOR_PERIOD_MS] = CAL_DATA_CLI_STORED_PARAM("supervisor_period_ms", supervisor_period_ms),
     [CAL_DATA_CLI_DEFAULT_MOVE_RPM] = CAL_DATA_CLI_STORED_PARAM("default_move_rpm", default_move_rpm),
     [CAL_DATA_CLI_DEFAULT_MOVE_STEPS] = CAL_DATA_CLI_STORED_PARAM("default_move_steps", default_move_steps),
-    [CAL_DATA_CLI_LOAD_OFFSET] = CAL_DATA_CLI_STORED_PARAM("load_offset", load_offset),
     [CAL_DATA_CLI_PUSH_RETRACT_TIMEOUT_MS] = CAL_DATA_CLI_STORED_PARAM("push_retract_timeout_ms", push_retract_timeout_ms),
     [CAL_DATA_CLI_LIFT_TIMEOUT_MS] = CAL_DATA_CLI_STORED_PARAM("lift_timeout_ms", lift_timeout_ms),
     [CAL_DATA_CLI_PATTY_THICKNESS_COUNTS] = CAL_DATA_CLI_STORED_PARAM("patty_thickness_counts", patty_thickness_counts),
@@ -429,7 +428,7 @@ static void thickness_get_handler(const cal_data_cli_param_entry_t* entry) {
         const uint32_t enc_magnitude = (enc < 0) ? (uint32_t)(-(int64_t)enc) : (uint32_t)enc;
         // same back-off conversion as patty_handler_recalc_remaining; keep the two in sync
         const uint32_t backoff_counts =
-            (cal_data_get()->home_backoff_steps * AXIS_ENCODER_COUNTS_NUMERATOR) / AXIS_ENCODER_COUNTS_DENOMINATOR;
+            (cal_data_get()->load_offset * AXIS_ENCODER_COUNTS_NUMERATOR) / AXIS_ENCODER_COUNTS_DENOMINATOR;
         const uint32_t pos_cnt = enc_magnitude + travel + backoff_counts;
         est_now                = cartridge_stack_count(pos_cnt, cartridge->thickness_avg_counts);
       }

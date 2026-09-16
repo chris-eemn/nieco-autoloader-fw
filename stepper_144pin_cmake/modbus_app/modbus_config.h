@@ -46,7 +46,7 @@ typedef enum {
   REG_LTO_PAUSE = 7,            /* 1 = pause LTO dispense logic, 0 = resume
                                  * (future: patty_handler_set_lto_pause via event post) */
   REG_HOME_THRESHOLD = 8,       /* home error threshold (cal_data.home_error_counts) */
-  REG_LOAD_OFFSET = 9,          /* load offset (cal_data.load_offset) */
+  REG_LOAD_OFFSET = 9,          /* load offset (cal_data.load_offset) -- homing back-off distance, microsteps */
   REG_STALL_THRESHOLD = 10,     /* stall error threshold (cal_data.stall_error_counts) */
   REG_PATTY1_THICKNESS = 11,    /* per-patty travel for Patty 1 (cal_data.patty_thickness_counts) */
   REG_PATTY2_THICKNESS = 12,    /* per-patty travel for Patty 2 (cal_data.patty2_thickness_counts) */
@@ -77,7 +77,6 @@ typedef enum {
   REG_CAL_DATA_PUSHER_RPM = 77,            /* cal_data.pusher_rpm */
   REG_CAL_DATA_LIFTER_RPM = 78,            /* cal_data.lifter_rpm */
   REG_CAL_DATA_HOME_RPM = 79,              /* cal_data.home_rpm */
-  REG_CAL_DATA_HOME_BACKOFF_STEPS = 80,    /* cal_data.home_backoff_steps (microsteps) */
   REG_CAL_DATA_HOME_SETTLE_DELAY_MS = 81,  /* cal_data.home_settle_delay_ms */
   REG_CAL_DATA_HOME_MAX_STEPS = 82,        /* cal_data.home_max_steps (microsteps) */
   REG_CAL_DATA_SUPERVISOR_PERIOD_MS = 83,  /* cal_data.supervisor_period_ms */
