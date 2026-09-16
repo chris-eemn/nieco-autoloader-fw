@@ -36,8 +36,6 @@ hal_lptim_handle_t *mx_lptim1_init(void)
   /* Init GPIO */
   /* ### LPTIM1 GPIO Configuration ########################### */
   /* GPIO Clocks activation */
-  HAL_RCC_GPIOD_EnableClock();
-
   HAL_RCC_GPIOG_EnableClock();
 
   HAL_RCC_GPIOE_EnableClock();
@@ -47,39 +45,26 @@ hal_lptim_handle_t *mx_lptim1_init(void)
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PD10    ------>   LPTIM1_CH2   ------>  PD10
+       PG12    ------>   LPTIM1_IN1   ------>  ENC1_CHA
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_1;
-  HAL_GPIO_Init(PD10_PORT, PD10_PIN, &gpio_config);
+  HAL_GPIO_Init(ENC1_CHA_PORT, ENC1_CHA_PIN, &gpio_config);
 
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PG12    ------>   LPTIM1_IN1   ------>  PG12
-       PG13    ------>   LPTIM1_CH1   ------>  PG13
+       PE1     ------>   LPTIM1_IN2   ------>  ENC1_CHB
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_1;
-  HAL_GPIO_Init(HAL_GPIOG, PG12_PIN | PG13_PIN, &gpio_config);
-
-  /**
-    [GPIO Pin] ------> [Signal Name] ------> [Labels]
-
-       PE1     ------>   LPTIM1_IN2   ------>  PE1
-    **/
-  gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
-  gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.pull        = HAL_GPIO_PULL_NO;
-  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
-  gpio_config.alternate   = HAL_GPIO_AF_1;
-  HAL_GPIO_Init(PE1_PORT, PE1_PIN, &gpio_config);
+  HAL_GPIO_Init(ENC1_CHB_PORT, ENC1_CHB_PIN, &gpio_config);
 
   hal_lptim_config_t  config;
 
@@ -107,28 +92,6 @@ hal_lptim_handle_t *mx_lptim1_init(void)
     return NULL;
   }
 
-  hal_lptim_ic_config_t ic_config1;
-  ic_config1.source = HAL_LPTIM_INPUT_GPIO;
-  ic_config1.polarity = HAL_LPTIM_IC_RISING;
-  ic_config1.prescaler = HAL_LPTIM_IC_DIV1;
-  ic_config1.filter = HAL_LPTIM_FDIV1;
-
-  if (HAL_LPTIM_IC_SetConfigChannel(&hLPTIM1, HAL_LPTIM_CHANNEL_1, &ic_config1) != HAL_OK)
-  {
-    return NULL;
-  }
-
-  hal_lptim_ic_config_t ic_config2;
-  ic_config2.source = HAL_LPTIM_INPUT_GPIO;
-  ic_config2.polarity = HAL_LPTIM_IC_RISING;
-  ic_config2.prescaler = HAL_LPTIM_IC_DIV1;
-  ic_config2.filter = HAL_LPTIM_FDIV1;
-
-  if (HAL_LPTIM_IC_SetConfigChannel(&hLPTIM1, HAL_LPTIM_CHANNEL_2, &ic_config2) != HAL_OK)
-  {
-    return NULL;
-  }
-
   hal_lptim_encoder_config_t p_encoder;
   p_encoder.input1 = HAL_LPTIM_INPUT1_GPIO;
   p_encoder.input2 = HAL_LPTIM_INPUT2_GPIO;
@@ -149,14 +112,11 @@ void mx_lptim1_deinit(void)
 
   HAL_RCC_LPTIM1_DisableClock();
 
-  /* De-initialize all GPIOD pins associated with LPTIM1 */
-  HAL_GPIO_DeInit(PD10_PORT, PD10_PIN);
-
   /* De-initialize all GPIOG pins associated with LPTIM1 */
-  HAL_GPIO_DeInit(HAL_GPIOG, PG12_PIN | PG13_PIN);
+  HAL_GPIO_DeInit(ENC1_CHA_PORT, ENC1_CHA_PIN);
 
   /* De-initialize all GPIOE pins associated with LPTIM1 */
-  HAL_GPIO_DeInit(PE1_PORT, PE1_PIN);
+  HAL_GPIO_DeInit(ENC1_CHB_PORT, ENC1_CHB_PIN);
 }
 
 hal_lptim_handle_t *mx_lptim1_gethandle(void)

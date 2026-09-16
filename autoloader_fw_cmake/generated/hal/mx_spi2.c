@@ -61,36 +61,49 @@ hal_spi_handle_t *mx_spi2_init(void)
 
   /* ### SPI2 GPIO Configuration ########################### */
   /* GPIO Clocks activation */
-  HAL_RCC_GPIOA_EnableClock();
+  HAL_RCC_GPIOD_EnableClock();
 
   HAL_RCC_GPIOC_EnableClock();
+
+  HAL_RCC_GPIOB_EnableClock();
 
   hal_gpio_config_t  gpio_config;
 
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PA9     ------>   SPI2_SCK   ------>  PA9, SPI_FLASH_SCK
+       PD3     ------>   SPI2_SCK   ------>  SPI_FLASH_SCK
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_HIGH;
   gpio_config.alternate   = HAL_GPIO_AF_5;
-  HAL_GPIO_Init(PA9_PORT, PA9_PIN, &gpio_config);
+  HAL_GPIO_Init(SPI_FLASH_SCK_PORT, SPI_FLASH_SCK_PIN, &gpio_config);
 
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PC2     ------>   SPI2_MISO   ------>  PC2, SPI_FLASH_MISO
-       PC3     ------>   SPI2_MOSI   ------>  PC3, SPI_FLASH_MOSI
+       PC2     ------>   SPI2_MISO   ------>  SPI_FLASH_MISO
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_HIGH;
   gpio_config.alternate   = HAL_GPIO_AF_5;
-  HAL_GPIO_Init(HAL_GPIOC, PC2_PIN | PC3_PIN, &gpio_config);
+  HAL_GPIO_Init(SPI_FLASH_MISO_PORT, SPI_FLASH_MISO_PIN, &gpio_config);
+
+  /**
+    [GPIO Pin] ------> [Signal Name] ------> [Labels]
+
+       PB15    ------>   SPI2_MOSI   ------>  SPI_FLASH_MOSI
+    **/
+  gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
+  gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
+  gpio_config.pull        = HAL_GPIO_PULL_NO;
+  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_HIGH;
+  gpio_config.alternate   = HAL_GPIO_AF_5;
+  HAL_GPIO_Init(SPI_FLASH_MOSI_PORT, SPI_FLASH_MOSI_PIN, &gpio_config);
 
   /* Enable the interrupt for SPI */
   HAL_CORTEX_NVIC_SetPriority(SPI2_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
@@ -110,11 +123,14 @@ void mx_spi2_deinit(void)
 
   HAL_RCC_SPI2_DisableClock();
 
-  /* De-initialize all GPIOA pins associated with SPI2 */
-  HAL_GPIO_DeInit(PA9_PORT, PA9_PIN);
+  /* De-initialize all GPIOD pins associated with SPI2 */
+  HAL_GPIO_DeInit(SPI_FLASH_SCK_PORT, SPI_FLASH_SCK_PIN);
 
   /* De-initialize all GPIOC pins associated with SPI2 */
-  HAL_GPIO_DeInit(HAL_GPIOC, PC2_PIN | PC3_PIN);
+  HAL_GPIO_DeInit(SPI_FLASH_MISO_PORT, SPI_FLASH_MISO_PIN);
+
+  /* De-initialize all GPIOB pins associated with SPI2 */
+  HAL_GPIO_DeInit(SPI_FLASH_MOSI_PORT, SPI_FLASH_MOSI_PIN);
 }
 
 hal_spi_handle_t *mx_spi2_gethandle(void)

@@ -1,10 +1,10 @@
 # file-format: 1.0.0
-if(CMAKE_BUILD_TYPE STREQUAL "debug_GCC_NUCLEO-C5A3ZG")
+if(CMAKE_BUILD_TYPE STREQUAL "debug_GCC_STM32C591ZGT6")
   set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES SUFFIX ".elf")
   target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC ${CPU_FLAGS})
   target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC "SHELL:-g3 -O0 -fdata-sections -ffunction-sections -std=gnu11 -Wall -fstack-usage --specs=nano.specs --specs=nosys.specs -Werror=implicit-function-declaration ${CC_SECURE}")
-  target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC . arch/cmsis/CMSIS/Core/Include generated/hal generated/middleware middleware/filex/common/inc middleware/filex/ports/freertos/inc middleware/freertos/include middleware/freertos/portable/GCC/ARM_CM33_NTZ/non_secure middleware/usbx/common/core/inc middleware/usbx/common/usbx_host_classes/inc middleware/usbx/interfaces/usbx_stm32_host_controllers middleware/usbx/ports/freertos/inc stm32c5xx_dfp/Include stm32c5xx_drivers/hal stm32c5xx_drivers/ll user_modifiable/_debug_GCC_NUCLEO-C5A3ZG)
-  target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC STM32C5A3xx _RTE_)
+  target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC . arch/cmsis/CMSIS/Core/Include generated/hal generated/middleware middleware/filex/common/inc middleware/filex/ports/freertos/inc middleware/freertos/include middleware/freertos/portable/GCC/ARM_CM33_NTZ/non_secure middleware/usbx/common/core/inc middleware/usbx/common/usbx_host_classes/inc middleware/usbx/interfaces/usbx_stm32_host_controllers middleware/usbx/ports/freertos/inc stm32c5xx_dfp/Include stm32c5xx_drivers/hal stm32c5xx_drivers/ll user_modifiable/_debug_GCC_STM32C591ZGT6)
+  target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC STM32C591xx _RTE_)
   target_link_options(${CMAKE_PROJECT_NAME} PUBLIC -Wl,-Map=${CMAKE_PROJECT_NAME}.map -Wl,--gc-sections -Wl,--start-group -lc -lm -Wl,--end-group -static --specs=nano.specs --specs=nosys.specs ${CC_SECURE})
   target_link_options(${CMAKE_PROJECT_NAME} PUBLIC ${CPU_FLAGS})
 endif()

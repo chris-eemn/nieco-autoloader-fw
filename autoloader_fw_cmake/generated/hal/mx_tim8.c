@@ -106,35 +106,35 @@ hal_tim_handle_t *mx_tim8_init(void)
   }
   /* ### TIM8 GPIO Configuration ########################### */
   /* GPIO Clocks activation */
-  HAL_RCC_GPIOB_EnableClock();
-
   HAL_RCC_GPIOC_EnableClock();
+
+  HAL_RCC_GPIOB_EnableClock();
 
   hal_gpio_config_t  gpio_config;
 
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PB13    ------>   TIM8_CH2   ------>  PB13
-    **/
-  gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
-  gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.pull        = HAL_GPIO_PULL_NO;
-  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
-  gpio_config.alternate   = HAL_GPIO_AF_2;
-  HAL_GPIO_Init(PB13_PORT, PB13_PIN, &gpio_config);
-
-  /**
-    [GPIO Pin] ------> [Signal Name] ------> [Labels]
-
-       PC6     ------>   TIM8_CH1   ------>  PC6
+       PC6     ------>   TIM8_CH1   ------>  ENC6_CHA
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_3;
-  HAL_GPIO_Init(PC6_PORT, PC6_PIN, &gpio_config);
+  HAL_GPIO_Init(ENC6_CHA_PORT, ENC6_CHA_PIN, &gpio_config);
+
+  /**
+    [GPIO Pin] ------> [Signal Name] ------> [Labels]
+
+       PB13    ------>   TIM8_CH2   ------>  ENC6_CHB
+    **/
+  gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
+  gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
+  gpio_config.pull        = HAL_GPIO_PULL_NO;
+  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
+  gpio_config.alternate   = HAL_GPIO_AF_2;
+  HAL_GPIO_Init(ENC6_CHB_PORT, ENC6_CHB_PIN, &gpio_config);
 
   return &hTIM8;
 }
@@ -147,11 +147,11 @@ void mx_tim8_deinit(void)
 
   HAL_RCC_TIM8_Reset();
 
-  /* De-initialize all GPIOB pins associated with TIM8 */
-  HAL_GPIO_DeInit(PB13_PORT, PB13_PIN);
-
   /* De-initialize all GPIOC pins associated with TIM8 */
-  HAL_GPIO_DeInit(PC6_PORT, PC6_PIN);
+  HAL_GPIO_DeInit(ENC6_CHA_PORT, ENC6_CHA_PIN);
+
+  /* De-initialize all GPIOB pins associated with TIM8 */
+  HAL_GPIO_DeInit(ENC6_CHB_PORT, ENC6_CHB_PIN);
 }
 
 hal_tim_handle_t *mx_tim8_gethandle(void)

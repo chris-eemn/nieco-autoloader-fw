@@ -30,12 +30,12 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 
 /** Primary aliases for TIM4_CH1 pin */
-#define PD12_PORT                             HAL_GPIOD
-#define PD12_PIN                              HAL_GPIO_PIN_12
+#define ENC4_CHA_PORT                         HAL_GPIOD
+#define ENC4_CHA_PIN                          HAL_GPIO_PIN_12
 
 /** Primary aliases for TIM4_CH2 pin */
-#define PD13_PORT                             HAL_GPIOD
-#define PD13_PIN                              HAL_GPIO_PIN_13
+#define ENC4_CHB_PORT                         HAL_GPIOD
+#define ENC4_CHB_PIN                          HAL_GPIO_PIN_13
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/

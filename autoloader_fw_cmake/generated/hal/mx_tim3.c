@@ -114,15 +114,15 @@ hal_tim_handle_t *mx_tim3_init(void)
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PA6     ------>   TIM3_CH1   ------>  PA6
-       PA7     ------>   TIM3_CH2   ------>  PA7
+       PA6     ------>   TIM3_CH1   ------>  ENC7_CHA
+       PA7     ------>   TIM3_CH2   ------>  ENC7_CHB
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_2;
-  HAL_GPIO_Init(HAL_GPIOA, PA6_PIN | PA7_PIN, &gpio_config);
+  HAL_GPIO_Init(HAL_GPIOA, ENC7_CHA_PIN | ENC7_CHB_PIN, &gpio_config);
 
   return &hTIM3;
 }
@@ -136,7 +136,7 @@ void mx_tim3_deinit(void)
   HAL_RCC_TIM3_Reset();
 
   /* De-initialize all GPIOA pins associated with TIM3 */
-  HAL_GPIO_DeInit(HAL_GPIOA, PA6_PIN | PA7_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOA, ENC7_CHA_PIN | ENC7_CHB_PIN);
 }
 
 hal_tim_handle_t *mx_tim3_gethandle(void)

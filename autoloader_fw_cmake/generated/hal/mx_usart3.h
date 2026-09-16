@@ -30,20 +30,12 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 
 /** Primary aliases for USART3_RX pin */
-#define PB4_PORT                              HAL_GPIOB
-#define PB4_PIN                               HAL_GPIO_PIN_4
-
-/** Secondary aliases for USART3_RX pin */
-#define MB_UART_RX_PORT                       HAL_GPIOB
-#define MB_UART_RX_PIN                        HAL_GPIO_PIN_4
+#define UI_MB_RX_PORT                         HAL_GPIOB
+#define UI_MB_RX_PIN                          HAL_GPIO_PIN_4
 
 /** Primary aliases for USART3_TX pin */
-#define PB10_PORT                             HAL_GPIOB
-#define PB10_PIN                              HAL_GPIO_PIN_10
-
-/** Secondary aliases for USART3_TX pin */
-#define MB_UART_TX_PORT                       HAL_GPIOB
-#define MB_UART_TX_PIN                        HAL_GPIO_PIN_10
+#define UI_MB_TX_PORT                         HAL_GPIOB
+#define UI_MB_TX_PIN                          HAL_GPIO_PIN_10
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/

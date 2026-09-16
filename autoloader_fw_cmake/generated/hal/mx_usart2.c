@@ -49,7 +49,7 @@ hal_uart_handle_t *mx_usart2_uart_init(void)
     return NULL;
   }
 
-  uart_config.baud_rate = 115200;
+  uart_config.baud_rate = 57600;
   uart_config.clock_prescaler = HAL_UART_PRESCALER_DIV1;
   uart_config.word_length = HAL_UART_WORD_LENGTH_8_BIT;
   uart_config.stop_bits = HAL_UART_STOP_BIT_1;
@@ -73,15 +73,15 @@ hal_uart_handle_t *mx_usart2_uart_init(void)
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PA3     ------>   USART2_RX   ------>  DBGIN_VCP_RX
-       PA2     ------>   USART2_TX   ------>  DBGIN_VCP_TX
+       PA3     ------>   USART2_RX   ------>  FUTURE_MB_RX
+       PA2     ------>   USART2_TX   ------>  FUTURE_MB_TX
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_7;
-  HAL_GPIO_Init(HAL_GPIOA, DBGIN_VCP_RX_PIN | DBGIN_VCP_TX_PIN, &gpio_config);
+  HAL_GPIO_Init(HAL_GPIOA, FUTURE_MB_RX_PIN | FUTURE_MB_TX_PIN, &gpio_config);
 
   /* Enable interrupt */
   HAL_CORTEX_NVIC_SetPriority(USART2_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
@@ -101,7 +101,7 @@ void mx_usart2_uart_deinit(void)
   HAL_RCC_USART2_DisableClock();
 
   /* De-initialize all GPIOA pins associated with USART2 */
-  HAL_GPIO_DeInit(HAL_GPIOA, DBGIN_VCP_TX_PIN | DBGIN_VCP_RX_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOA, FUTURE_MB_TX_PIN | FUTURE_MB_RX_PIN);
 }
 hal_uart_handle_t *mx_usart2_uart_gethandle(void)
 {

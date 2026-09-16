@@ -609,7 +609,7 @@ extern "C" {
 #define USE_HAL_TIM_REGISTER_CALLBACKS          1U
 #define USE_HAL_TIM_USER_DATA                   0U
 #define USE_HAL_TIM_GET_LAST_ERRORS             0U
-#define USE_HAL_TIM_DMA                         1U
+#define USE_HAL_TIM_DMA                         0U
 /**
   * @}
   */

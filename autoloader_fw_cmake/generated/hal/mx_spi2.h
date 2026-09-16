@@ -30,28 +30,16 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 
 /** Primary aliases for SPI2_SCK pin */
-#define PA9_PORT                              HAL_GPIOA
-#define PA9_PIN                               HAL_GPIO_PIN_9
-
-/** Secondary aliases for SPI2_SCK pin */
-#define SPI_FLASH_SCK_PORT                    HAL_GPIOA
-#define SPI_FLASH_SCK_PIN                     HAL_GPIO_PIN_9
+#define SPI_FLASH_SCK_PORT                    HAL_GPIOD
+#define SPI_FLASH_SCK_PIN                     HAL_GPIO_PIN_3
 
 /** Primary aliases for SPI2_MISO pin */
-#define PC2_PORT                              HAL_GPIOC
-#define PC2_PIN                               HAL_GPIO_PIN_2
-
-/** Secondary aliases for SPI2_MISO pin */
 #define SPI_FLASH_MISO_PORT                   HAL_GPIOC
 #define SPI_FLASH_MISO_PIN                    HAL_GPIO_PIN_2
 
 /** Primary aliases for SPI2_MOSI pin */
-#define PC3_PORT                              HAL_GPIOC
-#define PC3_PIN                               HAL_GPIO_PIN_3
-
-/** Secondary aliases for SPI2_MOSI pin */
-#define SPI_FLASH_MOSI_PORT                   HAL_GPIOC
-#define SPI_FLASH_MOSI_PIN                    HAL_GPIO_PIN_3
+#define SPI_FLASH_MOSI_PORT                   HAL_GPIOB
+#define SPI_FLASH_MOSI_PIN                    HAL_GPIO_PIN_15
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/

@@ -115,26 +115,26 @@ hal_tim_handle_t *mx_tim1_init(void)
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PA8     ------>   TIM1_CH1   ------>  PA8
+       PA8     ------>   TIM1_CH1   ------>  ENC8_CHA
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_1;
-  HAL_GPIO_Init(PA8_PORT, PA8_PIN, &gpio_config);
+  HAL_GPIO_Init(ENC8_CHA_PORT, ENC8_CHA_PIN, &gpio_config);
 
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PE11    ------>   TIM1_CH2   ------>  PE11
+       PE11    ------>   TIM1_CH2   ------>  ENC8_CHB
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_1;
-  HAL_GPIO_Init(PE11_PORT, PE11_PIN, &gpio_config);
+  HAL_GPIO_Init(ENC8_CHB_PORT, ENC8_CHB_PIN, &gpio_config);
 
   return &hTIM1;
 }
@@ -148,10 +148,10 @@ void mx_tim1_deinit(void)
   HAL_RCC_TIM1_Reset();
 
   /* De-initialize all GPIOA pins associated with TIM1 */
-  HAL_GPIO_DeInit(PA8_PORT, PA8_PIN);
+  HAL_GPIO_DeInit(ENC8_CHA_PORT, ENC8_CHA_PIN);
 
   /* De-initialize all GPIOE pins associated with TIM1 */
-  HAL_GPIO_DeInit(PE11_PORT, PE11_PIN);
+  HAL_GPIO_DeInit(ENC8_CHB_PORT, ENC8_CHB_PIN);
 }
 
 hal_tim_handle_t *mx_tim1_gethandle(void)

@@ -1,6 +1,6 @@
 # file-format: 1.0.0
 set(CMSIS_COMPONENTS_LIST ) # Start with empty component list. To be populated below by each config.
-if(${CMAKE_BUILD_TYPE} STREQUAL "debug_GCC_NUCLEO-C5A3ZG")
+if(${CMAKE_BUILD_TYPE} STREQUAL "debug_GCC_STM32C591ZGT6")
   list(APPEND CMSIS_COMPONENTS_LIST "Cvendor:STMicroelectronics#Cclass:CMSIS#Cgroup:CORE#Cversion:6.2.0")
   list(APPEND CMSIS_COMPONENTS_LIST "Cvendor:STMicroelectronics#Cclass:Device#Cgroup:STM32 HAL DRIVERS CORE#Csub:USB CORE DEF#Cversion:2.1.0")
   list(APPEND CMSIS_COMPONENTS_LIST "Cvendor:STMicroelectronics#Cclass:Device#Cgroup:STM32 HAL DRIVERS CORE#Csub:USB DRD#Cversion:2.1.0")

@@ -36,18 +36,17 @@ extern "C" {
 #include "mx_lptim1.h"
 #include "mx_rcc.h"
 #include "mx_spi2.h"
-#include "mx_tim1.h"
 #include "mx_tim17.h"
-#include "mx_tim12.h"
 #include "mx_tim2.h"
-#include "mx_tim7.h"
-#include "mx_tim3.h"
+#include "mx_tim15.h"
 #include "mx_tim4.h"
 #include "mx_tim5.h"
 #include "mx_tim8.h"
-#include "mx_tim15.h"
-#include "mx_usart2.h"
+#include "mx_tim3.h"
+#include "mx_tim1.h"
 #include "mx_usart3.h"
+#include "mx_uart4.h"
+#include "mx_usart2.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -92,17 +91,11 @@ extern "C" {
       As a result, no aliases are generated for mx_icache_init
     ************************************************************* */
 
-  /* ***********************************************************
-      LPTIM1: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_lptim1 with HAL layer
-  *         Name of the User label:
-  *                   m8_encoder_timer
-  * @retval hal_lptim_handle_t Pointer on the handle on the LPTIM1 instance
-  */
-#define m8_encoder_timer_init mx_lptim1_init
+  /* *************************************************************
+    LPTIM1: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_lptim1_init
+    ************************************************************* */
 
   /* *************************************************************
     RCC: No software label has been defined for this peripheral instance
@@ -110,29 +103,11 @@ extern "C" {
       As a result, no aliases are generated for mx_rcc_init
     ************************************************************* */
 
-  /* ***********************************************************
-      SPI2: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_spi2 with HAL layer
-  *         Name of the User label:
-  *                   SPI_FLASH_BUS
-  * @retval hal_spi_handle_t Pointer on the handle on the SPI2 instance
-  */
-#define spi_flash_bus_init mx_spi2_init
-
-  /* ***********************************************************
-      TIM1: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_tim1 with HAL layer
-  *         Name of the User label:
-  *                   m1_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM1 instance
-  */
-#define m1_encoder_timer_init mx_tim1_init
+  /* *************************************************************
+    SPI2: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_spi2_init
+    ************************************************************* */
 
   /* *************************************************************
     TIM17: No software label has been defined for this peripheral instance
@@ -140,119 +115,65 @@ extern "C" {
       As a result, no aliases are generated for mx_tim17_init
     ************************************************************* */
 
-  /* ***********************************************************
-      TIM12: aliases for initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    TIM2: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim2_init
+    ************************************************************* */
 
-/**
-  * @brief  Initialize the mx_tim12 with HAL layer
-  *         Name of the User label:
-  *                   step_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM12 instance
-  */
-#define step_timer_init mx_tim12_init
+  /* *************************************************************
+    TIM15: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim15_init
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM2: aliases for initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    TIM4: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim4_init
+    ************************************************************* */
 
-/**
-  * @brief  Initialize the mx_tim2 with HAL layer
-  *         Name of the User label:
-  *                   m2_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM2 instance
-  */
-#define m2_encoder_timer_init mx_tim2_init
+  /* *************************************************************
+    TIM5: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim5_init
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM7: aliases for initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    TIM8: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim8_init
+    ************************************************************* */
 
-/**
-  * @brief  Initialize the mx_tim7 with HAL layer
-  *         Name of the User label:
-  *                   mb_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM7 instance
-  */
-#define mb_timer_init mx_tim7_init
+  /* *************************************************************
+    TIM3: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim3_init
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM3: aliases for initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    TIM1: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim1_init
+    ************************************************************* */
 
-/**
-  * @brief  Initialize the mx_tim3 with HAL layer
-  *         Name of the User label:
-  *                   m3_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM3 instance
-  */
-#define m3_encoder_timer_init mx_tim3_init
+  /* *************************************************************
+    USART3: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_usart3_uart_init
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM4: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_tim4 with HAL layer
-  *         Name of the User label:
-  *                   m4_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM4 instance
-  */
-#define m4_encoder_timer_init mx_tim4_init
-
-  /* ***********************************************************
-      TIM5: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_tim5 with HAL layer
-  *         Name of the User label:
-  *                   m5_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM5 instance
-  */
-#define m5_encoder_timer_init mx_tim5_init
-
-  /* ***********************************************************
-      TIM8: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_tim8 with HAL layer
-  *         Name of the User label:
-  *                   m6_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM8 instance
-  */
-#define m6_encoder_timer_init mx_tim8_init
-
-  /* ***********************************************************
-      TIM15: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_tim15 with HAL layer
-  *         Name of the User label:
-  *                   m7_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM15 instance
-  */
-#define m7_encoder_timer_init mx_tim15_init
+  /* *************************************************************
+    UART4: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_uart4_uart_init
+    ************************************************************* */
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_usart2_uart_init
     ************************************************************* */
-
-  /* ***********************************************************
-      USART3: aliases for initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  Initialize the mx_usart3_uart with HAL layer
-  *         Name of the User label:
-  *                   mb_slave
-  * @retval hal_uart_handle_t Pointer on the handle on the USART3 instance
-  */
-#define mb_slave_init mx_usart3_uart_init
 
 /* ########################################################### */
 
@@ -294,38 +215,17 @@ extern "C" {
       As a result, no aliases are generated for mx_icache_deinit
     ************************************************************* */
 
-  /* ***********************************************************
-      LPTIM1: aliases for De-Initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    LPTIM1: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_lptim1_deinit
+    ************************************************************* */
 
-/**
-  * @brief  De-Initialize the mx_lptim1 with HAL layer
-  *         Name of the User label:
-  *                   m8_encoder_timer
-  */
-#define m8_encoder_timer_deinit mx_lptim1_deinit
-
-  /* ***********************************************************
-      SPI2: aliases for De-Initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  De-Initialize the mx_spi2 with HAL layer
-  *         Name of the User label:
-  *                   SPI_FLASH_BUS
-  */
-#define spi_flash_bus_deinit mx_spi2_deinit
-
-  /* ***********************************************************
-      TIM1: aliases for De-Initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  De-Initialize the mx_tim1 with HAL layer
-  *         Name of the User label:
-  *                   m1_encoder_timer
-  */
-#define m1_encoder_timer_deinit mx_tim1_deinit
+  /* *************************************************************
+    SPI2: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_spi2_deinit
+    ************************************************************* */
 
   /* *************************************************************
     TIM17: No software label has been defined for this peripheral instance
@@ -333,110 +233,65 @@ extern "C" {
       As a result, no aliases are generated for mx_tim17_deinit
     ************************************************************* */
 
-  /* ***********************************************************
-      TIM12: aliases for De-Initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    TIM2: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim2_deinit
+    ************************************************************* */
 
-/**
-  * @brief  De-Initialize the mx_tim12 with HAL layer
-  *         Name of the User label:
-  *                   step_timer
-  */
-#define step_timer_deinit mx_tim12_deinit
+  /* *************************************************************
+    TIM15: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim15_deinit
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM2: aliases for De-Initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    TIM4: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim4_deinit
+    ************************************************************* */
 
-/**
-  * @brief  De-Initialize the mx_tim2 with HAL layer
-  *         Name of the User label:
-  *                   m2_encoder_timer
-  */
-#define m2_encoder_timer_deinit mx_tim2_deinit
+  /* *************************************************************
+    TIM5: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim5_deinit
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM7: aliases for De-Initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    TIM8: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim8_deinit
+    ************************************************************* */
 
-/**
-  * @brief  De-Initialize the mx_tim7 with HAL layer
-  *         Name of the User label:
-  *                   mb_timer
-  */
-#define mb_timer_deinit mx_tim7_deinit
+  /* *************************************************************
+    TIM3: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim3_deinit
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM3: aliases for De-Initialization functions
-    *********************************************************** */
+  /* *************************************************************
+    TIM1: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim1_deinit
+    ************************************************************* */
 
-/**
-  * @brief  De-Initialize the mx_tim3 with HAL layer
-  *         Name of the User label:
-  *                   m3_encoder_timer
-  */
-#define m3_encoder_timer_deinit mx_tim3_deinit
+  /* *************************************************************
+    USART3: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_usart3_uart_deinit
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM4: aliases for De-Initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  De-Initialize the mx_tim4 with HAL layer
-  *         Name of the User label:
-  *                   m4_encoder_timer
-  */
-#define m4_encoder_timer_deinit mx_tim4_deinit
-
-  /* ***********************************************************
-      TIM5: aliases for De-Initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  De-Initialize the mx_tim5 with HAL layer
-  *         Name of the User label:
-  *                   m5_encoder_timer
-  */
-#define m5_encoder_timer_deinit mx_tim5_deinit
-
-  /* ***********************************************************
-      TIM8: aliases for De-Initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  De-Initialize the mx_tim8 with HAL layer
-  *         Name of the User label:
-  *                   m6_encoder_timer
-  */
-#define m6_encoder_timer_deinit mx_tim8_deinit
-
-  /* ***********************************************************
-      TIM15: aliases for De-Initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  De-Initialize the mx_tim15 with HAL layer
-  *         Name of the User label:
-  *                   m7_encoder_timer
-  */
-#define m7_encoder_timer_deinit mx_tim15_deinit
+  /* *************************************************************
+    UART4: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_uart4_uart_deinit
+    ************************************************************* */
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_usart2_uart_deinit
     ************************************************************* */
-
-  /* ***********************************************************
-      USART3: aliases for De-Initialization functions
-    *********************************************************** */
-
-/**
-  * @brief  De-Initialize the mx_usart3_uart with HAL layer
-  *         Name of the User label:
-  *                   mb_slave
-  */
-#define mb_slave_deinit mx_usart3_uart_deinit
 
 /* ########################################################### */
 
@@ -447,22 +302,22 @@ extern "C" {
     *********************************************************** */
 
 /**
-  * @brief  Get the EXTI handle for EXTI6 used for gpio_default
-  * @retval hal_exti_handle_t Pointer on the handle on the EXTI6 used by gpio_default instance
+  * @brief  Get the EXTI handle for EXTI15 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI15 used by gpio_default instance
   */
-#define m1_fault_exti_gethandle mx_gpio_default_exti6_gethandle
+#define enc1_index_exti_gethandle mx_gpio_default_exti15_gethandle
+
+  /* *************************************************************
+    gpio_default / EXTI6: No EXTI software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_gpio_default_exti6_gethandle
+    ************************************************************* */
 
 /**
-  * @brief  Get the EXTI handle for EXTI14 used for gpio_default
-  * @retval hal_exti_handle_t Pointer on the handle on the EXTI14 used by gpio_default instance
+  * @brief  Get the EXTI handle for EXTI4 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI4 used by gpio_default instance
   */
-#define m2_fault_exti_gethandle mx_gpio_default_exti14_gethandle
-
-/**
-  * @brief  Get the EXTI handle for EXTI5 used for gpio_default
-  * @retval hal_exti_handle_t Pointer on the handle on the EXTI5 used by gpio_default instance
-  */
-#define m4_fault_exti_gethandle mx_gpio_default_exti5_gethandle
+#define m2_fault_exti_gethandle mx_gpio_default_exti4_gethandle
 
 /**
   * @brief  Get the EXTI handle for EXTI1 used for gpio_default
@@ -470,11 +325,47 @@ extern "C" {
   */
 #define m3_fault_exti_gethandle mx_gpio_default_exti1_gethandle
 
+  /* *************************************************************
+    gpio_default / EXTI5: No EXTI software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_gpio_default_exti5_gethandle
+    ************************************************************* */
+
 /**
-  * @brief  Get the EXTI handle for EXTI13 used for gpio_default
-  * @retval hal_exti_handle_t Pointer on the handle on the EXTI13 used by gpio_default instance
+  * @brief  Get the EXTI handle for EXTI2 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI2 used by gpio_default instance
   */
-#define door_exti_gethandle mx_gpio_default_exti13_gethandle
+#define m5_fault_exti_gethandle mx_gpio_default_exti2_gethandle
+
+/**
+  * @brief  Get the EXTI handle for EXTI3 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI3 used by gpio_default instance
+  */
+#define m6_fault_exti_gethandle mx_gpio_default_exti3_gethandle
+
+/**
+  * @brief  Get the EXTI handle for EXTI8 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI8 used by gpio_default instance
+  */
+#define m7_fault_exti_gethandle mx_gpio_default_exti8_gethandle
+
+/**
+  * @brief  Get the EXTI handle for EXTI14 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI14 used by gpio_default instance
+  */
+#define m8_fault_exti_gethandle mx_gpio_default_exti14_gethandle
+
+/**
+  * @brief  Get the EXTI handle for EXTI0 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI0 used by gpio_default instance
+  */
+#define enc3_index_exti_gethandle mx_gpio_default_exti0_gethandle
+
+  /* *************************************************************
+    gpio_default / EXTI13: No EXTI software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_gpio_default_exti13_gethandle
+    ************************************************************* */
 
   /* *************************************************************
     USB_DRD_FS_HOST: No software label has been defined for this peripheral instance
@@ -494,35 +385,17 @@ extern "C" {
       As a result, no aliases are generated for mx_icache_gethandle
     ************************************************************* */
 
-  /* ***********************************************************
-      LPTIM1: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for LPTIM1
-  *         Name of the User label:
-  *                   m8_encoder_timer
-  * @retval hal_lptim_handle_t Pointer on the handle on the LPTIM1 instance
-  */
-#define m8_encoder_timer_gethandle mx_lptim1_gethandle
+  /* *************************************************************
+    LPTIM1: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_lptim1_gethandle
+    ************************************************************* */
 
-  /* ***********************************************************
-      SPI2: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for SPI2
-  *         Name of the User label:
-  *                   SPI_FLASH_BUS
-  * @retval hal_spi_handle_t Pointer on the handle on the SPI2 instance
-  */
-#define spi_flash_bus_gethandle mx_spi2_gethandle
-
-  /* ***********************************************************
-      TIM1: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM1
-  *         Name of the User label:
-  *                   m1_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM1 instance
-  */
-#define m1_encoder_timer_gethandle mx_tim1_gethandle
+  /* *************************************************************
+    SPI2: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_spi2_gethandle
+    ************************************************************* */
 
   /* *************************************************************
     TIM17: No software label has been defined for this peripheral instance
@@ -530,101 +403,65 @@ extern "C" {
       As a result, no aliases are generated for mx_tim17_gethandle
     ************************************************************* */
 
-  /* ***********************************************************
-      TIM12: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM12
-  *         Name of the User label:
-  *                   step_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM12 instance
-  */
-#define step_timer_gethandle mx_tim12_gethandle
+  /* *************************************************************
+    TIM2: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim2_gethandle
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM2: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM2
-  *         Name of the User label:
-  *                   m2_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM2 instance
-  */
-#define m2_encoder_timer_gethandle mx_tim2_gethandle
+  /* *************************************************************
+    TIM15: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim15_gethandle
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM7: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM7
-  *         Name of the User label:
-  *                   mb_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM7 instance
-  */
-#define mb_timer_gethandle mx_tim7_gethandle
+  /* *************************************************************
+    TIM4: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim4_gethandle
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM3: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM3
-  *         Name of the User label:
-  *                   m3_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM3 instance
-  */
-#define m3_encoder_timer_gethandle mx_tim3_gethandle
+  /* *************************************************************
+    TIM5: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim5_gethandle
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM4: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM4
-  *         Name of the User label:
-  *                   m4_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM4 instance
-  */
-#define m4_encoder_timer_gethandle mx_tim4_gethandle
+  /* *************************************************************
+    TIM8: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim8_gethandle
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM5: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM5
-  *         Name of the User label:
-  *                   m5_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM5 instance
-  */
-#define m5_encoder_timer_gethandle mx_tim5_gethandle
+  /* *************************************************************
+    TIM3: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim3_gethandle
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM8: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM8
-  *         Name of the User label:
-  *                   m6_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM8 instance
-  */
-#define m6_encoder_timer_gethandle mx_tim8_gethandle
+  /* *************************************************************
+    TIM1: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_tim1_gethandle
+    ************************************************************* */
 
-  /* ***********************************************************
-      TIM15: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for TIM15
-  *         Name of the User label:
-  *                   m7_encoder_timer
-  * @retval hal_tim_handle_t Pointer on the handle on the TIM15 instance
-  */
-#define m7_encoder_timer_gethandle mx_tim15_gethandle
+  /* *************************************************************
+    USART3: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_usart3_uart_gethandle
+    ************************************************************* */
+
+  /* *************************************************************
+    UART4: No software label has been defined for this peripheral instance
+      in the STM32CubeMX2 configuration panel.
+      As a result, no aliases are generated for mx_uart4_uart_gethandle
+    ************************************************************* */
 
   /* *************************************************************
     USART2: No software label has been defined for this peripheral instance
       in the STM32CubeMX2 configuration panel.
       As a result, no aliases are generated for mx_usart2_uart_gethandle
     ************************************************************* */
-
-  /* ***********************************************************
-      USART3: aliases for get handle functions
-    *********************************************************** *//**
-  * @brief  Get the HAL handle for USART3
-  *         Name of the User label:
-  *                   mb_slave
-  * @retval hal_uart_handle_t Pointer on the handle on the USART3 instance
-  */
-#define mb_slave_gethandle mx_usart3_uart_gethandle
 
 /* ########################################################### */
 

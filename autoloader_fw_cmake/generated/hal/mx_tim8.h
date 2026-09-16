@@ -29,13 +29,13 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-/** Primary aliases for TIM8_CH2 pin */
-#define PB13_PORT                             HAL_GPIOB
-#define PB13_PIN                              HAL_GPIO_PIN_13
-
 /** Primary aliases for TIM8_CH1 pin */
-#define PC6_PORT                              HAL_GPIOC
-#define PC6_PIN                               HAL_GPIO_PIN_6
+#define ENC6_CHA_PORT                         HAL_GPIOC
+#define ENC6_CHA_PIN                          HAL_GPIO_PIN_6
+
+/** Primary aliases for TIM8_CH2 pin */
+#define ENC6_CHB_PORT                         HAL_GPIOB
+#define ENC6_CHB_PIN                          HAL_GPIO_PIN_13
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/

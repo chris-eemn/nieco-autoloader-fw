@@ -116,26 +116,26 @@ hal_tim_handle_t *mx_tim2_init(void)
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PA15    ------>   TIM2_CH1   ------>  NETR53_2
+       PA15    ------>   TIM2_CH1   ------>  ENC2_CHA
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.pull        = HAL_GPIO_PULL_NO;
+  gpio_config.pull        = HAL_GPIO_PULL_UP;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_1;
-  HAL_GPIO_Init(NETR53_2_PORT, NETR53_2_PIN, &gpio_config);
+  HAL_GPIO_Init(ENC2_CHA_PORT, ENC2_CHA_PIN, &gpio_config);
 
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PB3     ------>   TIM2_CH2   ------>  DBGIN_SWO
+       PB3     ------>   TIM2_CH2   ------>  ENC2_CHB
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
-  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
+  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_VERY_HIGH;
   gpio_config.alternate   = HAL_GPIO_AF_1;
-  HAL_GPIO_Init(DBGIN_SWO_PORT, DBGIN_SWO_PIN, &gpio_config);
+  HAL_GPIO_Init(ENC2_CHB_PORT, ENC2_CHB_PIN, &gpio_config);
 
   return &hTIM2;
 }
@@ -149,10 +149,10 @@ void mx_tim2_deinit(void)
   HAL_RCC_TIM2_Reset();
 
   /* De-initialize all GPIOA pins associated with TIM2 */
-  HAL_GPIO_DeInit(NETR53_2_PORT, NETR53_2_PIN);
+  HAL_GPIO_DeInit(ENC2_CHA_PORT, ENC2_CHA_PIN);
 
   /* De-initialize all GPIOB pins associated with TIM2 */
-  HAL_GPIO_DeInit(DBGIN_SWO_PORT, DBGIN_SWO_PIN);
+  HAL_GPIO_DeInit(ENC2_CHB_PORT, ENC2_CHB_PIN);
 }
 
 hal_tim_handle_t *mx_tim2_gethandle(void)

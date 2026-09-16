@@ -43,14 +43,14 @@
   */
 system_status_t mx_rcc_init(void)
 {
-  if (HAL_RCC_HSE_Enable(HAL_RCC_HSE_ON) != HAL_OK)
+  if (HAL_RCC_HSIS_Enable() != HAL_OK)
   {
     return SYSTEM_CLOCK_ERROR;
   }
 
     hal_rcc_psi_config_t config_psi;
-  config_psi.psi_source = HAL_RCC_PSI_SRC_HSE;
-  config_psi.psi_ref = HAL_RCC_PSI_REF_48MHZ;
+  config_psi.psi_source = HAL_RCC_PSI_SRC_HSI_8MHz;
+  config_psi.psi_ref = HAL_RCC_PSI_REF_8MHZ;
   config_psi.psi_out = HAL_RCC_PSI_OUT_144MHZ;
   if (HAL_RCC_PSI_SetConfig(&config_psi) != HAL_OK)
   {
@@ -104,9 +104,10 @@ void mx_rcc_deinit(void)
 system_status_t mx_rcc_peripherals_clock_config(void)
 {
   /* Peripherals using PCLK1 (144 MHz):
+    USART3
+    UART4
     USART2
     I2C1
-    USART3
     SPI2
   */
 

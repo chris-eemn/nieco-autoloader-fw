@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "STM32",
-            "compileCommands": "${workspaceFolder}/build/debug_GCC_NUCLEO-C5A3ZG/compile_commands.json",
+            "compileCommands": "${workspaceFolder}/build/debug_GCC_STM32C591ZGT6/compile_commands.json",
             "intelliSenseMode": "linux-gcc-x64",
             "cStandard": "c17",
             "cppStandard": "c++98"

@@ -56,7 +56,7 @@ hal_hcd_handle_t *mx_usb_drd_fs_host_init(void)
   /* No GPIO configuration required for USB */
 
   /* Enable the interruption for HCD */
-  HAL_CORTEX_NVIC_SetPriority(USB_DRD_FS_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_0, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_SetPriority(USB_DRD_FS_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
   HAL_CORTEX_NVIC_EnableIRQ(USB_DRD_FS_IRQn);
 
   return &hUSB_DRD_FS_HCD;

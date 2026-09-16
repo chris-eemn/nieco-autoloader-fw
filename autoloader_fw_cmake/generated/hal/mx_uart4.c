@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
-  * @file           : mx_usart3.c
-  * @brief          : USART3 Peripheral initialization
+  * @file           : mx_uart4.c
+  * @brief          : UART4 Peripheral initialization
   ******************************************************************************
   * @attention
   *
@@ -16,7 +16,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "mx_usart3.h"
+#include "mx_uart4.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -25,31 +25,31 @@
 /* Private functions prototype------------------------------------------------*/
 /* Exported variables by reference--------------------------------------------*/
 /* Handle for UART */
-static hal_uart_handle_t hUSART3;
+static hal_uart_handle_t hUART4;
 
 /* Exported function definition ----------------------------------------------*/
 /******************************************************************************/
 /* Exported functions for UART in HAL layer */
 /******************************************************************************/
 
-hal_uart_handle_t *mx_usart3_uart_init(void)
+hal_uart_handle_t *mx_uart4_uart_init(void)
 {
   hal_uart_config_t uart_config;
 
   /* Basic configuration */
-  if (HAL_UART_Init(&hUSART3, HAL_UART3) != HAL_OK)
+  if (HAL_UART_Init(&hUART4, HAL_UART4) != HAL_OK)
   {
     return NULL;
   }
 
-  HAL_RCC_USART3_EnableClock();
+  HAL_RCC_UART4_EnableClock();
 
-  if (HAL_RCC_USART3_SetKernelClkSource(HAL_RCC_USART3_CLK_SRC_PCLK1) != HAL_OK)
+  if (HAL_RCC_UART4_SetKernelClkSource(HAL_RCC_UART4_CLK_SRC_PCLK1) != HAL_OK)
   {
     return NULL;
   }
 
-  uart_config.baud_rate = 57600;
+  uart_config.baud_rate = 115200;
   uart_config.clock_prescaler = HAL_UART_PRESCALER_DIV1;
   uart_config.word_length = HAL_UART_WORD_LENGTH_8_BIT;
   uart_config.stop_bits = HAL_UART_STOP_BIT_1;
@@ -59,70 +59,59 @@ hal_uart_handle_t *mx_usart3_uart_init(void)
   uart_config.oversampling = HAL_UART_OVERSAMPLING_16;
   uart_config.one_bit_sampling = HAL_UART_ONE_BIT_SAMPLE_DISABLE;
 
-  if (HAL_UART_SetConfig(&hUSART3, &uart_config) != HAL_OK)
+  if (HAL_UART_SetConfig(&hUART4, &uart_config) != HAL_OK)
   {
     return NULL;
   }
 
-  /* ### USART3 GPIO Configuration ########################### */
+  /* ### UART4 GPIO Configuration ########################### */
   /* GPIO Clocks activation */
-  HAL_RCC_GPIOB_EnableClock();
+  HAL_RCC_GPIOD_EnableClock();
 
   hal_gpio_config_t  gpio_config;
 
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PB4     ------>   USART3_RX   ------>  UI_MB_RX
-    **/
-  gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
-  gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.pull        = HAL_GPIO_PULL_UP;
-  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
-  gpio_config.alternate   = HAL_GPIO_AF_11;
-  HAL_GPIO_Init(UI_MB_RX_PORT, UI_MB_RX_PIN, &gpio_config);
-
-  /**
-    [GPIO Pin] ------> [Signal Name] ------> [Labels]
-
-       PB10    ------>   USART3_TX   ------>  UI_MB_TX
+       PD11    ------>   UART4_RX   ------>  CLI_RX
+       PD1     ------>   UART4_TX   ------>  CLI_TX
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
-  gpio_config.alternate   = HAL_GPIO_AF_7;
-  HAL_GPIO_Init(UI_MB_TX_PORT, UI_MB_TX_PIN, &gpio_config);
+  gpio_config.alternate   = HAL_GPIO_AF_8;
+  HAL_GPIO_Init(HAL_GPIOD, CLI_RX_PIN | CLI_TX_PIN, &gpio_config);
 
   /* Enable interrupt */
-  HAL_CORTEX_NVIC_SetPriority(USART3_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
-  HAL_CORTEX_NVIC_EnableIRQ(USART3_IRQn);
+  HAL_CORTEX_NVIC_SetPriority(UART4_IRQn, HAL_CORTEX_NVIC_PREEMP_PRIORITY_5, HAL_CORTEX_NVIC_SUB_PRIORITY_0);
+  HAL_CORTEX_NVIC_EnableIRQ(UART4_IRQn);
 
-  return &hUSART3;
+  return &hUART4;
 }
 
-void mx_usart3_uart_deinit(void)
+void mx_uart4_uart_deinit(void)
 {
   /* Disable interrupt */
-  HAL_CORTEX_NVIC_DisableIRQ(USART3_IRQn);
-(void)HAL_UART_DeInit(&hUSART3);
+  HAL_CORTEX_NVIC_DisableIRQ(UART4_IRQn);
+(void)HAL_UART_DeInit(&hUART4);
 
-  HAL_RCC_USART3_Reset();
+  HAL_RCC_UART4_Reset();
 
-  HAL_RCC_USART3_DisableClock();
+  HAL_RCC_UART4_DisableClock();
 
-  /* De-initialize all GPIOB pins associated with USART3 */
-  HAL_GPIO_DeInit(HAL_GPIOB, UI_MB_RX_PIN | UI_MB_TX_PIN);
+  /* De-initialize all GPIOD pins associated with UART4 */
+  HAL_GPIO_DeInit(HAL_GPIOD, CLI_TX_PIN | CLI_RX_PIN);
 }
-hal_uart_handle_t *mx_usart3_uart_gethandle(void)
+hal_uart_handle_t *mx_uart4_uart_gethandle(void)
 {
-  return &hUSART3;
+  return &hUART4;
 }
 
 /******************************************************************************/
-/*                          USART3 global interrupt                           */
+/*                           UART4 global interrupt                           */
 /******************************************************************************/
-void USART3_IRQHandler(void)
+void UART4_IRQHandler(void)
 {
-  HAL_UART_IRQHandler(&hUSART3);
+  HAL_UART_IRQHandler(&hUART4);
 }

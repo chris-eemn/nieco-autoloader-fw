@@ -29,14 +29,6 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-
-/** Primary aliases for RCC_OSC_IN pin */
-#define PH0_OSC_IN_PORT                       HAL_GPIOH
-#define PH0_OSC_IN_PIN                        HAL_GPIO_PIN_0
-
-/** Primary aliases for RCC_OSC_OUT pin */
-#define PH1_OSC_OUT_PORT                      HAL_GPIOH
-#define PH1_OSC_OUT_PIN                       HAL_GPIO_PIN_1
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 /******************************************************************************/

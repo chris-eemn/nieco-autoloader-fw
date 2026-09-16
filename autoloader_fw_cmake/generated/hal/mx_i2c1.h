@@ -30,20 +30,12 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 
 /** Primary aliases for I2C1_SCL pin */
-#define PB6_PORT                              HAL_GPIOB
-#define PB6_PIN                               HAL_GPIO_PIN_6
-
-/** Secondary aliases for I2C1_SCL pin */
-#define M1_I2C_SCL_PORT                       HAL_GPIOB
-#define M1_I2C_SCL_PIN                        HAL_GPIO_PIN_6
+#define THERMO_I2C_SCL_PORT                   HAL_GPIOB
+#define THERMO_I2C_SCL_PIN                    HAL_GPIO_PIN_6
 
 /** Primary aliases for I2C1_SDA pin */
-#define PB7_PORT                              HAL_GPIOB
-#define PB7_PIN                               HAL_GPIO_PIN_7
-
-/** Secondary aliases for I2C1_SDA pin */
-#define M1_I2C_SDA_PORT                       HAL_GPIOB
-#define M1_I2C_SDA_PIN                        HAL_GPIO_PIN_7
+#define THERMO_I2C_SDA_PORT                   HAL_GPIOB
+#define THERMO_I2C_SDA_PIN                    HAL_GPIO_PIN_7
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

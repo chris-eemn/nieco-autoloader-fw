@@ -30,12 +30,12 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 
 /** Primary aliases for USART2_RX pin */
-#define DBGIN_VCP_RX_PORT                     HAL_GPIOA
-#define DBGIN_VCP_RX_PIN                      HAL_GPIO_PIN_3
+#define FUTURE_MB_RX_PORT                     HAL_GPIOA
+#define FUTURE_MB_RX_PIN                      HAL_GPIO_PIN_3
 
 /** Primary aliases for USART2_TX pin */
-#define DBGIN_VCP_TX_PORT                     HAL_GPIOA
-#define DBGIN_VCP_TX_PIN                      HAL_GPIO_PIN_2
+#define FUTURE_MB_TX_PORT                     HAL_GPIOA
+#define FUTURE_MB_TX_PIN                      HAL_GPIO_PIN_2
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/

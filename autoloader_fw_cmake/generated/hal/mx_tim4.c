@@ -114,15 +114,15 @@ hal_tim_handle_t *mx_tim4_init(void)
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PD12    ------>   TIM4_CH1   ------>  PD12
-       PD13    ------>   TIM4_CH2   ------>  PD13
+       PD12    ------>   TIM4_CH1   ------>  ENC4_CHA
+       PD13    ------>   TIM4_CH2   ------>  ENC4_CHB
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_2;
-  HAL_GPIO_Init(HAL_GPIOD, PD12_PIN | PD13_PIN, &gpio_config);
+  HAL_GPIO_Init(HAL_GPIOD, ENC4_CHA_PIN | ENC4_CHB_PIN, &gpio_config);
 
   return &hTIM4;
 }
@@ -136,7 +136,7 @@ void mx_tim4_deinit(void)
   HAL_RCC_TIM4_Reset();
 
   /* De-initialize all GPIOD pins associated with TIM4 */
-  HAL_GPIO_DeInit(HAL_GPIOD, PD12_PIN | PD13_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOD, ENC4_CHA_PIN | ENC4_CHB_PIN);
 }
 
 hal_tim_handle_t *mx_tim4_gethandle(void)

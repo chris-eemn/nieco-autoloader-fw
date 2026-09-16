@@ -107,35 +107,35 @@ hal_tim_handle_t *mx_tim15_init(void)
   /* Master Mode Configuration */
   /* ### TIM15 GPIO Configuration ########################### */
   /* GPIO Clocks activation */
-  HAL_RCC_GPIOC_EnableClock();
-
   HAL_RCC_GPIOE_EnableClock();
+
+  HAL_RCC_GPIOC_EnableClock();
 
   hal_gpio_config_t  gpio_config;
 
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PC12    ------>   TIM15_CH1   ------>  PC12
-    **/
-  gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
-  gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
-  gpio_config.pull        = HAL_GPIO_PULL_NO;
-  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
-  gpio_config.alternate   = HAL_GPIO_AF_2;
-  HAL_GPIO_Init(PC12_PORT, PC12_PIN, &gpio_config);
-
-  /**
-    [GPIO Pin] ------> [Signal Name] ------> [Labels]
-
-       PE6     ------>   TIM15_CH2   ------>  TRACE_D3
+       PE6     ------>   TIM15_CH2   ------>  ENC3_CHB
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_4;
-  HAL_GPIO_Init(TRACE_D3_PORT, TRACE_D3_PIN, &gpio_config);
+  HAL_GPIO_Init(ENC3_CHB_PORT, ENC3_CHB_PIN, &gpio_config);
+
+  /**
+    [GPIO Pin] ------> [Signal Name] ------> [Labels]
+
+       PC12    ------>   TIM15_CH1   ------>  ENC3_CHA
+    **/
+  gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
+  gpio_config.output_type = HAL_GPIO_OUTPUT_PUSHPULL;
+  gpio_config.pull        = HAL_GPIO_PULL_NO;
+  gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
+  gpio_config.alternate   = HAL_GPIO_AF_2;
+  HAL_GPIO_Init(ENC3_CHA_PORT, ENC3_CHA_PIN, &gpio_config);
 
   return &hTIM15;
 }
@@ -148,11 +148,11 @@ void mx_tim15_deinit(void)
 
   HAL_RCC_TIM15_Reset();
 
-  /* De-initialize all GPIOC pins associated with TIM15 */
-  HAL_GPIO_DeInit(PC12_PORT, PC12_PIN);
-
   /* De-initialize all GPIOE pins associated with TIM15 */
-  HAL_GPIO_DeInit(TRACE_D3_PORT, TRACE_D3_PIN);
+  HAL_GPIO_DeInit(ENC3_CHB_PORT, ENC3_CHB_PIN);
+
+  /* De-initialize all GPIOC pins associated with TIM15 */
+  HAL_GPIO_DeInit(ENC3_CHA_PORT, ENC3_CHA_PIN);
 }
 
 hal_tim_handle_t *mx_tim15_gethandle(void)

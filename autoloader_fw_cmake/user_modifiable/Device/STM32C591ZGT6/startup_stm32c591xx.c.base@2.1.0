@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
-  * @file    startup_stm32c5a3xx.c
-  * @brief   Startup File for STM32C5A3xx Devices
+  * @file    startup_stm32c591xx.c
+  * @brief   Startup File for STM32C591xx Devices
   ******************************************************************************
   * @attention
   *
@@ -16,10 +16,10 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32c5a3xx.h"
+#include "stm32c591xx.h"
 
 #ifdef __cplusplus
-#error "startup_stm32c5a3xx.c file cannot be compiled with C++ compiler"
+#error "startup_stm32c591xx.c file cannot be compiled with C++ compiler"
 #endif /* __cplusplus */
 
 /* External References -------------------------------------------------------*/
@@ -81,8 +81,6 @@ void LPDMA1_CH7_IRQHandler            (void) __attribute__((weak, alias("Default
 void IWDG_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
 void ADC1_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
 void ADC2_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
-void FDCAN1_IT0_IRQHandler            (void) __attribute__((weak, alias("Default_IRQHandler")));
-void FDCAN1_IT1_IRQHandler            (void) __attribute__((weak, alias("Default_IRQHandler")));
 void TIM1_BRK_TERR_IERR_IRQHandler    (void) __attribute__((weak, alias("Default_IRQHandler")));
 void TIM1_UPD_IRQHandler              (void) __attribute__((weak, alias("Default_IRQHandler")));
 void TIM1_TRGI_COM_DIR_IDX_IRQHandler (void) __attribute__((weak, alias("Default_IRQHandler")));
@@ -115,7 +113,6 @@ void RNG_IRQHandler                   (void) __attribute__((weak, alias("Default
 void FPU_IRQHandler                   (void) __attribute__((weak, alias("Default_IRQHandler")));
 void ICACHE_IRQHandler                (void) __attribute__((weak, alias("Default_IRQHandler")));
 void CORDIC_IRQHandler                (void) __attribute__((weak, alias("Default_IRQHandler")));
-void AES_IRQHandler                   (void) __attribute__((weak, alias("Default_IRQHandler")));
 void HASH_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
 void I2C2_EV_IRQHandler               (void) __attribute__((weak, alias("Default_IRQHandler")));
 void I2C2_ERR_IRQHandler              (void) __attribute__((weak, alias("Default_IRQHandler")));
@@ -133,15 +130,10 @@ void LPDMA2_CH4_IRQHandler            (void) __attribute__((weak, alias("Default
 void LPDMA2_CH5_IRQHandler            (void) __attribute__((weak, alias("Default_IRQHandler")));
 void LPDMA2_CH6_IRQHandler            (void) __attribute__((weak, alias("Default_IRQHandler")));
 void LPDMA2_CH7_IRQHandler            (void) __attribute__((weak, alias("Default_IRQHandler")));
-void FDCAN2_IT0_IRQHandler            (void) __attribute__((weak, alias("Default_IRQHandler")));
-void FDCAN2_IT1_IRQHandler            (void) __attribute__((weak, alias("Default_IRQHandler")));
 void TIM3_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
 void TIM4_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
 void XSPI1_IRQHandler                 (void) __attribute__((weak, alias("Default_IRQHandler")));
-void SAES_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
 void PKA_IRQHandler                   (void) __attribute__((weak, alias("Default_IRQHandler")));
-void ETH1_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
-void ETH1_WKUP_IRQHandler             (void) __attribute__((weak, alias("Default_IRQHandler")));
 void USART6_IRQHandler                (void) __attribute__((weak, alias("Default_IRQHandler")));
 void UART7_IRQHandler                 (void) __attribute__((weak, alias("Default_IRQHandler")));
 void ADC3_IRQHandler                  (void) __attribute__((weak, alias("Default_IRQHandler")));
@@ -209,8 +201,8 @@ const VECTOR_TABLE_Type __VECTOR_TABLE[] __VECTOR_TABLE_ATTRIBUTE =
   IWDG_IRQHandler,
   ADC1_IRQHandler,
   ADC2_IRQHandler,
-  FDCAN1_IT0_IRQHandler,
-  FDCAN1_IT1_IRQHandler,
+  0,
+  0,
   TIM1_BRK_TERR_IERR_IRQHandler,
   TIM1_UPD_IRQHandler,
   TIM1_TRGI_COM_DIR_IDX_IRQHandler,
@@ -243,7 +235,7 @@ const VECTOR_TABLE_Type __VECTOR_TABLE[] __VECTOR_TABLE_ATTRIBUTE =
   FPU_IRQHandler,
   ICACHE_IRQHandler,
   CORDIC_IRQHandler,
-  AES_IRQHandler,
+  0,
   HASH_IRQHandler,
   I2C2_EV_IRQHandler,
   I2C2_ERR_IRQHandler,
@@ -261,16 +253,16 @@ const VECTOR_TABLE_Type __VECTOR_TABLE[] __VECTOR_TABLE_ATTRIBUTE =
   LPDMA2_CH5_IRQHandler,
   LPDMA2_CH6_IRQHandler,
   LPDMA2_CH7_IRQHandler,
-  FDCAN2_IT0_IRQHandler,
-  FDCAN2_IT1_IRQHandler,
+  0,
+  0,
   0,
   TIM3_IRQHandler,
   TIM4_IRQHandler,
   XSPI1_IRQHandler,
-  SAES_IRQHandler,
+  0,
   PKA_IRQHandler,
-  ETH1_IRQHandler,
-  ETH1_WKUP_IRQHandler,
+  0,
+  0,
   USART6_IRQHandler,
   UART7_IRQHandler,
   ADC3_IRQHandler

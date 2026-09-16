@@ -324,7 +324,6 @@
     <condition id="HAL CORE Init GPIO and RCC">
       <description>STMicroelectronics HAL Common Init</description>
       <require condition="HAL Generated code"/>
-      <require condition="HAL GPIO Init"/>
       <require Cclass="Device" Cgroup="STM32 HAL" Csub="PWR"/>
       <require Cclass="Device" Cgroup="STM32 HAL" Csub="FLASH_ITF"/>
     </condition>
@@ -613,9 +612,6 @@
     </component>
     <component generator="stm32c5xx_hal_mx2codegen" Cclass="Device" Cgroup="STM32CubeMX2 Config" Csub="RCC"   Cversion="2.1.0" condition="HAL CORE Init GPIO and RCC">
       <description>TO BE DEFINED</description>
-        <Pre_Include_Global_h>
-          #define USE_EXTERNAL_ENV
-        </Pre_Include_Global_h>
       <files>
         <file category="source" name="mx_rcc.c" />
         <file category="header" name="mx_rcc.h" />
@@ -634,42 +630,39 @@
         <file category="source" name="mx_system.c" />
         <file category="header" name="mx_system.h" />
         <file category="header" name="mx_def.h" />
-        <file category="header" name="stm32_external_env.h" />
         <file category="other" name="mx_stm32c5xx_hal_drivers_license.md" />
       </files>
     </component>
     <component generator="stm32c5xx_hal_mx2codegen" Cclass="Device" Cgroup="STM32CubeMX2 Config" Csub="TIM"   Cversion="2.1.0" condition="HAL CORE GPIO DMA Init and TIM">
       <description>TO BE DEFINED</description>
       <files>
-        <file category="source" name="mx_tim1.c" />
-        <file category="header" name="mx_tim1.h" />
         <file category="source" name="mx_tim17.c" />
         <file category="header" name="mx_tim17.h" />
-        <file category="source" name="mx_tim12.c" />
-        <file category="header" name="mx_tim12.h" />
         <file category="source" name="mx_tim2.c" />
         <file category="header" name="mx_tim2.h" />
-        <file category="source" name="mx_tim7.c" />
-        <file category="header" name="mx_tim7.h" />
-        <file category="source" name="mx_tim3.c" />
-        <file category="header" name="mx_tim3.h" />
+        <file category="source" name="mx_tim15.c" />
+        <file category="header" name="mx_tim15.h" />
         <file category="source" name="mx_tim4.c" />
         <file category="header" name="mx_tim4.h" />
         <file category="source" name="mx_tim5.c" />
         <file category="header" name="mx_tim5.h" />
         <file category="source" name="mx_tim8.c" />
         <file category="header" name="mx_tim8.h" />
-        <file category="source" name="mx_tim15.c" />
-        <file category="header" name="mx_tim15.h" />
+        <file category="source" name="mx_tim3.c" />
+        <file category="header" name="mx_tim3.h" />
+        <file category="source" name="mx_tim1.c" />
+        <file category="header" name="mx_tim1.h" />
       </files>
     </component>
     <component generator="stm32c5xx_hal_mx2codegen" Cclass="Device" Cgroup="STM32CubeMX2 Config" Csub="UART"   Cversion="2.1.0" condition="HAL CORE GPIO DMA Init and UART">
       <description>TO BE DEFINED</description>
       <files>
-        <file category="source" name="mx_usart2.c" />
-        <file category="header" name="mx_usart2.h" />
         <file category="source" name="mx_usart3.c" />
         <file category="header" name="mx_usart3.h" />
+        <file category="source" name="mx_uart4.c" />
+        <file category="header" name="mx_uart4.h" />
+        <file category="source" name="mx_usart2.c" />
+        <file category="header" name="mx_usart2.h" />
       </files>
     </component>
   </components>

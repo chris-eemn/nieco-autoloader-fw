@@ -96,14 +96,8 @@ system_status_t mx_system_init(void)
     Peripheral init section
   */
 
-  /** USART2 */
-  if (mx_usart2_uart_init() == NULL)
-  {
-    return SYSTEM_PERIPHERAL_ERROR;
-  }
-
-  /** TIM1 */
-  if (mx_tim1_init() == NULL)
+  /** gpio_default */
+  if (mx_gpio_default_init() != SYSTEM_OK)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -113,26 +107,8 @@ system_status_t mx_system_init(void)
     * then it is initialized in stm32_hal_timebase_tim.c.
     */
 
-  /** TIM12 */
-  if (mx_tim12_init() == NULL)
-  {
-    return SYSTEM_PERIPHERAL_ERROR;
-  }
-
-  /** I2C1 */
-  if (mx_i2c1_i2c_init() == NULL)
-  {
-    return SYSTEM_PERIPHERAL_ERROR;
-  }
-
-  /** gpio_default */
-  if (mx_gpio_default_init() != SYSTEM_OK)
-  {
-    return SYSTEM_PERIPHERAL_ERROR;
-  }
-
-  /** USART3 */
-  if (mx_usart3_uart_init() == NULL)
+  /** LPTIM1 */
+  if (mx_lptim1_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -143,14 +119,8 @@ system_status_t mx_system_init(void)
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
-  /** TIM7 */
-  if (mx_tim7_init() == NULL)
-  {
-    return SYSTEM_PERIPHERAL_ERROR;
-  }
-
-  /** TIM3 */
-  if (mx_tim3_init() == NULL)
+  /** TIM15 */
+  if (mx_tim15_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
@@ -173,26 +143,50 @@ system_status_t mx_system_init(void)
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
-  /** TIM15 */
-  if (mx_tim15_init() == NULL)
+  /** TIM3 */
+  if (mx_tim3_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
-  /** LPTIM1 */
-  if (mx_lptim1_init() == NULL)
+  /** TIM1 */
+  if (mx_tim1_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
-  /** USB_DRD_FS_HOST */
-  if (mx_usb_drd_fs_host_init() == NULL)
+  /** USART3 */
+  if (mx_usart3_uart_init() == NULL)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /** UART4 */
+  if (mx_uart4_uart_init() == NULL)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /** USART2 */
+  if (mx_usart2_uart_init() == NULL)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /** I2C1 */
+  if (mx_i2c1_i2c_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
 
   /** SPI2 */
   if (mx_spi2_init() == NULL)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /** USB_DRD_FS_HOST */
+  if (mx_usb_drd_fs_host_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }

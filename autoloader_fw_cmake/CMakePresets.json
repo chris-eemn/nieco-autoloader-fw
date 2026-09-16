@@ -8,7 +8,7 @@
             "binaryDir": "${sourceDir}/build/${presetName}"
         },
         {
-            "name": "debug_GCC_NUCLEO-C5A3ZG",
+            "name": "debug_GCC_STM32C591ZGT6",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "${presetName}",
                 "TOOLCHAIN_FILE": "GCC.14.3.1.cmake"
@@ -23,8 +23,8 @@
             "configurePreset": "default"
         },
         {
-            "name": "debug_GCC_NUCLEO-C5A3ZG",
-            "configurePreset": "debug_GCC_NUCLEO-C5A3ZG"
+            "name": "debug_GCC_STM32C591ZGT6",
+            "configurePreset": "debug_GCC_STM32C591ZGT6"
         }
     ]
 }

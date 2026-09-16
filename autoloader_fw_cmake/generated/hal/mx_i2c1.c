@@ -64,15 +64,15 @@ hal_i2c_handle_t *mx_i2c1_i2c_init(void)
   /**
     [GPIO Pin] ------> [Signal Name] ------> [Labels]
 
-       PB6     ------>   I2C1_SCL   ------>  PB6, M1_I2C_SCL
-       PB7     ------>   I2C1_SDA   ------>  PB7, M1_I2C_SDA
+       PB6     ------>   I2C1_SCL   ------>  THERMO_I2C_SCL
+       PB7     ------>   I2C1_SDA   ------>  THERMO_I2C_SDA
     **/
   gpio_config.mode        = HAL_GPIO_MODE_ALTERNATE;
   gpio_config.output_type = HAL_GPIO_OUTPUT_OPENDRAIN;
   gpio_config.pull        = HAL_GPIO_PULL_NO;
   gpio_config.speed       = HAL_GPIO_SPEED_FREQ_LOW;
   gpio_config.alternate   = HAL_GPIO_AF_4;
-  HAL_GPIO_Init(HAL_GPIOB, PB6_PIN | PB7_PIN, &gpio_config);
+  HAL_GPIO_Init(HAL_GPIOB, THERMO_I2C_SCL_PIN | THERMO_I2C_SDA_PIN, &gpio_config);
 
   if (HAL_RCC_I2C1_SetKernelClkSource(HAL_RCC_I2C1_CLK_SRC_PCLK1) != HAL_OK)
   {
@@ -105,7 +105,7 @@ void mx_i2c1_i2c_deinit(void)
   HAL_RCC_I2C1_DisableClock();
 
   /* De-initialize all GPIOB pins associated with I2C1 */
-  HAL_GPIO_DeInit(HAL_GPIOB, PB6_PIN | PB7_PIN);
+  HAL_GPIO_DeInit(HAL_GPIOB, THERMO_I2C_SCL_PIN | THERMO_I2C_SDA_PIN);
 }
 
 hal_i2c_handle_t *mx_i2c1_i2c_gethandle(void)

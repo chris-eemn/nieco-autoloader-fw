@@ -29,26 +29,16 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-/** Primary aliases for LPTIM1_CH2 pin */
-#define PD10_PORT                             HAL_GPIOD
-#define PD10_PIN                              HAL_GPIO_PIN_10
-
 /** Primary aliases for LPTIM1_IN1 pin */
-#define PG12_PORT                             HAL_GPIOG
-#define PG12_PIN                              HAL_GPIO_PIN_12
+#define ENC1_CHA_PORT                         HAL_GPIOG
+#define ENC1_CHA_PIN                          HAL_GPIO_PIN_12
 
 /** Primary aliases for LPTIM1_IN2 pin */
-#define PE1_PORT                              HAL_GPIOE
-#define PE1_PIN                               HAL_GPIO_PIN_1
+#define ENC1_CHB_PORT                         HAL_GPIOE
+#define ENC1_CHB_PIN                          HAL_GPIO_PIN_1
 
-/** Primary aliases for LPTIM1_CH1 pin */
-#define PG13_PORT                             HAL_GPIOG
-#define PG13_PIN                              HAL_GPIO_PIN_13
-
-#define M8_ENCODER_TIMER_IRQN       I2C1_ERR_IRQn
-#define M8_ENCODER_TIMER_IRQHANDLER I2C1_ERR_IRQHandler
-#define MYLPTIM_1_IRQN       M8_ENCODER_TIMER_IRQN
-#define MYLPTIM_1_IRQHANDLER M8_ENCODER_TIMER_IRQHANDLER
+#define _IRQN       I2C1_ERR_IRQn
+#define _IRQHANDLER I2C1_ERR_IRQHandler
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

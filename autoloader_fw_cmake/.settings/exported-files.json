@@ -1,13 +1,13 @@
 {
   "disclaimer": "Do not modify this file as it is used by STM32CubeMX2 to determine what and how to update your project with new configuration",
   "version": "1.0.0",
-  "timestamp": "2026-09-02T19:20:05.730Z",
+  "timestamp": "2026-09-16T22:03:29.134Z",
   "files": [
     {
       "fileGroup": "project_file",
       "checksum": {
         "algo": "sha256",
-        "digest": "9bda91995763cadb0f860734a8ac650b532328310770ab80df076a28ebe34c1c"
+        "digest": "336239ca9565e8dc65605f7aee10bfd5adf106cad7652eecf79c7e1ba1689732"
       },
       "file": "CMakeLists.txt"
     },
@@ -15,7 +15,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "e7800ee88183c42a76971e2e39b3c4639bc677bfd7f382711c92b2e79d68a2d2"
+        "digest": "d29ff9b28a4b6f00a98682ed9a0422f3fee554f40d28197988f13fda76ee223d"
       },
       "file": "CMakePresets.json"
     },
@@ -39,7 +39,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "966cbb5339ddb7ad007ac6f86fbfa3db90608a5eb121507172da0234964b4e7e"
+        "digest": "5ab1c4cfdefc14956b7375bf6e1707dc22095e396202d8e8d7a3e795dde738d3"
       },
       "file": "cmake/components.cmake"
     },
@@ -47,7 +47,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "c9bea6d77152aa5a03e2a6e777f8ef1d6c36640cc942a3846c6231d52eba2072"
+        "digest": "765fbe6c1b8e3869ecc869c373925751c1425dfab4052b08b78660a037ff657c"
       },
       "file": "cmake/files.cmake"
     },
@@ -55,7 +55,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "3e68f702fb4928c6924e7ef05d253a5ac2b0642fc30c6c959146ce0f74072280"
+        "digest": "1fb576e19d0be12253cd5a025c6b699efe77c6a9f1db00f29a7c3d920d05bebe"
       },
       "file": "cmake/flags.cmake"
     },
@@ -71,7 +71,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "67af8518786c07945f278b9136d0678549ee15eb26391a7391d40a17741d7612"
+        "digest": "d93c93c827b10d25e16f60845229d34b207adadf4fd67e91fedf02601736775a"
       },
       "file": "cmake/target.cmake"
     },
@@ -231,7 +231,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "3a36cd09e678c4899344e69e254304d79f0f15236a96bf229b8e9fe9d05ec7b3"
+        "digest": "8875a5d6947825e3bbe40b59afcb7c8259ac73c6658688c4120d03d4d1d1e9da"
       },
       "file": "generated/hal/mx_gpio_default.c"
     },
@@ -239,7 +239,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "db2103d55e437f4108e52086f82fff41ac4f294ed9af21af76368eba7ee5ccf3"
+        "digest": "ba249cf37ebf050a8d9e02cdcde8a1efc48080a17b7dd1160b31bc9e1ac0e057"
       },
       "file": "generated/hal/mx_gpio_default.h"
     },
@@ -247,7 +247,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "bf5b553a15a2a60596ef8d8b0db8cbca7f69746bfb95f2eb2b25aa954912cb9c"
+        "digest": "ac18a0d02454b0bd92d1b24b5f29c5fa9b2404731990acd2a4fb4796b5a0f197"
       },
       "file": "generated/hal/mx_hal_def.h"
     },
@@ -255,7 +255,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "f9a0a91a1c526fc7defe9fcb2e25582b915367fb1add51dc116a69792546ff51"
+        "digest": "ee34969ae7f732d55209b558aeb618114067287fec8ba4ee64fe902d8454c163"
       },
       "file": "generated/hal/mx_i2c1.c"
     },
@@ -263,7 +263,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "537888ce7a00910c863d2e0f6cd16832102da1ba138af002da61b621b7530152"
+        "digest": "938e2583b03db3f78021ce1f54f4a9fa638b840e10e3678789f1abbb29a58086"
       },
       "file": "generated/hal/mx_i2c1.h"
     },
@@ -287,7 +287,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "802e133de38f6dbacbc75a668299877b3b672658f2fcf1da9c964558d9ec7fc9"
+        "digest": "0461a7a5af192610e1579c6956e810fd5629ce8edcb5072a64b860358b615f9a"
       },
       "file": "generated/hal/mx_lptim1.c"
     },
@@ -295,7 +295,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "df4d3df4bf1d61eb6fd12233fb8e06b5df401e24139fbe742eeb1674343199cf"
+        "digest": "a7a7ab46123414a31795499e565262ca501d0601dafd7b126f93087f6c1bf68c"
       },
       "file": "generated/hal/mx_lptim1.h"
     },
@@ -303,7 +303,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "eda92ffbe69cf05a299966b4c05c668d0b2eec7596e6a231c51462d9b9df2cc9"
+        "digest": "fa32a4c5271002ce8d0bd79c6c31de4f98a593cce0bb4d1f8b5860de5c025fc7"
       },
       "file": "generated/hal/mx_rcc.c"
     },
@@ -311,7 +311,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "f4820bf261dd5505f2fba3fd1fda2ce90c3b8832413b855c533033befdaba92c"
+        "digest": "32875f5dd444e62d2194432736c134d6ac81a28eae921b3be53081e0443586c9"
       },
       "file": "generated/hal/mx_rcc.h"
     },
@@ -319,7 +319,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "400fe2602524a69918b1d3eb5aabdff531c3d46156671150ea43ec6ed64df6ec"
+        "digest": "a4744e677e6ea05c14c811b403707184a9d8eaa3fba6a4e39a51199d1f35bbf8"
       },
       "file": "generated/hal/mx_spi2.c"
     },
@@ -327,7 +327,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "2580b4e14c09fc63cc26af339391afd60a4ac4251860b36836aee92c05cba83d"
+        "digest": "d2c0411e57741185580a72c3d65365154ce59ec0038c4ac3f1d2bd942168c04f"
       },
       "file": "generated/hal/mx_spi2.h"
     },
@@ -343,7 +343,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "e242bff2e325d313724fbfd34c49b9dbd751e1006a1c07e4234139cd99900355"
+        "digest": "22263c4e41bb6b0fea843516b25fbcb5b60460cfee6c048dfbc981a7b015857b"
       },
       "file": "generated/hal/mx_system.c"
     },
@@ -359,7 +359,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "b9d00e7ee917c01d5bc35832aebbab645c973de2dfcf23bd5e62e5000bff6e8a"
+        "digest": "399e64587ce52ca1bdb09d29a455efbe0a067213749653d3db67e9a0ae7c5f28"
       },
       "file": "generated/hal/mx_tim1.c"
     },
@@ -367,7 +367,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "8ba7d7df37b933136ec91ac9c8a17bcab994d8cc41c61736d7ebe9a7844df641"
+        "digest": "c2f14d7df2ccdc4b1b2fcf8215aa978e355ca6a2b4e9b016266720141e810882"
       },
       "file": "generated/hal/mx_tim1.h"
     },
@@ -375,23 +375,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "ae09731693213dcf068a2ae0b229f88b7a275525755fbf4e2b58f5f2c80024f7"
-      },
-      "file": "generated/hal/mx_tim12.c"
-    },
-    {
-      "fileGroup": "generated",
-      "checksum": {
-        "algo": "sha256",
-        "digest": "f73c081b0514b41ceaf77954783d55e226a44d2a091c66793554dd682ce196fb"
-      },
-      "file": "generated/hal/mx_tim12.h"
-    },
-    {
-      "fileGroup": "generated",
-      "checksum": {
-        "algo": "sha256",
-        "digest": "c882f6c34df82a6861cc82d427d8bb3484307aef97cacf8ae2c47feaf5a8d20d"
+        "digest": "67ef4119256241414c00463959607252224ce76d7c627bad37e74989f0fdd60e"
       },
       "file": "generated/hal/mx_tim15.c"
     },
@@ -399,7 +383,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "746317b08124ddfb3271cc3fb0c536036f99eea88cbe7b426b5652ba05e4605a"
+        "digest": "b6d7683b700dfae61e125ad30eda0dba715cf2abdbab413c9969401d3ec33ca9"
       },
       "file": "generated/hal/mx_tim15.h"
     },
@@ -423,7 +407,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "af9740744635fa905110ca863cf9c39804481b05387a2dff4109098fd344cc4b"
+        "digest": "be0c44d894090cbac97f4c09aa016f57bdbc0715865811508c37da28e8e162c0"
       },
       "file": "generated/hal/mx_tim2.c"
     },
@@ -431,7 +415,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "1939ada1df14823e3e8a271073413935340cbc7747d97150ab87dd6b699d42c3"
+        "digest": "69b1da1c0ab057dd4e2c266c66072a0e31bd3ed9009008868af3d035c975418a"
       },
       "file": "generated/hal/mx_tim2.h"
     },
@@ -439,7 +423,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "efbfb61ec887eb95c16a9f24446cad468b8e0271b4fb1661312f2fdd4c0ceb2d"
+        "digest": "5959eb2bd257893aadc3f7b48b50a755a15e255327937873926d692ce094e211"
       },
       "file": "generated/hal/mx_tim3.c"
     },
@@ -447,7 +431,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "cffb873b5e9187934f2e0e5bc8937f86cbda4373c504e713433c5bad23f58006"
+        "digest": "b3e3d47688c3759a39ae4b67f368c3a0032003495925f643ac16f65e180165d0"
       },
       "file": "generated/hal/mx_tim3.h"
     },
@@ -455,7 +439,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "f70e3f4eb23cd56ef8db820c2c2730e42927c04e7f21936adb616b60b59e7121"
+        "digest": "6d7e0387603129b12b799ca12d190553e1f70858594e372e2778688ec6a1cdac"
       },
       "file": "generated/hal/mx_tim4.c"
     },
@@ -463,7 +447,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "9cc2e003881e4a3e3c0caf7fed1dd7f0e596c6b17bb78dec611e070c56277836"
+        "digest": "908e17f95e42190c3bac7cad4adb31bdc6968171df29f70f639350fac4b7f7f2"
       },
       "file": "generated/hal/mx_tim4.h"
     },
@@ -471,7 +455,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "6b0fe01a2d5a2e748b08e8dce5d103dfc228ad738f9883287ca647faea8b8cfd"
+        "digest": "10734a3adf6c44d13d5bd81731e00ea67a3a904f51335cfa0f6164a4b278f2c0"
       },
       "file": "generated/hal/mx_tim5.c"
     },
@@ -479,7 +463,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "577884c03683b6f71e5a66c1f2c0d8753edf30a0a070fd4a623edfd8b73ca37c"
+        "digest": "df469234bdf2bcc18e8d68e5ca63418e6975064342799046a3ee57ff9f015cd3"
       },
       "file": "generated/hal/mx_tim5.h"
     },
@@ -487,23 +471,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "3509b6da8c52cf0f573d03664253386be628ce1b5263857a95a9014e711c0923"
-      },
-      "file": "generated/hal/mx_tim7.c"
-    },
-    {
-      "fileGroup": "generated",
-      "checksum": {
-        "algo": "sha256",
-        "digest": "b72ef41ebfd1763cdec28713bfe43069d6540dba2f7f68a828a5fe351dda17cd"
-      },
-      "file": "generated/hal/mx_tim7.h"
-    },
-    {
-      "fileGroup": "generated",
-      "checksum": {
-        "algo": "sha256",
-        "digest": "a8d9d8f473cfec9014cd097b384a861747ad2c2a7a1905c47239de97c0aa4ac0"
+        "digest": "65bd2df445b98d4a0f6ea821e422e2a88c900b36e8c0444ed64fc9e9808b6318"
       },
       "file": "generated/hal/mx_tim8.c"
     },
@@ -511,7 +479,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "92b561ad4cc6898aef724e43ba1fa077358d788989d65a17b9775405d822f1d4"
+        "digest": "9cd39b6ae4f869ea35689a5f4286e20764b24bf28e92915a6ac23ef0023d2d69"
       },
       "file": "generated/hal/mx_tim8.h"
     },
@@ -519,7 +487,23 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "673af030e65425533d0838c5590795c619660b644ffd99994123efd487204ffc"
+        "digest": "6edcb71a88c4f0e13cec27183e1c036b6ba0d4907cc4a44f3ce25f4c205dfbe7"
+      },
+      "file": "generated/hal/mx_uart4.c"
+    },
+    {
+      "fileGroup": "generated",
+      "checksum": {
+        "algo": "sha256",
+        "digest": "3b2eeadc1feb69cd1d412975a939695ebe2fa09d93cb17b0bbf5455b3f2ec6f9"
+      },
+      "file": "generated/hal/mx_uart4.h"
+    },
+    {
+      "fileGroup": "generated",
+      "checksum": {
+        "algo": "sha256",
+        "digest": "bd2bfe52551329bd09f0fb1616e056b64541891848372a55710842e322d6aca6"
       },
       "file": "generated/hal/mx_usart2.c"
     },
@@ -527,7 +511,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "97946ab155743b87c7d4cd323f56fc6193f0b318654dcc7002d4b9ab45b9d051"
+        "digest": "81a7b7b1d8f9e2e815752bec6965d133802e4b1c54a106b7c82d97352437dae3"
       },
       "file": "generated/hal/mx_usart2.h"
     },
@@ -535,7 +519,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "1f84788794223b6aa6c6ee2c443f39dceb1f6ad59fab769172013ca70773a7b0"
+        "digest": "cbb40c058eece0b56d05709967e292dbf3dc04eeaaa626f0be284aa8f6f64830"
       },
       "file": "generated/hal/mx_usart3.c"
     },
@@ -543,7 +527,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "1ea935ffb0fc5bfe762de0decb15fd770660b06ba1ed67885f0aba5063cbdd7a"
+        "digest": "f1541814a8a38580377a0b06d55cb98620be78151f4e3cdbd866746eb48b95a8"
       },
       "file": "generated/hal/mx_usart3.h"
     },
@@ -551,7 +535,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "74efbfadd8d85eaf8aa2ef5f954c0666292a9e5f63f21bc5d9a619c107e684b9"
+        "digest": "f978328ea039e0f0821bdf302dd8ea324b288508f634cd35244496a37285bf15"
       },
       "file": "generated/hal/mx_usb_drd_fs.c"
     },
@@ -559,7 +543,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "2baeb05f4bb3f6de6b6798a7bafd2d4f3f9e22084f51e0a4bc5f981f64832997"
+        "digest": "cd4f7400b3a1fb22ff5599e41bf421f14277fdcb785468cf25ca0532db2ef74a"
       },
       "file": "generated/hal/mx_usb_drd_fs.h"
     },
@@ -567,15 +551,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "c6f3ec0b61bfbe0530fb28abd0c9e4af4ecadf52bb4351abdfa2e8ef46cd2714"
-      },
-      "file": "generated/hal/Pre_Include_Global.h"
-    },
-    {
-      "fileGroup": "generated",
-      "checksum": {
-        "algo": "sha256",
-        "digest": "5196934f318c747bc5c6dec423698cadad30fd783700feb87da6d08df9eedd3b"
+        "digest": "3c8cb05d8482ee6bd0f3551f2e8f839b39247cd34a7432a6d47ae814be434802"
       },
       "file": "generated/hal/stm32c5xx_hal_conf.h"
     },
@@ -583,15 +559,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "03bd0a9102fe8db46c1c4f208ac6775a4190a43a41034802d1e83e1e8a577366"
-      },
-      "file": "generated/hal/stm32_external_env.h"
-    },
-    {
-      "fileGroup": "generated",
-      "checksum": {
-        "algo": "sha256",
-        "digest": "1137567bd46f0b1899ee8e4e69ebeff1cd72ab972d7dc96e17d4dbd7c1d2dd19"
+        "digest": "c6015f2ad7bc8333035cb43d151ab82879b5c5bcf133a743d3e631b7ce621afa"
       },
       "file": "generated/hal/STM32_HAL_Driver_codegen.cmake"
     },
@@ -599,7 +567,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "7646638e4d1d48b049b284988077535973be4428068ede6440ffbc1ea7429431"
+        "digest": "3524c39b8a8553c055e82b3bc92d3abebf3b7a8c21e818f814645dd96b0db1a6"
       },
       "file": "generated/hal/STM32_HAL_Driver_codegen.gpdsc"
     },
@@ -2271,17 +2239,17 @@
       "fileGroup": "RTE",
       "checksum": {
         "algo": "sha256",
-        "digest": "65cbcae85122681a37a08ba4f103c8c7212176662e5ef66dba501968239ff3da"
+        "digest": "2a2c48dd9ef4049cbe9c8d9c4593fe398808921aeee174bc64e323fa965f4586"
       },
-      "file": "user_modifiable/_debug_GCC_NUCLEO-C5A3ZG/Pre_Include_Global.h"
+      "file": "user_modifiable/_debug_GCC_STM32C591ZGT6/Pre_Include_Global.h"
     },
     {
       "fileGroup": "RTE",
       "checksum": {
         "algo": "sha256",
-        "digest": "56f67fc1087c6aca6c44bfe5006af377da4713432d6e8ad8ef24597b9f14aa2f"
+        "digest": "396f9b61dcff2376cf35b8dc9dc52935f3a987087b1601d4c4b445f9e4bbe473"
       },
-      "file": "user_modifiable/_debug_GCC_NUCLEO-C5A3ZG/RTE_Components.h"
+      "file": "user_modifiable/_debug_GCC_STM32C591ZGT6/RTE_Components.h"
     },
     {
       "fileGroup": "project_file",
@@ -2697,7 +2665,7 @@
         "algo": "sha256",
         "digest": "5cb6ac766dc2a71be2e094b6e92b77158d382db62b03f852ba2ce751630b6cb9"
       },
-      "file": "user_modifiable/Application/STM32C5A3ZGT6/main.c.base@2.1.0"
+      "file": "user_modifiable/Application/STM32C591ZGT6/main.c.base@2.1.0"
     },
     {
       "fileGroup": "generated",
@@ -2705,39 +2673,39 @@
         "algo": "sha256",
         "digest": "36b0951f773375f65a05aae8a8e24187e8ccae7ce6a053539612f1c012f2dcc9"
       },
-      "file": "user_modifiable/Application/STM32C5A3ZGT6/main.h.base@2.1.0"
+      "file": "user_modifiable/Application/STM32C591ZGT6/main.h.base@2.1.0"
     },
     {
       "fileGroup": "RTE",
       "checksum": {
         "algo": "sha256",
-        "digest": "2f190db5ebcef9eadc919fa6b9ac33d3f3650bf0321b6950b9d8af04fc84167e"
+        "digest": "678eebb660460f874b9063ac565e460519fa3deb6529196c1402f37fc56ac301"
       },
-      "file": "user_modifiable/Device/STM32C5A3ZGT6/startup_stm32c5a3xx.c"
+      "file": "user_modifiable/Device/STM32C591ZGT6/startup_stm32c591xx.c"
     },
     {
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "2f190db5ebcef9eadc919fa6b9ac33d3f3650bf0321b6950b9d8af04fc84167e"
+        "digest": "678eebb660460f874b9063ac565e460519fa3deb6529196c1402f37fc56ac301"
       },
-      "file": "user_modifiable/Device/STM32C5A3ZGT6/startup_stm32c5a3xx.c.base@2.1.0"
+      "file": "user_modifiable/Device/STM32C591ZGT6/startup_stm32c591xx.c.base@2.1.0"
     },
     {
       "fileGroup": "RTE",
       "checksum": {
         "algo": "sha256",
-        "digest": "595b55e52b1ee483c8ac377c3d651264c0ad0b8ce45510d0fdc1c4e061d913fd"
+        "digest": "e381b372a7601a5e57366dc904b0aaa0555dc1c97312e9dee3a19161858279c6"
       },
-      "file": "user_modifiable/Device/STM32C5A3ZGT6/stm32c5a3xg_flash.ld"
+      "file": "user_modifiable/Device/STM32C591ZGT6/stm32c591xg_flash.ld"
     },
     {
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "595b55e52b1ee483c8ac377c3d651264c0ad0b8ce45510d0fdc1c4e061d913fd"
+        "digest": "e381b372a7601a5e57366dc904b0aaa0555dc1c97312e9dee3a19161858279c6"
       },
-      "file": "user_modifiable/Device/STM32C5A3ZGT6/stm32c5a3xg_flash.ld.base@2.1.0"
+      "file": "user_modifiable/Device/STM32C591ZGT6/stm32c591xg_flash.ld.base@2.1.0"
     },
     {
       "fileGroup": "RTE",
@@ -2745,7 +2713,7 @@
         "algo": "sha256",
         "digest": "3756864b21d695eeeebdbf5b569570b783b4627f42bc7494b96fe5f217a1e12b"
       },
-      "file": "user_modifiable/Device/STM32C5A3ZGT6/system_stm32c5xx.c"
+      "file": "user_modifiable/Device/STM32C591ZGT6/system_stm32c5xx.c"
     },
     {
       "fileGroup": "generated",
@@ -2753,7 +2721,7 @@
         "algo": "sha256",
         "digest": "3756864b21d695eeeebdbf5b569570b783b4627f42bc7494b96fe5f217a1e12b"
       },
-      "file": "user_modifiable/Device/STM32C5A3ZGT6/system_stm32c5xx.c.base@2.1.0"
+      "file": "user_modifiable/Device/STM32C591ZGT6/system_stm32c5xx.c.base@2.1.0"
     },
     {
       "fileGroup": "pack",
