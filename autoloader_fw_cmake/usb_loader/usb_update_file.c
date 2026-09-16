@@ -70,7 +70,7 @@ static bool name_tail_matches_suffix(const CHAR *tail);
 static bool parse_version_field(const CHAR **cursor, uint8_t *out_value);
 
 /**
- * @brief tests a filename against the v<major>_<minor>_<build>_stepper_144pin.bin pattern
+ * @brief tests a filename against the v<major>_<minor>_<build>_autoloader_fw.bin pattern
  * @param name filename to test; must not be NULL
  * @param out_major destination for the major field; must not be NULL
  * @param out_minor destination for the minor field; must not be NULL

@@ -70,7 +70,7 @@ static void app_bringup_task_run(void* parameters) {
 
   (void)parameters;
 
-  app_console_print("stepper_144pin %s (%s) starting\r\n", APP_VERSION_GIT_DESCRIBE, APP_VERSION_GIT_COMMIT);
+  app_console_print("autoloader_fw %s (%s) starting\r\n", APP_VERSION_GIT_DESCRIBE, APP_VERSION_GIT_COMMIT);
 
   if (cal_data_init() == false) {
     app_console_print("[INFO] Cal data blank or from an older layout -- factory defaults written.\r\n");

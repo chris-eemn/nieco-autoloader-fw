@@ -4,7 +4,7 @@
  * @brief Locates and validates a firmware-update file on a mounted FileX volume, and compares
  *        its version against the running application's.
  *
- *        The update file is named v<major>_<minor>_<build>_stepper_144pin.bin and holds the
+ *        The update file is named v<major>_<minor>_<build>_autoloader_fw.bin and holds the
  *        header+payload blob the bootloader expects: a 16-byte ede_update_file_header_t
  *        (usb_loader/update_image.h) followed immediately by the raw application binary. That
  *        means a validated file can later be copied byte-for-byte into the SPI-flash staging
@@ -37,7 +37,7 @@
 /** Fixed tail of a conforming update filename, following the v<major>_<minor>_<build> prefix.
  * Matched case-insensitively -- FAT long names preserve whatever case the file was created
  * with, so a technician's rename must not be able to make a valid file invisible. */
-#define USB_UPDATE_FILE_NAME_SUFFIX "_stepper_144pin.bin"
+#define USB_UPDATE_FILE_NAME_SUFFIX "_autoloader_fw.bin"
 
 /** Size of the stored filename buffer. FileX hands back names of up to FX_MAX_LONG_NAME_LEN
  * (256) bytes, but only names that already matched the pattern above are ever copied in here,
