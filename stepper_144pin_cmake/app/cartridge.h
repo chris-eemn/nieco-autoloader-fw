@@ -55,6 +55,12 @@ typedef struct {
   uint8_t thickness_sample_count;                             // samples valid so far, saturates at CARTRIDGE_THICKNESS_RING_SIZE
   uint8_t thickness_sample_next;                              // ring write index
   uint32_t thickness_avg_counts;                              // mean of stored samples, 0 = no valid average yet
+  /* Dynamic stack count computed from the measured stack height and the rolling
+   * average at the last dispense commit, BEFORE the inventory clamps. Latched
+   * every commit even when use_measured_thickness is off (shadow mode), so the
+   * customer can compare it against remaining. It may exceed remaining by
+   * design: it is a comparison number, not inventory. 0 = never computed. */
+  uint32_t thickness_shadow_remaining;
 } cartridge_t;
 /*******************************************************************************
  * Module Variable Definitions
@@ -70,7 +76,7 @@ typedef struct {
  * @param type Actuator type (pusher or lifter).
  * @return uint8_t Axis number associated with the specified slot and actuator.
  */
-uint8_t cartridge_get_axis_num(cartridge_t* slot, cartridge_actuator_type_t type);
+uint8_t cartridge_get_axis_num(const cartridge_t* slot, cartridge_actuator_type_t type);
 
 /**
  * @brief Gets the cartridge slot identifier from an axis number and actuator type.
@@ -118,6 +124,19 @@ const char* cartridge_type_to_string(cartridge_type_t type);
  * @param sample_counts Thickness sample in encoder counts; 0 is ignored.
  */
 void cartridge_add_thickness_sample(cartridge_t* slot, uint32_t sample_counts);
+
+/**
+ * @brief Converts a measured stack height into a patty count using a thickness average.
+ *
+ *        Single shared formula for the authoritative remaining recalculation and
+ *        the shadow comparison count: round-to-nearest division
+ *        (stack_height + avg/2) / avg.
+ *
+ * @param stack_height Stack height in encoder counts.
+ * @param avg Thickness average in encoder counts; 0 returns 0.
+ * @return uint32_t Patty count, 0 when avg is 0.
+ */
+uint32_t cartridge_stack_count(uint32_t stack_height, uint32_t avg);
 
 /**
  * @brief Clears the slot's thickness ring buffer and rolling average.

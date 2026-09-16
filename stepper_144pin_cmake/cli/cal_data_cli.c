@@ -19,9 +19,11 @@
 #include "cal_data.h"
 #include "app_console.h"
 #include "app_task.h"
+#include "axis.h"
 #include "cartridge.h"
 #include "dispense_sm.h"
 #include "patty_handler.h"
+#include "stepper_ctrl.h"
 #include "stepper_system.h"
 
 #include "FreeRTOS.h"
@@ -361,12 +363,25 @@ static const cal_data_cli_param_entry_t* lookup_param(const char* name) {
  *        under the offset in effect then), now = the raw travel recomputed
  *        under the CURRENT cal-data offset (previews what `param set
  *        thickness_offset_counts` would produce before the next dispense),
- *        n = samples in the ring, avg = rolling average, plus the inventory
- *        counts. The values are a snapshot of Control-task state read from the
+ *        n = samples in the ring, avg = rolling average, static = the
+ *        customer-specified patty_thickness_counts (one global value, not
+ *        per-slot), dyn_cnt = the dynamic stack count latched at the last
+ *        commit before the inventory clamps (0 = never computed), plus the
+ *        inventory counts. est_now = the live stack-count estimate from the
+ *        current lifter encoder position (same formula as the commit-time
+ *        recalc, including the back-off term; travel is the last completed
+ *        cycle's capture, not the current one). The encoder is zeroed at the
+ *        post-back-off position and the dispense cycle leaves the lifter there
+ *        until the next cycle's pusher motion, so between dispenses est_now
+ *        tracks the stack; once the lifter descends again the encoder reads
+ *        negative and est_now collapses. It reads 0 when the last cycle had no
+ *        valid capture.
+ *        The values are a snapshot of Control-task state read from the
  *        console task; a mid-dispense read can straddle a commit.
  */
 static void thickness_get_handler(const cal_data_cli_param_entry_t* entry) {
   const cartridge_t* cartridges = app_task_get_cartridges();
+  const uint32_t static_counts  = cal_data_get()->patty_thickness_counts;
 
   (void)entry;
 
@@ -393,10 +408,39 @@ static void thickness_get_handler(const cal_data_cli_param_entry_t* entry) {
       last = cartridge->thickness_samples[newest];
     }
 
-    app_console_print("[THICKNESS] Slot %d: travel=%lu last=%lu now=%lu n=%u/%u avg=%lu rem=%u pend=%u\r\n", (int)(slot_index + 1U),
-                      (unsigned long)travel, (unsigned long)last, (unsigned long)now, (unsigned int)cartridge->thickness_sample_count,
-                      (unsigned int)CARTRIDGE_THICKNESS_RING_SIZE, (unsigned long)cartridge->thickness_avg_counts,
-                      (unsigned int)cartridge->remaining, (unsigned int)cartridge->pending);
+    // live estimate: current lifter encoder position plus the last captured seek travel and the
+    // configured back-off distance (the same stack-height formula as the commit-time recalc).
+    // The encoder is zeroed at the post-back-off position, so this estimate is only meaningful
+    // while the lifter sits at its post-seek position (enc ~ 0). The dispense cycle leaves the
+    // lifter there until the next cycle's pusher motion, so between dispenses est_now tracks
+    // the stack; once the lifter descends again the encoder reads negative and est_now
+    // collapses.
+    // est_now stays 0 when the last cycle had no valid capture (travel == 0: idle, failed, or
+    // aborted seek) so it never shows a stack count that the reset just erased.
+    // NOTE: axis_get_encoder_count updates the encoder accumulator, so this read is a
+    // read-modify-write from the console task; do not poll it during motion.
+    uint32_t est_now = 0U;
+    if ((cartridge->thickness_avg_counts != 0U) && (travel != 0U)) {
+      axis_t* lifter_axis = stepper_ctrl_get_axis(cartridge_get_axis_num(cartridge, LIFTER));
+
+      if (lifter_axis != NULL) {
+        const int32_t enc = axis_get_encoder_count(lifter_axis);
+        // encoder magnitude is the distance from the post-seek zero; travel is the last captured seek
+        const uint32_t enc_magnitude = (enc < 0) ? (uint32_t)(-(int64_t)enc) : (uint32_t)enc;
+        // same back-off conversion as patty_handler_recalc_remaining; keep the two in sync
+        const uint32_t backoff_counts =
+            (cal_data_get()->home_backoff_steps * AXIS_ENCODER_COUNTS_NUMERATOR) / AXIS_ENCODER_COUNTS_DENOMINATOR;
+        const uint32_t pos_cnt = enc_magnitude + travel + backoff_counts;
+        est_now                = cartridge_stack_count(pos_cnt, cartridge->thickness_avg_counts);
+      }
+    }
+
+    app_console_print("[THICKNESS] Slot %d: travel=%lu last=%lu now=%lu n=%u/%u avg=%lu static=%lu dyn_cnt=%lu est_now=%lu rem=%u pend=%u\r\n",
+                      (int)(slot_index + 1U), (unsigned long)travel, (unsigned long)last, (unsigned long)now,
+                      (unsigned int)cartridge->thickness_sample_count, (unsigned int)CARTRIDGE_THICKNESS_RING_SIZE,
+                      (unsigned long)cartridge->thickness_avg_counts, (unsigned long)static_counts,
+                      (unsigned long)cartridge->thickness_shadow_remaining, (unsigned long)est_now, (unsigned int)cartridge->remaining,
+                      (unsigned int)cartridge->pending);
   }
 }
 

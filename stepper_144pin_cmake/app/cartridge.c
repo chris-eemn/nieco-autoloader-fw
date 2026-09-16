@@ -38,7 +38,7 @@
 /*******************************************************************************
  * Public Function Definitions
  *******************************************************************************/
-uint8_t cartridge_get_axis_num(cartridge_t* slot, cartridge_actuator_type_t type) {
+uint8_t cartridge_get_axis_num(const cartridge_t* slot, cartridge_actuator_type_t type) {
   uint8_t axis_num = 0U;
   /*
     CARTRIDGE SLOT 1 -> PUSHER AXIS 1, LIFTER AXIS 2
@@ -154,6 +154,21 @@ void cartridge_add_thickness_sample(cartridge_t* slot, uint32_t sample_counts) {
   }
 }
 
+/**
+ * @brief Converts a measured stack height into a patty count using a thickness average.
+ *        Round-to-nearest division (stack_height + avg/2) / avg; 0 when avg is 0.
+ */
+uint32_t cartridge_stack_count(uint32_t stack_height, uint32_t avg) {
+  uint32_t count = 0U;
+
+  if (avg != 0U) {
+    // round to nearest: (stack_height + avg/2) / avg
+    count = (stack_height + (avg / 2U)) / avg;
+  }
+
+  return count;
+}
+
 void cartridge_reset_thickness(cartridge_t* slot) {
   if (slot != NULL) {
     for (uint8_t i = 0U; i < CARTRIDGE_THICKNESS_RING_SIZE; i++) {
@@ -163,6 +178,7 @@ void cartridge_reset_thickness(cartridge_t* slot) {
     slot->thickness_sample_count = 0U;
     slot->thickness_sample_next = 0U;
     slot->thickness_avg_counts = 0U;
+    slot->thickness_shadow_remaining = 0U;
   }
 }
 
