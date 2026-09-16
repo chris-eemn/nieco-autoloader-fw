@@ -1,12 +1,12 @@
-[submodule "stepper_144pin_cmake/modbus"]
-	path = stepper_144pin_cmake/modbus
+[submodule "autoloader_fw_cmake/modbus"]
+	path = autoloader_fw_cmake/modbus
 	url = git@github.com:Embedded-Design-Solutions/modbus.git
-[submodule "stepper_144pin_cmake/driver_w25q"]
-	path = stepper_144pin_cmake/driver_w25q
+[submodule "autoloader_fw_cmake/driver_w25q"]
+	path = autoloader_fw_cmake/driver_w25q
 	url = git@github.com:Embedded-Design-Solutions/driver_w25q.git
-[submodule "stepper_144pin_cmake/stm32c5-bootloader"]
-	path = stepper_144pin_cmake/stm32c5-bootloader
+[submodule "autoloader_fw_cmake/stm32c5-bootloader"]
+	path = autoloader_fw_cmake/stm32c5-bootloader
 	url = git@github.com:Embedded-Design-Solutions/stm32c5-bootloader.git
-[submodule "stepper_144pin_cmake/ede-mcp342x"]
-	path = stepper_144pin_cmake/ede-mcp342x
+[submodule "autoloader_fw_cmake/ede-mcp342x"]
+	path = autoloader_fw_cmake/ede-mcp342x
 	url = git@github.com:Embedded-Design-Solutions/ede-mcp342x.git
