@@ -16,8 +16,8 @@
 
 set -e
 
-APP_DIR=stepper_144pin_cmake
-BOOT_DIR=stepper_144pin_cmake/stm32c5-bootloader
+APP_DIR=autoloader_fw_cmake
+BOOT_DIR=autoloader_fw_cmake/stm32c5-bootloader
 PRESET=debug_GCC_NUCLEO-C5A3ZG
 RELEASE_DIR=release
 
@@ -25,7 +25,7 @@ RELEASE_DIR=release
 # for their source -- never on the tools folders inside them, which are working scratch space.
 TOOLS_DIR=create_release
 
-APP_NAME=stepper_144pin
+APP_NAME=autoloader_fw
 BOOT_NAME=ede-stm32-bootloader
 
 # The bootloader jumps here, and driver_w25q_port/w25q_config.h derives the staged-image slot size

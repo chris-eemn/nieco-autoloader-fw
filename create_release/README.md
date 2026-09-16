@@ -13,11 +13,11 @@ Both land in `../release/`, named from the git tag the build was made at:
 
 | File | What it is | Used for |
 |---|---|---|
-| `v<major>_<minor>_<build>_stepper_144pin.hex` | Bootloader at `0x08000000` + application at `0x08020000` | Programming a board over ST-LINK / STM32CubeProgrammer |
-| `v<major>_<minor>_<build>_stepper_144pin.bin` | 16-byte `ede_update_file_header_t` + application | Field update over USB thumb drive |
+| `v<major>_<minor>_<build>_autoloader_fw.hex` | Bootloader at `0x08000000` + application at `0x08020000` | Programming a board over ST-LINK / STM32CubeProgrammer |
+| `v<major>_<minor>_<build>_autoloader_fw.bin` | 16-byte `ede_update_file_header_t` + application | Field update over USB thumb drive |
 
-For example, a build at tag `v2.4.5` produces `v2_4_5_stepper_144pin.hex` and
-`v2_4_5_stepper_144pin.bin`.
+For example, a build at tag `v2.4.5` produces `v2_4_5_autoloader_fw.hex` and
+`v2_4_5_autoloader_fw.bin`.
 
 ## Prerequisites
 
@@ -95,7 +95,7 @@ bootloader's reset vector.
 thumb drive and insert the drive after the board has booted; the firmware scans the root, picks the
 highest version it finds, validates the header, and reports whether an update is needed. Keep the
 generated filename exactly as it is — the firmware matches on the `v<major>_<minor>_<build>` prefix
-and the `_stepper_144pin.bin` suffix, and cross-checks the version in the name against the version in
+and the `_autoloader_fw.bin` suffix, and cross-checks the version in the name against the version in
 the header. The USB thumb drive is the only field-update path — the firmware no longer accepts an
 image over USART3.
 
@@ -105,7 +105,7 @@ vector table at the application base, so `combine_hex.py` strips the header if o
 ## What's in this folder
 
 This folder is self-contained: everything a release runs lives here, so the process never depends on
-the working `tools/` folders inside `stepper_144pin_cmake` or the bootloader submodule. Those are
+the working `tools/` folders inside `autoloader_fw_cmake` or the bootloader submodule. Those are
 scratch space and are free to change or disappear.
 
 | File | Role |
@@ -168,7 +168,7 @@ Dockerfile downloads its own tarballs and copies nothing from the repository.
 
 ### ROM origin
 
-`stepper_144pin_cmake/user_modifiable/Device/STM32C5A3ZGT6/stm32c5a3xg_flash.ld` must read:
+`autoloader_fw_cmake/user_modifiable/Device/STM32C5A3ZGT6/stm32c5a3xg_flash.ld` must read:
 
     ROM (rx) : org = 0x8020000, len = 0xE0000
 
@@ -190,7 +190,7 @@ bootloader — that change must be reverted before cutting a release.
 
 ## Related
 
-`stepper_144pin_cmake/tools/fake_create_release.py` does something deliberately different: it
+`autoloader_fw_cmake/tools/fake_create_release.py` does something deliberately different: it
 rebuilds locally with an *arbitrary* injected version, for testing the update path without cutting a
 real release. It is not a substitute for this folder — it does not build the bootloader and produces
 no combined HEX.

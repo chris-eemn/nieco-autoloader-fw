@@ -39,7 +39,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Where the bootloader project drops its binary, relative to the repository root, so the common case
 # needs no --bootloader. gen_build.bash passes both paths explicitly and does not rely on this.
-DEFAULT_BOOTLOADER_GLOB = "stepper_144pin_cmake/stm32c5-bootloader/build/*/ede-stm32-bootloader.bin"
+DEFAULT_BOOTLOADER_GLOB = "autoloader_fw_cmake/stm32c5-bootloader/build/*/ede-stm32-bootloader.bin"
 
 DEFAULT_BOOT_BASE_ADDR = 0x08000000
 DEFAULT_APP_BASE_ADDR = 0x08020000
