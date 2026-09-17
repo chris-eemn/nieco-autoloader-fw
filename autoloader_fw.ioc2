@@ -6048,31 +6048,31 @@
   "pinout-user-settings": {}
 }"""
 "File: STM32C591ZGT6_project/.settings/hw-composition.store.json" = """
-{
-  "name": "STM32C591ZGT6_project",
-  "boards": [
-    {
-      "type": "VIRTUAL",
-      "mcuUID": "STMicroelectronics.stm32c5xx_dfp.2.1.0$STMicroelectronics:13::STM32C591ZGT6",
-      "uid": "5bc36631-0504-453f-9dd1-b183bd7a9c7f"
-    }
-  ],
-  "version": 3,
-  "constraints": []
+{\r
+  "name": "STM32C591ZGT6_project",\r
+  "boards": [\r
+    {\r
+      "type": "VIRTUAL",\r
+      "mcuUID": "STMicroelectronics.stm32c5xx_dfp.2.1.0$STMicroelectronics:13::STM32C591ZGT6",\r
+      "uid": "5bc36631-0504-453f-9dd1-b183bd7a9c7f"\r
+    }\r
+  ],\r
+  "version": 3,\r
+  "constraints": []\r
 }"""
 "File: STM32C591ZGT6_project/STM32C591ZGT6_project.hw" = '""'
 "File: STM32C591ZGT6_project/project.cube" = """
-{
-  "traits": [
-    {
-      "files": [
-        "STM32C591ZGT6_project.hw"
-      ],
-      "name": "hardware",
-      "id": "bf7717e6-07f3-4848-a074-f936711d9523"
-    }
-  ],
-  "children": []
+{\r
+  "traits": [\r
+    {\r
+      "files": [\r
+        "STM32C591ZGT6_project.hw"\r
+      ],\r
+      "name": "hardware",\r
+      "id": "bf7717e6-07f3-4848-a074-f936711d9523"\r
+    }\r
+  ],\r
+  "children": []\r
 }"""
 "File: autoloader_fw.csolution.yml" = """
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/2.11.0/tools/projmgr/schemas/csolution.schema.json
@@ -11338,7 +11338,7 @@ solution:
                       "provide_static_memory": true,
                       "use_trace_facility": false
                     },
-                    "fpu_mode": false,
+                    "fpu_mode": true,
                     "mpu_mode": false
                   },
                   "system": {
@@ -11388,7 +11388,7 @@ solution:
                     "hook_selector": {
                       "use_idle_hook": false,
                       "use_tick_hook": false,
-                      "check_for_stack_overflow": "0",
+                      "check_for_stack_overflow": "2",
                       "use_malloc_failed_hook": false,
                       "use_daemon_task_startup_hook": false,
                       "use_sb_completed_callback": false

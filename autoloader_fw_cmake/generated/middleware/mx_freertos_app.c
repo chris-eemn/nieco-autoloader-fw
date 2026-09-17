@@ -32,3 +32,19 @@ int32_t app_synctasks_init (void)
   return 0;
 }
 
+/**
+  * @brief Function for the application Stack Overflow Hook.
+  * @param xTask: Handle of the task that overflowed its stack.
+  * @param pcTaskName: Name of the task that overflowed its stack.
+  * @retval None
+  */
+void vApplicationStackOverflowHook (TaskHandle_t xTask, char * pcTaskName)
+{
+  /* If configCHECK_FOR_STACK_OVERFLOW is set to either 1 or 2 then this
+  function will automatically get called if a task overflows its stack. */
+  ( void ) xTask;
+  ( void ) pcTaskName;
+
+  for( ;; );
+}
+

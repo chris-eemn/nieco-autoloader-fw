@@ -34,6 +34,8 @@ extern "C" {
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 int32_t app_synctasks_init(void);
+/* Hook function -------------------------------------------------------------*/
+void vApplicationStackOverflowHook (TaskHandle_t xTask, char * pcTaskName);
 
 /** logging macro - just redirects to printf()
   * libc's stdout is redirected to UART thanks to the Basic stdio utility.

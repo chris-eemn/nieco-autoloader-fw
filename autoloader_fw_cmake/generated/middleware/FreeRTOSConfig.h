@@ -32,7 +32,7 @@
 #define FREERTOS_CONFIG_H
 
 #define configENABLE_MPU                              0U
-#define configENABLE_FPU                              0U
+#define configENABLE_FPU                              1U
 #define configUSE_TICKLESS_IDLE                       0U
 #define configUSE_PREEMPTION                          1U
 #define configUSE_TIME_SLICING                        1U
@@ -114,7 +114,7 @@ PRIORITY THAN THIS! (higher priorities are lower numeric values). */
 /* Hook and callback function related definitions. */
 #define configUSE_IDLE_HOOK                           0U
 #define configUSE_TICK_HOOK                           0U
-#define configCHECK_FOR_STACK_OVERFLOW                0U
+#define configCHECK_FOR_STACK_OVERFLOW                2U
 #define configUSE_MALLOC_FAILED_HOOK                  0U
 #define configUSE_DAEMON_TASK_STARTUP_HOOK            0U
 #define configUSE_SB_COMPLETED_CALLBACK               0U
