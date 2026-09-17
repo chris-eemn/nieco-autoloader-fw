@@ -72,7 +72,7 @@ static volatile bool s_lock_cmd_locked = false;
  * Function Prototypes
  *******************************************************************************/
 
-static void input_door_debounce(void);
+static void input_poll_door_pin(void);
 static void input_poll_lock_pin(void);
 static void input_poll_reload_pin(void);
 static void input_poll_shutdown_pin(void);
@@ -122,10 +122,7 @@ void input_task_run(void* parameters) {
     /* Wake on the periodic poll timer. */
     vTaskDelay(pdMS_TO_TICKS(INPUT_POLL_PERIOD_MS));
 
-    /* Service door debounce. */
-    input_door_debounce();
-
-    /* Poll additional inputs. */
+    /* Poll all inputs. */
     input_poll_inputs();
   }
 }
@@ -135,13 +132,12 @@ void input_task_run(void* parameters) {
  *******************************************************************************/
 
 /**
- * @brief Debounce the door pin and post events to the app queue.
+ * @brief Poll and debounce the door pin.
  *
- *        If the cal_data debounce window has elapsed since the last door
- *        edge and the pin state has changed, an APP_EV_DOOR_OPENED or
- *        APP_EV_DOOR_CLOSED event is posted to the application event queue.
+ *        Posts APP_EV_DOOR_OPENED or APP_EV_DOOR_CLOSED when the pin
+ *        state changes after the debounce window has elapsed.
  */
-static void input_door_debounce(void) {
+static void input_poll_door_pin(void) {
   TickType_t elapsed;
   uint8_t raw;
   app_event_t door_event;
@@ -285,6 +281,7 @@ static void input_poll_shutdown_pin(void) {
 }
 
 static void input_poll_inputs(void) {
+  input_poll_door_pin();
   input_poll_lock_pin();
   input_poll_reload_pin();
   input_poll_shutdown_pin();
