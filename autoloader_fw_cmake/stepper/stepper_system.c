@@ -220,26 +220,29 @@ static encoder_t* stepper_system_start_lptim_encoder(hal_lptim_handle_t* timer) 
  * @return true when all eight encoders were initialised; otherwise false.
  */
 static bool stepper_system_init_encoders(void) {
+  /* Encoder 8 is LPTIM-backed (m8_encoder_timer is LPTIM1 in the CubeMX
+   * labels); encoders 1-7 are TIM-backed. */
+  /* The CubeMX labels map encoder 1 to LPTIM1 and encoder 8 to TIM1 (the
+   * LPTIM/TIM roles swapped during the pin remap), so the LPTIM start path
+   * now serves ENC1 and ENC8 is a plain TIM encoder. */
   hal_tim_handle_t* timers[ENC8] = {
-      m1_encoder_timer_init(), m2_encoder_timer_init(), m3_encoder_timer_init(), m4_encoder_timer_init(),
-      m5_encoder_timer_init(), m6_encoder_timer_init(), m7_encoder_timer_init(),
+      m2_encoder_timer_init(), m3_encoder_timer_init(), m4_encoder_timer_init(),
+      m5_encoder_timer_init(), m6_encoder_timer_init(), m7_encoder_timer_init(), m8_encoder_timer_init(),
   };
   bool initialized = true;
 
-  for (uint8_t index = 0U; index < (uint8_t)ENC8; index++) {
-    s_encoders[index] = stepper_system_start_tim_encoder(timers[index]);
+  s_encoders[ENC1] = stepper_system_start_lptim_encoder(m1_encoder_timer_init());
+  if (s_encoders[ENC1] == NULL) {
+    app_console_print("[ERROR] Encoder 1 init failed.\r\n");
+    initialized = false;
+  }
+
+  for (uint8_t index = (uint8_t)ENC2; initialized != false && index < (uint8_t)ENCODER_COUNT; index++) {
+    s_encoders[index] = stepper_system_start_tim_encoder(timers[index - (uint8_t)ENC2]);
     if (s_encoders[index] == NULL) {
       app_console_print("[ERROR] Encoder %u init failed.\r\n", (uint32_t)(index + 1U));
       initialized = false;
       break;
-    }
-  }
-
-  if (initialized != false) {
-    s_encoders[ENC8] = stepper_system_start_lptim_encoder(m8_encoder_timer_init());
-    if (s_encoders[ENC8] == NULL) {
-      app_console_print("[ERROR] Encoder 8 init failed.\r\n");
-      initialized = false;
     }
   }
 
