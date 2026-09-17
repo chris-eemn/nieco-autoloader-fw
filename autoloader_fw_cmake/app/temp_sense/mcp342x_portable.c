@@ -16,6 +16,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "mx_gpio_default.h"
 #include "mx_i2c1.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -94,7 +95,7 @@ static bool mcp342x_portable_recover_bus(void) {
   /* Reset the peripheral and HAL state before taking GPIO ownership. */
   mx_i2c1_i2c_deinit();
   HAL_RCC_GPIOB_EnableClock();
-  HAL_GPIO_WritePin(HAL_GPIOB, PB6_PIN | PB7_PIN, HAL_GPIO_PIN_SET);
+  HAL_GPIO_WritePin(HAL_GPIOB, THERMO_I2C_SCL_PIN | THERMO_I2C_SDA_PIN, HAL_GPIO_PIN_SET);
 
   const hal_gpio_config_t gpio_config = {
       .mode = HAL_GPIO_MODE_OUTPUT,
@@ -103,37 +104,37 @@ static bool mcp342x_portable_recover_bus(void) {
       .speed = HAL_GPIO_SPEED_FREQ_LOW,
       .alternate = HAL_GPIO_AF_4,
   };
-  bool released = (HAL_GPIO_Init(HAL_GPIOB, PB6_PIN | PB7_PIN, &gpio_config) == HAL_OK);
+  bool released = (HAL_GPIO_Init(HAL_GPIOB, THERMO_I2C_SCL_PIN | THERMO_I2C_SDA_PIN, &gpio_config) == HAL_OK);
 
   if (released == true) {
     vTaskDelay(1U);
-    released = (HAL_GPIO_ReadPin(HAL_GPIOB, PB6_PIN) == HAL_GPIO_PIN_SET);
+    released = (HAL_GPIO_ReadPin(HAL_GPIOB, THERMO_I2C_SCL_PIN) == HAL_GPIO_PIN_SET);
     for (uint8_t clock_count = 0U;
-         (released == true) && (clock_count < 9U) && (HAL_GPIO_ReadPin(HAL_GPIOB, PB7_PIN) == HAL_GPIO_PIN_RESET);
+         (released == true) && (clock_count < 9U) && (HAL_GPIO_ReadPin(HAL_GPIOB, THERMO_I2C_SDA_PIN) == HAL_GPIO_PIN_RESET);
          clock_count++) {
-      HAL_GPIO_WritePin(HAL_GPIOB, PB6_PIN, HAL_GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(HAL_GPIOB, THERMO_I2C_SCL_PIN, HAL_GPIO_PIN_RESET);
       vTaskDelay(1U);
-      HAL_GPIO_WritePin(HAL_GPIOB, PB6_PIN, HAL_GPIO_PIN_SET);
+      HAL_GPIO_WritePin(HAL_GPIOB, THERMO_I2C_SCL_PIN, HAL_GPIO_PIN_SET);
       vTaskDelay(1U);
-      released = (HAL_GPIO_ReadPin(HAL_GPIOB, PB6_PIN) == HAL_GPIO_PIN_SET);
+      released = (HAL_GPIO_ReadPin(HAL_GPIOB, THERMO_I2C_SCL_PIN) == HAL_GPIO_PIN_SET);
     }
 
     if (released == true) {
       /* Pull SDA low while SCL is low, then release SCL before SDA for STOP. */
-      HAL_GPIO_WritePin(HAL_GPIOB, PB6_PIN, HAL_GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(HAL_GPIOB, PB7_PIN, HAL_GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(HAL_GPIOB, THERMO_I2C_SCL_PIN, HAL_GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(HAL_GPIOB, THERMO_I2C_SDA_PIN, HAL_GPIO_PIN_RESET);
       vTaskDelay(1U);
-      HAL_GPIO_WritePin(HAL_GPIOB, PB6_PIN, HAL_GPIO_PIN_SET);
+      HAL_GPIO_WritePin(HAL_GPIOB, THERMO_I2C_SCL_PIN, HAL_GPIO_PIN_SET);
       vTaskDelay(1U);
-      released = (HAL_GPIO_ReadPin(HAL_GPIOB, PB6_PIN) == HAL_GPIO_PIN_SET);
-      HAL_GPIO_WritePin(HAL_GPIOB, PB7_PIN, HAL_GPIO_PIN_SET);
+      released = (HAL_GPIO_ReadPin(HAL_GPIOB, THERMO_I2C_SCL_PIN) == HAL_GPIO_PIN_SET);
+      HAL_GPIO_WritePin(HAL_GPIOB, THERMO_I2C_SDA_PIN, HAL_GPIO_PIN_SET);
       vTaskDelay(1U);
-      released = (released == true) && (HAL_GPIO_ReadPin(HAL_GPIOB, PB7_PIN) == HAL_GPIO_PIN_SET);
+      released = (released == true) && (HAL_GPIO_ReadPin(HAL_GPIOB, THERMO_I2C_SDA_PIN) == HAL_GPIO_PIN_SET);
     }
   }
 
   /* Restore alternate-function pins, timing, filters and IRQs even on failure. */
-  HAL_GPIO_WritePin(HAL_GPIOB, PB6_PIN | PB7_PIN, HAL_GPIO_PIN_SET);
+  HAL_GPIO_WritePin(HAL_GPIOB, THERMO_I2C_SCL_PIN | THERMO_I2C_SDA_PIN, HAL_GPIO_PIN_SET);
   if (mx_i2c1_i2c_init() == NULL) {
     released = false;
   }
