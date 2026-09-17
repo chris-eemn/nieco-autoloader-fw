@@ -45,6 +45,7 @@ extern "C" {
 #include "mx_tim3.h"
 #include "mx_tim1.h"
 #include "mx_tim12.h"
+#include "mx_tim7.h"
 #include "mx_usart3.h"
 #include "mx_uart4.h"
 #include "mx_usart2.h"
@@ -223,6 +224,18 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM12 instance
   */
 #define step_timer_init mx_tim12_init
+
+  /* ***********************************************************
+      TIM7: aliases for initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  Initialize the mx_tim7 with HAL layer
+  *         Name of the User label:
+  *                   mb_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM7 instance
+  */
+#define mb_timer_init mx_tim7_init
 
   /* ***********************************************************
       USART3: aliases for initialization functions
@@ -405,6 +418,17 @@ extern "C" {
 #define step_timer_deinit mx_tim12_deinit
 
   /* ***********************************************************
+      TIM7: aliases for De-Initialization functions
+    *********************************************************** */
+
+/**
+  * @brief  De-Initialize the mx_tim7 with HAL layer
+  *         Name of the User label:
+  *                   mb_timer
+  */
+#define mb_timer_deinit mx_tim7_deinit
+
+  /* ***********************************************************
       USART3: aliases for De-Initialization functions
     *********************************************************** */
 
@@ -441,11 +465,11 @@ extern "C" {
   */
 #define enc1_index_exti_gethandle mx_gpio_default_exti15_gethandle
 
-  /* *************************************************************
-    gpio_default / EXTI6: No EXTI software label has been defined for this peripheral instance
-      in the STM32CubeMX2 configuration panel.
-      As a result, no aliases are generated for mx_gpio_default_exti6_gethandle
-    ************************************************************* */
+/**
+  * @brief  Get the EXTI handle for EXTI6 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI6 used by gpio_default instance
+  */
+#define m1_fault_exti_gethandle mx_gpio_default_exti6_gethandle
 
 /**
   * @brief  Get the EXTI handle for EXTI4 used for gpio_default
@@ -459,11 +483,11 @@ extern "C" {
   */
 #define m3_fault_exti_gethandle mx_gpio_default_exti1_gethandle
 
-  /* *************************************************************
-    gpio_default / EXTI5: No EXTI software label has been defined for this peripheral instance
-      in the STM32CubeMX2 configuration panel.
-      As a result, no aliases are generated for mx_gpio_default_exti5_gethandle
-    ************************************************************* */
+/**
+  * @brief  Get the EXTI handle for EXTI5 used for gpio_default
+  * @retval hal_exti_handle_t Pointer on the handle on the EXTI5 used by gpio_default instance
+  */
+#define m4_fault_exti_gethandle mx_gpio_default_exti5_gethandle
 
 /**
   * @brief  Get the EXTI handle for EXTI2 used for gpio_default
@@ -624,6 +648,16 @@ extern "C" {
   * @retval hal_tim_handle_t Pointer on the handle on the TIM12 instance
   */
 #define step_timer_gethandle mx_tim12_gethandle
+
+  /* ***********************************************************
+      TIM7: aliases for get handle functions
+    *********************************************************** *//**
+  * @brief  Get the HAL handle for TIM7
+  *         Name of the User label:
+  *                   mb_timer
+  * @retval hal_tim_handle_t Pointer on the handle on the TIM7 instance
+  */
+#define mb_timer_gethandle mx_tim7_gethandle
 
   /* ***********************************************************
       USART3: aliases for get handle functions

@@ -269,6 +269,10 @@ extern "C" {
 #define M1_NFAULT_PORT                                  HAL_GPIOD
 #define M1_NFAULT_PIN                                   HAL_GPIO_PIN_6
 
+/* EXTI aliases */
+#define M1_FAULT_EXTI_EXTI_LINE                         HAL_EXTI_LINE_6
+#define M1_FAULT_EXTI_EXTI_TRIGGER                      HAL_EXTI_TRIGGER_RISING
+
 /* Primary aliases for GPIO PD7 pin */
 #define PANEL_LED5_Y_PORT                               HAL_GPIOD
 #define PANEL_LED5_Y_PIN                                HAL_GPIO_PIN_7
@@ -711,6 +715,10 @@ extern "C" {
 /* Primary aliases for GPIO PH5 pin */
 #define M4_NFAULT_PORT                                  HAL_GPIOH
 #define M4_NFAULT_PIN                                   HAL_GPIO_PIN_5
+
+/* EXTI aliases */
+#define M4_FAULT_EXTI_EXTI_LINE                         HAL_EXTI_LINE_5
+#define M4_FAULT_EXTI_EXTI_TRIGGER                      HAL_EXTI_TRIGGER_RISING
 
 /* Primary aliases for GPIO PH15 pin */
 #define PANEL_LED1_Y_PORT                               HAL_GPIOH

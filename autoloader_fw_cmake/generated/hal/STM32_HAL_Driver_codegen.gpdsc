@@ -654,6 +654,8 @@
         <file category="header" name="mx_tim1.h" />
         <file category="source" name="mx_tim12.c" />
         <file category="header" name="mx_tim12.h" />
+        <file category="source" name="mx_tim7.c" />
+        <file category="header" name="mx_tim7.h" />
       </files>
     </component>
     <component generator="stm32c5xx_hal_mx2codegen" Cclass="Device" Cgroup="STM32CubeMX2 Config" Csub="UART"   Cversion="2.1.0" condition="HAL CORE GPIO DMA Init and UART">

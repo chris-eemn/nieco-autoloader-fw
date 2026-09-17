@@ -533,7 +533,7 @@
     },
     "HAL_CORTEX_PROJECT_USE_HAL": {
       "name": "HAL_CORTEX_PROJECT_USE_HAL",
-      "value": 22,
+      "value": 23,
       "originator": "sw-config-semaphore"
     },
     "HAL_ICACHE_CORE_ENABLED": {
@@ -573,7 +573,7 @@
     },
     "HAL_TIM_PROJECT_USE_HAL": {
       "name": "HAL_TIM_PROJECT_USE_HAL",
-      "value": 9,
+      "value": 10,
       "originator": "sw-config-semaphore"
     },
     "FREERTOS_PROJECT_MAX_SYSCALL_IT_PRIO": {
@@ -1129,6 +1129,13 @@
           "priority": 5,
           "subpriority": 0,
           "used": true
+        },
+        {
+          "id": 53,
+          "name": "TIM7",
+          "priority": 5,
+          "subpriority": 0,
+          "used": true
         }
       ],
       "needs": [
@@ -1231,6 +1238,11 @@
           "needId": "98e75065-56e0-483f-904b-8cf1c7ad678b",
           "destination": "TIM12",
           "owner": "TIM12"
+        },
+        {
+          "needId": "b86a0e40-6c66-4ffc-8eb8-649d3fe3d6c9",
+          "destination": "TIM7",
+          "owner": "TIM7"
         }
       ]
     }
@@ -1434,6 +1446,16 @@
       "selector": "GLOBAL",
       "id": "98e75065-56e0-483f-904b-8cf1c7ad678b",
       "owner": "TIM12",
+      "propertyPath": ""
+    },
+    {
+      "needType": "need.interrupt.lines",
+      "projectUri": "cube:2a9bf528-ac03-4ae0-acda-0138ae3fafd9/221b8ddd-b2b7-4a03-94c0-e5989cd20a84",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+      "componentInstanceId": "b8933fef-b366-460f-bf4c-5694e978055a",
+      "selector": "GLOBAL",
+      "id": "b86a0e40-6c66-4ffc-8eb8-649d3fe3d6c9",
+      "owner": "TIM7",
       "propertyPath": ""
     }
   ],
@@ -6229,7 +6251,11 @@ solution:
       "driverConfigurationId": "5967bac8-0d28-4459-8260-bc413e89f98f"
     },
     "TIM12": {
-      "driverConfigurationId": "4c19f0fb-9c7d-460b-84a1-c66ecde24cd1",
+      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM",
+      "driverConfigurationId": "4c19f0fb-9c7d-460b-84a1-c66ecde24cd1"
+    },
+    "TIM7": {
+      "driverConfigurationId": "b8933fef-b366-460f-bf4c-5694e978055a",
       "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM"
     }
   }
@@ -7749,6 +7775,17 @@ solution:
                   "layer": "HAL",
                   "mode": "",
                   "name": "mx_tim12_init",
+                  "peripheral": "TIM"
+                },
+                {
+                  "_foreignKey": "TIM7",
+                  "_rank": 17,
+                  "callable": true,
+                  "generated": true,
+                  "hw_instance": "TIM7",
+                  "layer": "HAL",
+                  "mode": "",
+                  "name": "mx_tim7_init",
                   "peripheral": "TIM"
                 }
               ],
@@ -11185,6 +11222,75 @@ solution:
               }
             }
           }
+        },
+        {
+          "index": 27,
+          "instanceId": "b8933fef-b366-460f-bf4c-5694e978055a",
+          "entity": "peripheral.tim",
+          "settings": {
+            "parameters": {
+              "info": {
+                "init_type": "called",
+                "labels": [
+                  "mb_timer"
+                ],
+                "layer": "HAL"
+              },
+              "system": {
+                "nvic": {
+                  "enable_interruption_global": true,
+                  "irq_handler_generation_global": true,
+                  "nvic_config_global": {
+                    "needs": [
+                      {
+                        "needType": "need.interrupt.lines",
+                        "projectUri": "cube:2a9bf528-ac03-4ae0-acda-0138ae3fafd9/221b8ddd-b2b7-4a03-94c0-e5989cd20a84",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+                        "componentInstanceId": "b8933fef-b366-460f-bf4c-5694e978055a",
+                        "selector": "GLOBAL",
+                        "id": "b86a0e40-6c66-4ffc-8eb8-649d3fe3d6c9",
+                        "owner": "TIM7"
+                      }
+                    ]
+                  }
+                },
+                "dma": {
+                  "enable_dma_upd": false
+                }
+              },
+              "additional": {
+                "update_event": {
+                  "update_event_generation": true,
+                  "update_event_source": "REGULAR",
+                  "update_flag_remap": false
+                },
+                "synchronization": {
+                  "master_mode": {
+                    "trigger_output_source": "DISABLED"
+                  }
+                }
+              },
+              "basic": {
+                "time_base": {
+                  "clock_source_configuration": {
+                    "clock_source": "INTERNAL",
+                    "prescaler": 143,
+                    "kernel_clock_frequency": "144 MHz",
+                    "kernel_clock_source": "TIMx_Input_Clock"
+                  },
+                  "counter": {
+                    "one_pulse_mode": false,
+                    "counter_mode": "UP",
+                    "dithering": false,
+                    "period_dithering_pattern": 0,
+                    "period": 65535
+                  },
+                  "frequency": "15 Hz"
+                },
+                "autoreload_preload": false
+              }
+            }
+          }
         }
       ],
       "STMicroelectronics.freertos.2.1.0$STMicroelectronics::RTOS:STM32CubeMX2 Config:FreeRTOS@2.1.0#FreeRTOS Init condition": [
@@ -12362,7 +12468,9 @@ solution:
                 }
               }
             },
-            "labels": []
+            "labels": [
+              "m1_fault_exti"
+            ]
           }
         },
         {
@@ -12459,7 +12567,9 @@ solution:
                 }
               }
             },
-            "labels": []
+            "labels": [
+              "m4_fault_exti"
+            ]
           }
         },
         {
