@@ -81,7 +81,6 @@ static void input_poll_lock_pin(void);
 static void input_poll_reload_pin(void);
 static void input_poll_shutdown_pin(void);
 static void input_poll_inputs(void);
-static void input_door_exti_cb(hal_exti_handle_t* hexti, hal_exti_trigger_t trigger);
 
 /*******************************************************************************
  * Public Function Definitions
@@ -120,25 +119,6 @@ void input_init(void) {
 }
 
 /**
- * @brief Register the door EXTI callback and initialise debounce state.
- */
-void input_register_exti_cb(void) {
-  hal_exti_handle_t* door_exti = door_exti_gethandle();
-
-  if (door_exti == NULL) {
-    return;
-  }
-
-  /* Initialise debounce state by sampling the pin. */
-  s_door_last_raw = HAL_GPIO_ReadPin(DOOR_SW_PORT, DOOR_SW_PIN);
-  s_door_last_change_tick = 0U;
-
-  HAL_EXTI_SetUserData(door_exti, (const void*)1); /* non-NULL = registered */
-
-  configASSERT(HAL_EXTI_RegisterTriggerCallback(door_exti, input_door_exti_cb) == HAL_OK);
-}
-
-/**
  * @brief FreeRTOS input task entry point.
  * @param parameters Unused FreeRTOS task parameter.
  */
@@ -155,20 +135,6 @@ void input_task_run(void* parameters) {
     /* Poll additional inputs (placeholder for future expansion). */
     input_poll_inputs();
   }
-}
-
-/**
- * @brief EXTI callback registered with the HAL.
- *
- *        Thin wrapper that forwards to input_door_exti_callback_from_isr().
- * @param hexti EXTI handle (unused).
- * @param trigger Trigger edge (unused — both edges enabled).
- */
-static void input_door_exti_cb(hal_exti_handle_t* hexti, hal_exti_trigger_t trigger) {
-  (void)hexti;
-  (void)trigger;
-
-  input_door_exti_callback_from_isr();
 }
 
 /**

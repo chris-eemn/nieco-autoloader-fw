@@ -93,7 +93,6 @@ static void app_bringup_task_run(void* parameters) {
 
   app_task_register_axis_event_cb();
   input_init();
-  input_register_exti_cb();
 
   if (app_task_begin() == false) {
     app_console_print("[ERROR] Control task start event was not queued.\r\n");

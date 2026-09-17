@@ -56,14 +56,6 @@
 void input_init(void);
 
 /**
- * @brief Register the door EXTI callback and initialise debounce state.
- *
- *        Reads the door pin, stores the initial state, and registers the
- *        EXTI trigger callback.  Must be called after input_init().
- */
-void input_register_exti_cb(void);
-
-/**
  * @brief FreeRTOS input task entry point.
  *
  *        Wakes on door EXTI notification or on the periodic poll timer,
