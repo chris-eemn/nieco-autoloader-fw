@@ -289,7 +289,7 @@ static bool stepper_system_init_io_expander(void) {
 static bool stepper_system_init_axes(void) {
   hal_exti_handle_t* fault_exti[STEPPER_SYSTEM_MOTOR_COUNT] = {m1_fault_exti_gethandle(), m2_fault_exti_gethandle(), m3_fault_exti_gethandle(),
                                                                m4_fault_exti_gethandle()};
-  const encoder_id_enum encoder_id[STEPPER_SYSTEM_MOTOR_COUNT] = {ENC3, ENC2, ENC4, ENC6};
+  const encoder_id_enum encoder_id[STEPPER_SYSTEM_MOTOR_COUNT] = {ENC1, ENC2, ENC3, ENC4};
   bool initialized = true;
 
   stepper_module_init(step_timer_gethandle());
@@ -297,8 +297,6 @@ static bool stepper_system_init_axes(void) {
   for (uint8_t index = 0U; index < STEPPER_SYSTEM_MOTOR_COUNT; index++) {
     s_motors[index] = stepper_init(&s_motor_pins[index]);
     if (s_motors[index] != NULL) {
-      /* Motor 4 is currently wired to encoder 6 (TIM8). Keep the board mapping
-       * here so neither the CLI nor application state machines need to know it. */
       s_axes[index] = axis_init(s_motors[index], s_encoders[encoder_id[index]], fault_exti[index], &s_axis_config);
     }
 
