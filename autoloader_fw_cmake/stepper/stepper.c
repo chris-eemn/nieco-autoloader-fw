@@ -25,8 +25,8 @@
 
 #define STEP_ACTIVE HAL_GPIO_PIN_SET /* Rising edge triggers a microstep  */
 #define STEP_INACTIVE HAL_GPIO_PIN_RESET
-#define EN_ACTIVE HAL_GPIO_PIN_SET /* DRV8424 EN is active-high         */
-#define EN_INACTIVE HAL_GPIO_PIN_RESET
+#define EN_ACTIVE HAL_GPIO_PIN_RESET /* DRV8424 EN is active-high but this pin routes through an inverting circuit        */
+#define EN_INACTIVE HAL_GPIO_PIN_SET
 #define NSLP_WAKE HAL_GPIO_PIN_SET /* nSLEEP high = driver awake        */
 #define NSLP_SLEEP HAL_GPIO_PIN_RESET
 #define NFAULT_FAULT HAL_GPIO_PIN_RESET /* nFAULT open-drain active-low      */
