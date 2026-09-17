@@ -1,2 +1,7 @@
 *.bin
 *.hex
+
+# fw-context
+compile_commands.json
+.fw-context/build/
+.fw-context/local.toml
