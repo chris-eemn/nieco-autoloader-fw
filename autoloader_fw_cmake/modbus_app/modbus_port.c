@@ -1,7 +1,9 @@
 /**
  * @file modbus_port.c
- * @brief Modbus RTU portable layer for STM32C5A3ZG (CubeMX 2.0 HAL).
- *        Uses USART1 (label: mb_slave) for RS-485 half-duplex and MB Timer (label: MB_TIMER) as the inter-frame timeout timer.
+ * @brief Modbus RTU portable layer for STM32C5 (CubeMX 2.0 HAL).
+ *        Uses USART3 (label: mb_slave) for RS-485 half-duplex with MB_UI_DIR
+ *        (PF10) as the direction control, and MB Timer (label: mb_timer, TIM7)
+ *        as the inter-frame timeout timer.
  *
  * @copyright Copyright (c) 2022 Embedded Design Solutions, LLC.  All Rights Reserved.
  */
@@ -24,16 +26,10 @@
  * Module Macros
  *******************************************************************************/
 
-/* RS-485 DE (driver enable) pin — replace with your CubeMX IOC pin labels */
-#if 0
-#define RS485_DE_PIN GPIO_PIN_0
-#define RS485_DE_PORT GPIOA
-#endif
-
 /*
  * MB Timer tick frequency in Hz after the CubeMX prescaler.
- * Set MB Timer Prescaler in CubeMX to: (APB2_TIMER_CLK_HZ / MODBUS_TIMER_CLK_HZ) - 1
- * Example: 64 MHz APB2 timer clock with Prescaler = 63 → MODBUS_TIMER_CLK_HZ = 1 000 000
+ * Set MB Timer Prescaler in CubeMX to: (TIMER_CLK_HZ / MODBUS_TIMER_CLK_HZ) - 1
+ * Example: 144 MHz APB1 timer clock with Prescaler = 143 → MODBUS_TIMER_CLK_HZ = 1 000 000
  */
 #define MODBUS_TIMER_CLK_HZ 1000000UL
 
@@ -165,17 +161,17 @@ bool ui_slave_is_writing(void) {
  *******************************************************************************/
 
 /**
- * @brief Drives the RS-485 DE pin low to enable the receive path.
+ * @brief Drives the MB_UI_DIR pin low to enable the receive path.
  */
 static void set_for_rx(void) {
-  // HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(MB_UI_DIR_PORT, MB_UI_DIR_PIN, MB_UI_DIR_INACTIVE_STATE);
 }
 
 /**
- * @brief Drives the RS-485 DE pin high to enable the transmit path.
+ * @brief Drives the MB_UI_DIR pin high to enable the transmit path.
  */
 static void set_for_tx(void) {
-  // HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(MB_UI_DIR_PORT, MB_UI_DIR_PIN, MB_UI_DIR_ACTIVE_STATE);
 }
 
 /*******************************************************************************
