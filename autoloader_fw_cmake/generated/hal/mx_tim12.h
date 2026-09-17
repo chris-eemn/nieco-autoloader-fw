@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
-  * @file           : mx_lptim1.h
-  * @brief          : Header for mx_lptim1.c file.
+  * @file           : mx_tim12.h
+  * @brief          : Header for mx_tim12.c file.
   ******************************************************************************
   * @attention
   *
@@ -16,8 +16,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef MX_LPTIM1_H
-#define MX_LPTIM1_H
+#ifndef MX_TIM12_H
+#define MX_TIM12_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,45 +29,38 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-/** Primary aliases for LPTIM1_IN1 pin */
-#define ENC1_CHA_PORT                         HAL_GPIOG
-#define ENC1_CHA_PIN                          HAL_GPIO_PIN_12
-
-/** Primary aliases for LPTIM1_IN2 pin */
-#define ENC1_CHB_PORT                         HAL_GPIOE
-#define ENC1_CHB_PIN                          HAL_GPIO_PIN_1
-
-#define M1_ENCODER_TIMER_IRQN       I2C1_ERR_IRQn
-#define M1_ENCODER_TIMER_IRQHANDLER I2C1_ERR_IRQHandler
-#define _IRQN       M1_ENCODER_TIMER_IRQN
-#define _IRQHANDLER M1_ENCODER_TIMER_IRQHANDLER
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
+/******************************************************************************/
+/* Exported functions for TIM in HAL layer */
+/******************************************************************************/
+/**
+  * @brief  mx_tim12 init function.
+  *         This function configures the hardware resources used in this example.
+  * @retval Pointer to handle
+  * @retval NULL in case of failure
+  */
+hal_tim_handle_t *mx_tim12_init(void);
+
+/**
+  * @brief  De-initialize mx_tim12 instance and return it.
+  */
+void mx_tim12_deinit(void);
+
+/**
+  * @brief  Get the mx_tim12 object.
+  * @return Pointer on the mx_tim12 Handle
+  */
+hal_tim_handle_t *mx_tim12_gethandle(void);
 
 /******************************************************************************/
-/* Exported functions for SW instance in HAL layer */
+/*                           TIM12 global interrupt                           */
 /******************************************************************************/
-/**
-  * @brief mx_lptim1 init function
-  * This function configures the hardware resources used in this example
-  * @retval pointer to handle or NULL in case of failure
-  */
-hal_lptim_handle_t *mx_lptim1_init(void);
-
-/**
-  * @brief  De-initialize mx_lptim1 instance and return it.
-  */
-void mx_lptim1_deinit(void);
-
-/**
-  * @brief  Get the mx_lptim1 object.
-  * @retval Pointer on the mx_lptim1 Handle
-  */
-hal_lptim_handle_t *mx_lptim1_gethandle(void);
+void TIM12_IRQHandler(void);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* MX_LPTIM1_H */
+#endif /* MX_TIM12_H */

@@ -533,7 +533,7 @@
     },
     "HAL_CORTEX_PROJECT_USE_HAL": {
       "name": "HAL_CORTEX_PROJECT_USE_HAL",
-      "value": 21,
+      "value": 22,
       "originator": "sw-config-semaphore"
     },
     "HAL_ICACHE_CORE_ENABLED": {
@@ -573,7 +573,7 @@
     },
     "HAL_TIM_PROJECT_USE_HAL": {
       "name": "HAL_TIM_PROJECT_USE_HAL",
-      "value": 8,
+      "value": 9,
       "originator": "sw-config-semaphore"
     },
     "FREERTOS_PROJECT_MAX_SYSCALL_IT_PRIO": {
@@ -1122,6 +1122,13 @@
           "priority": 5,
           "subpriority": 0,
           "used": true
+        },
+        {
+          "id": 68,
+          "name": "TIM12",
+          "priority": 5,
+          "subpriority": 0,
+          "used": true
         }
       ],
       "needs": [
@@ -1219,6 +1226,11 @@
           "needId": "2a61c48b-e32e-424c-b5c1-014dc0a7a4e8",
           "destination": "USB",
           "owner": "USB"
+        },
+        {
+          "needId": "98e75065-56e0-483f-904b-8cf1c7ad678b",
+          "destination": "TIM12",
+          "owner": "TIM12"
         }
       ]
     }
@@ -1412,6 +1424,16 @@
       "selector": "*",
       "id": "2a61c48b-e32e-424c-b5c1-014dc0a7a4e8",
       "owner": "USB",
+      "propertyPath": ""
+    },
+    {
+      "needType": "need.interrupt.lines",
+      "projectUri": "cube:2a9bf528-ac03-4ae0-acda-0138ae3fafd9/221b8ddd-b2b7-4a03-94c0-e5989cd20a84",
+      "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+      "componentInstanceId": "4c19f0fb-9c7d-460b-84a1-c66ecde24cd1",
+      "selector": "GLOBAL",
+      "id": "98e75065-56e0-483f-904b-8cf1c7ad678b",
+      "owner": "TIM12",
       "propertyPath": ""
     }
   ],
@@ -6203,8 +6225,12 @@ solution:
       "mode": "SPI"
     },
     "USB_DRD_FS.HOST": {
-      "driverConfigurationId": "5967bac8-0d28-4459-8260-bc413e89f98f",
-      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:HCD"
+      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:HCD",
+      "driverConfigurationId": "5967bac8-0d28-4459-8260-bc413e89f98f"
+    },
+    "TIM12": {
+      "driverConfigurationId": "4c19f0fb-9c7d-460b-84a1-c66ecde24cd1",
+      "driverId": "STMicroelectronics::Device:STM32CubeMX2 Config:TIM"
     }
   }
 }"""
@@ -7713,6 +7739,17 @@ solution:
                   "mode": "",
                   "name": "mx_usb_drd_fs_host_init",
                   "peripheral": "HCD"
+                },
+                {
+                  "_foreignKey": "TIM12",
+                  "_rank": 16,
+                  "callable": true,
+                  "generated": true,
+                  "hw_instance": "TIM12",
+                  "layer": "HAL",
+                  "mode": "",
+                  "name": "mx_tim12_init",
+                  "peripheral": "TIM"
                 }
               ],
               "code_generation": {
@@ -9005,7 +9042,9 @@ solution:
             "parameters": {
               "info": {
                 "init_type": "called",
-                "labels": [],
+                "labels": [
+                  "m2_encoder_timer"
+                ],
                 "layer": "HAL"
               },
               "system": {
@@ -9262,7 +9301,9 @@ solution:
             "parameters": {
               "info": {
                 "init_type": "called",
-                "labels": [],
+                "labels": [
+                  "m3_encoder_timer"
+                ],
                 "layer": "HAL"
               },
               "system": {
@@ -9536,7 +9577,9 @@ solution:
             "parameters": {
               "info": {
                 "init_type": "called",
-                "labels": [],
+                "labels": [
+                  "m4_encoder_timer"
+                ],
                 "layer": "HAL"
               },
               "system": {
@@ -9793,7 +9836,9 @@ solution:
             "parameters": {
               "info": {
                 "init_type": "called",
-                "labels": [],
+                "labels": [
+                  "m5_encoder_timer"
+                ],
                 "layer": "HAL"
               },
               "system": {
@@ -10050,7 +10095,9 @@ solution:
             "parameters": {
               "info": {
                 "init_type": "called",
-                "labels": [],
+                "labels": [
+                  "m6_encoder_timer"
+                ],
                 "layer": "HAL"
               },
               "system": {
@@ -10414,7 +10461,9 @@ solution:
             "parameters": {
               "info": {
                 "init_type": "called",
-                "labels": [],
+                "labels": [
+                  "m7_encoder_timer"
+                ],
                 "layer": "HAL"
               },
               "system": {
@@ -10671,7 +10720,9 @@ solution:
             "parameters": {
               "info": {
                 "init_type": "called",
-                "labels": [],
+                "labels": [
+                  "m8_encoder_timer"
+                ],
                 "layer": "HAL"
               },
               "system": {
@@ -11026,6 +11077,114 @@ solution:
               }
             }
           }
+        },
+        {
+          "index": 26,
+          "instanceId": "4c19f0fb-9c7d-460b-84a1-c66ecde24cd1",
+          "entity": "peripheral.tim",
+          "settings": {
+            "parameters": {
+              "info": {
+                "init_type": "called",
+                "labels": [
+                  "step_timer"
+                ],
+                "layer": "HAL"
+              },
+              "system": {
+                "nvic": {
+                  "enable_interruption_global": true,
+                  "irq_handler_generation_global": true,
+                  "nvic_config_global": {
+                    "needs": [
+                      {
+                        "needType": "need.interrupt.lines",
+                        "projectUri": "cube:2a9bf528-ac03-4ae0-acda-0138ae3fafd9/221b8ddd-b2b7-4a03-94c0-e5989cd20a84",
+                        "componentId": "STMicroelectronics.stm32c5xx_hal_drivers.2.1.0$STMicroelectronics::Device:STM32CubeMX2 Config:TIM@2.1.0#HAL CORE GPIO DMA Init and TIM",
+                        "componentInstanceId": "4c19f0fb-9c7d-460b-84a1-c66ecde24cd1",
+                        "selector": "GLOBAL",
+                        "id": "98e75065-56e0-483f-904b-8cf1c7ad678b",
+                        "owner": "TIM12"
+                      }
+                    ]
+                  }
+                }
+              },
+              "channels": [
+                {
+                  "_foreignKey": "CC1",
+                  "use_channel": false
+                },
+                {
+                  "_foreignKey": "CC2",
+                  "use_channel": false
+                }
+              ],
+              "additional": {
+                "update_event": {
+                  "update_event_generation": true,
+                  "update_event_source": "REGULAR",
+                  "update_flag_remap": false
+                },
+                "hall_sensor_interface": {
+                  "xor_gate": {
+                    "enable_xor_gate": false,
+                    "xor_gate_position": "DIRECT",
+                    "xor_input1_inversion": false,
+                    "xor_input2_inversion": false
+                  }
+                },
+                "synchronization": {
+                  "master_mode": {
+                    "trigger_output_source": "DISABLED"
+                  },
+                  "slave_mode": {
+                    "mode": "DISABLED",
+                    "trigger_input": "ITR",
+                    "internal_trigger": {
+                      "id": "ITR0__internal_input_trigger",
+                      "direction": "input",
+                      "source": "tim1_trgo",
+                      "type": "internal input trigger",
+                      "instance": "TIM1",
+                      "ip_signal": "ITR0",
+                      "source_destination": [
+                        "tim1_trgo"
+                      ],
+                      "entity": "peripheral.interconnect.internal input trigger",
+                      "queryId": "d2929357-cc6b-4c00-8254-a7a4c1d7339c"
+                    }
+                  }
+                }
+              },
+              "basic": {
+                "time_base": {
+                  "clock_source_configuration": {
+                    "clock_source": "INTERNAL",
+                    "prescaler": 0,
+                    "kernel_clock_frequency": "144 MHz",
+                    "kernel_clock_source": "TIMx_Input_Clock"
+                  },
+                  "counter": {
+                    "one_pulse_mode": false,
+                    "counter_mode": "UP",
+                    "dithering": false,
+                    "period_dithering_pattern": 0,
+                    "period": 1439
+                  },
+                  "frequency": "100 kHz"
+                },
+                "autoreload_preload": true,
+                "sampling_clock": {
+                  "clock_division": 1,
+                  "clock_division2": 1,
+                  "dts_clock_frequency": "144 MHz",
+                  "dts2_clock_frequency": "144 MHz",
+                  "kernel_clock_frequency": "144 MHz"
+                }
+              }
+            }
+          }
         }
       ],
       "STMicroelectronics.freertos.2.1.0$STMicroelectronics::RTOS:STM32CubeMX2 Config:FreeRTOS@2.1.0#FreeRTOS Init condition": [
@@ -11167,7 +11326,9 @@ solution:
           "settings": {
             "parameters": {
               "info": {
-                "labels": [],
+                "labels": [
+                  "m1_encoder_timer"
+                ],
                 "layer": "HAL",
                 "init_type": "called"
               },
@@ -11300,7 +11461,9 @@ solution:
           "settings": {
             "parameters": {
               "info": {
-                "labels": [],
+                "labels": [
+                  "mb_slave"
+                ],
                 "layer": "HAL",
                 "init_type": "called",
                 "function_type": "UART"
@@ -11733,7 +11896,9 @@ solution:
           "settings": {
             "parameters": {
               "info": {
-                "labels": [],
+                "labels": [
+                  "spi_flash_bus"
+                ],
                 "layer": "HAL",
                 "init_type": "called"
               },

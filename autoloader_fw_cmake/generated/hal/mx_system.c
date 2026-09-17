@@ -75,24 +75,6 @@ system_status_t mx_system_init(void)
   }
 
   /*
-    Clock system section
-  */
-
-  /* Initialize RCC peripheral */
-  if (mx_rcc_init() != SYSTEM_OK)
-  {
-    return SYSTEM_CLOCK_ERROR;
-  }
-
-  /* peripherals clock configuration and activation
-    is centralized: no clock activation/deactivation in pppi_init */
-
-  if (mx_rcc_peripherals_clock_config() != SYSTEM_OK)
-  {
-    return SYSTEM_CLOCK_ERROR;
-  }
-
-  /*
     Peripheral init section
   */
 
@@ -187,6 +169,12 @@ system_status_t mx_system_init(void)
 
   /** USB_DRD_FS_HOST */
   if (mx_usb_drd_fs_host_init() == NULL)
+  {
+    return SYSTEM_PERIPHERAL_ERROR;
+  }
+
+  /** TIM12 */
+  if (mx_tim12_init() == NULL)
   {
     return SYSTEM_PERIPHERAL_ERROR;
   }
