@@ -58,7 +58,7 @@ static uint32_t s_supervisor_period_ms = 0U;
  * does a wholesale `axis->config = *config` overwrite on every param set,
  * which would wipe any per-axis fake-homing fields. Global flag + distance,
  * all axes. */
-static bool s_fake_homing_enabled = true;
+static bool s_fake_homing_enabled = false;
 static uint32_t s_fake_homing_distance_umsteps = 500U;
 /*******************************************************************************
  * Function Prototypes
