@@ -17,7 +17,7 @@
  *******************************************************************************/
 
 #include "app_console_port.h"
-#include "mx_usart2.h"
+#include "mx_uart4.h"
 
 #include "FreeRTOS.h"
 #include "semphr.h"
@@ -26,9 +26,7 @@
  * Module Macros
  *******************************************************************************/
 
-/* Change this macro (and the matching #include above) to retarget the console
- * to a different UART peripheral. Everything else stays the same. */
-#define CONSOLE_UART_GETHANDLE mx_usart2_uart_gethandle
+#define CONSOLE_UART_GETHANDLE mx_uart4_uart_gethandle
 
 /*******************************************************************************
  * Module Typedefs
