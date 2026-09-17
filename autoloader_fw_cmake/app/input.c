@@ -22,7 +22,6 @@
 #include <stdbool.h>
 
 #include "FreeRTOS.h"
-#include "semphr.h"
 #include "task.h"
 
 #include "stm32_hal.h"
@@ -50,10 +49,7 @@
  * to its default. */
 static uint32_t s_door_debounce_ms;
 
-/* Binary semaphore: the door EXTI ISR gives this to wake the input task. */
-static SemaphoreHandle_t s_door_exti_sem = NULL;
-
-/* Door pin state — updated by the ISR, read by the task thread. */
+/* Door pin state — updated by the task thread on every poll. */
 static volatile uint8_t s_door_last_raw = 0U;
 static volatile uint32_t s_door_last_change_tick = 0U;
 
@@ -88,14 +84,8 @@ static void input_poll_inputs(void);
 
 /**
  * @brief Initialise the input module.
- *
- *        Creates the binary semaphore used by the door EXTI ISR to wake the
- *        input task.
  */
 void input_init(void) {
-  s_door_exti_sem = xSemaphoreCreateBinary();
-  configASSERT(s_door_exti_sem != NULL);
-
   /* Latch the debounce window from cal_data once, at boot. cal_data_init()
    * runs before input_init() in the bringup task, so the factory defaults are
    * already provisioned. Debounce timing is poll-sensitive, so a runtime
@@ -105,9 +95,12 @@ void input_init(void) {
   /* Seed the polled-pin debounce state from the actual levels so the first
    * poll is not treated as an edge against the zero-initialised defaults.
    * Without this, a lock detect reading high at boot posts a spurious
-   * APP_EV_LOCK_CONFIRMED, and a released reload switch (high) makes the
+   * APP_EV_LOCK_CONFIRMED, a released reload switch (high) makes the
    * first press match the stale default and post a spurious
-   * APP_EV_RELOAD_REQUEST. */
+   * APP_EV_RELOAD_REQUEST, and the door poll posts a spurious door event
+   * against its zero-initialised default. */
+  s_door_last_raw = HAL_GPIO_ReadPin(DOOR_SW_PORT, DOOR_SW_PIN);
+  s_door_last_change_tick = 0U;
   s_lock_last_raw = HAL_GPIO_ReadPin(DOOR_LOCK_DETECT_SW_PORT, DOOR_LOCK_DETECT_SW_PIN);
   s_lock_last_change_tick = 0U;
   s_reload_last_raw = HAL_GPIO_ReadPin(RELOAD_SW_PORT, RELOAD_SW_PIN);
@@ -126,30 +119,15 @@ void input_task_run(void* parameters) {
   (void)parameters;
 
   for (;;) {
-    /* Wait for door EXTI notification or periodic poll timeout. */
-    (void)xSemaphoreTake(s_door_exti_sem, pdMS_TO_TICKS(INPUT_POLL_PERIOD_MS));
+    /* Wake on the periodic poll timer. */
+    vTaskDelay(pdMS_TO_TICKS(INPUT_POLL_PERIOD_MS));
 
-    /* Service door debounce regardless of wake source. */
+    /* Service door debounce. */
     input_door_debounce();
 
-    /* Poll additional inputs (placeholder for future expansion). */
+    /* Poll additional inputs. */
     input_poll_inputs();
   }
-}
-
-/**
- * @brief ISR-safe entry point called from the door EXTI handler.
- *
- *        Reads the door pin, records the tick of the last edge, and gives
- *        the binary semaphore to wake the input task.
- */
-void input_door_exti_callback_from_isr(void) {
-  BaseType_t higher_priority_woken = pdFALSE;
-
-  s_door_last_raw = HAL_GPIO_ReadPin(DOOR_SW_PORT, DOOR_SW_PIN);
-  s_door_last_change_tick = xTaskGetTickCountFromISR();
-  xSemaphoreGiveFromISR(s_door_exti_sem, &higher_priority_woken);
-  portYIELD_FROM_ISR(higher_priority_woken);
 }
 
 /*******************************************************************************
@@ -159,9 +137,9 @@ void input_door_exti_callback_from_isr(void) {
 /**
  * @brief Debounce the door pin and post events to the app queue.
  *
- *        If the cal_data debounce window have elapsed since the last EXTI edge and the
- *        pin state has changed, an APP_EV_DOOR_OPENED or APP_EV_DOOR_CLOSED
- *        event is posted to the application event queue.
+ *        If the cal_data debounce window has elapsed since the last door
+ *        edge and the pin state has changed, an APP_EV_DOOR_OPENED or
+ *        APP_EV_DOOR_CLOSED event is posted to the application event queue.
  */
 static void input_door_debounce(void) {
   TickType_t elapsed;
@@ -181,6 +159,7 @@ static void input_door_debounce(void) {
   }
 
   s_door_last_raw = raw;
+  s_door_last_change_tick = xTaskGetTickCount();
 
   door_event.id = (raw != 0U) ? APP_EV_DOOR_OPENED : APP_EV_DOOR_CLOSED;
   door_event.slot = APP_NO_SLOT;
@@ -191,10 +170,10 @@ static void input_door_debounce(void) {
 }
 
 /**
- * @brief Placeholder for periodic polling of additional inputs.
+ * @brief Poll and debounce the lock-detect pin.
  *
- *        Called on every wake of the input task.  No inputs are implemented
- *        yet — future additions go here.
+ *        Posts APP_EV_LOCK_CONFIRMED or APP_EV_LOCK_RELEASED when the pin
+ *        state changes after the debounce window has elapsed.
  */
 static void input_poll_lock_pin(void) {
   TickType_t elapsed;
@@ -214,6 +193,7 @@ static void input_poll_lock_pin(void) {
   }
 
   s_lock_last_raw = raw;
+  s_lock_last_change_tick = xTaskGetTickCount();
 
   lock_event.id = (raw != 0U) ? APP_EV_LOCK_CONFIRMED : APP_EV_LOCK_RELEASED;
   lock_event.slot = APP_NO_SLOT;

@@ -3,9 +3,8 @@
  * @author Chris Owens (cowens@eemn.io)
  * @brief FreeRTOS input task for door debounce and periodic input polling.
  *
- *        The input task wakes immediately when notified by the door EXTI
- *        handler, services the door debounce logic, and wakes periodically
- *        to poll additional inputs.  Debounced input events are posted to
+ *        The input task wakes periodically to poll the door, lock, reload,
+ *        and shutdown inputs.  Debounced input events are posted to
  *        the application event queue.  No state-machine decisions are made
  *        inside this module.
  * @version 0.1
@@ -50,28 +49,18 @@
 /**
  * @brief Initialise the input module.
  *
- *        Creates the binary semaphore used by the door EXTI ISR to wake the
- *        input task.  Must be called before the input task is created.
+ *        Must be called before the input task is created.
  */
 void input_init(void);
 
 /**
  * @brief FreeRTOS input task entry point.
  *
- *        Wakes on door EXTI notification or on the periodic poll timer,
- *        services door debounce, and calls the input-polling placeholder.
+ *        Wakes on the periodic poll timer, services door debounce,
+ *        and calls the input-polling routines.
  * @param parameters Unused FreeRTOS task parameter.
  */
 void input_task_run(void* parameters);
-
-/**
- * @brief ISR-safe entry point called from the door EXTI handler.
- *
- *        Reads the door pin, records the tick of the last edge, and gives
- *        the binary semaphore to wake the input task.  Must only be called
- *        from ISR context.
- */
-void input_door_exti_callback_from_isr(void);
 
 /**
  * @brief Get the current door state.
