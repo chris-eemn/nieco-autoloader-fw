@@ -23,7 +23,6 @@
 #include "encoder.h"
 #include "main.h"
 #include "mx_i2c1.h"
-#include "pca9538a.h"
 #include "stepper.h"
 #include "stepper_ctrl.h"
 
@@ -109,7 +108,6 @@ static const axis_config_t s_axis_config = {
 static encoder_t* stepper_system_start_tim_encoder(hal_tim_handle_t* timer);
 static encoder_t* stepper_system_start_lptim_encoder(hal_lptim_handle_t* timer);
 static bool stepper_system_init_encoders(void);
-static bool stepper_system_init_io_expander(void);
 static bool stepper_system_init_axes(void);
 
 /*******************************************************************************
@@ -121,9 +119,6 @@ bool stepper_system_init(void) {
 
   if (initialized == false) {
     initialized = stepper_system_init_encoders();
-    if (initialized != false) {
-      initialized = stepper_system_init_io_expander();
-    }
     if (initialized != false) {
       initialized = stepper_system_init_axes();
     }
@@ -244,39 +239,6 @@ static bool stepper_system_init_encoders(void) {
       initialized = false;
       break;
     }
-  }
-
-  return initialized;
-}
-
-/**
- * @brief Configure and verify the shared stepper-driver I/O expander.
- * @return true when the expected output value was read back; otherwise false.
- */
-static bool stepper_system_init_io_expander(void) {
-  const uint8_t expected_output = (IO_EXPANDER_M0 | IO_EXPANDER_M1);
-  uint8_t readback_output = 0U;
-  hal_i2c_handle_t* i2c = mx_i2c1_i2c_gethandle();
-  bool initialized = false;
-
-  if (i2c == NULL) {
-    app_console_print("[ERROR] Stepper I2C handle unavailable.\r\n");
-  }
-  else if (pca9538a_init(i2c, 0x00U) != HAL_OK) {
-    app_console_print("[ERROR] PCA9538A init failed.\r\n");
-  }
-  else if (pca9538a_write_output(i2c, expected_output) != HAL_OK) {
-    app_console_print("[ERROR] PCA9538A write failed.\r\n");
-  }
-  else if (pca9538a_read_output(i2c, &readback_output) != HAL_OK) {
-    app_console_print("[ERROR] PCA9538A read failed.\r\n");
-  }
-  else if (readback_output != expected_output) {
-    app_console_print("PCA9538A FAIL: wrote 0x%02X, read 0x%02X\r\n", expected_output, readback_output);
-  }
-  else {
-    app_console_print("PCA9538A OK: 0x%02X\r\n", readback_output);
-    initialized = true;
   }
 
   return initialized;
