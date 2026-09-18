@@ -64,6 +64,20 @@ hal_uart_handle_t *mx_uart4_uart_init(void)
     return NULL;
   }
 
+  /* Fifo configuration */
+  if (HAL_UART_SetTxFifoThreshold(&hUART4, HAL_UART_FIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    return NULL;
+  }
+  if (HAL_UART_SetRxFifoThreshold(&hUART4, HAL_UART_FIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    return NULL;
+  }
+  if (HAL_UART_EnableFifoMode(&hUART4) != HAL_OK)
+  {
+    return NULL;
+  }
+
   /* ### UART4 GPIO Configuration ########################### */
   /* GPIO Clocks activation */
   HAL_RCC_GPIOD_EnableClock();

@@ -1,7 +1,7 @@
 {
   "disclaimer": "Do not modify this file as it is used by STM32CubeMX2 to determine what and how to update your project with new configuration",
   "version": "1.0.0",
-  "timestamp": "2026-09-17T15:24:21.728Z",
+  "timestamp": "2026-09-18T15:53:14.035Z",
   "files": [
     {
       "fileGroup": "project_file",
@@ -519,7 +519,7 @@
       "fileGroup": "generated",
       "checksum": {
         "algo": "sha256",
-        "digest": "6edcb71a88c4f0e13cec27183e1c036b6ba0d4907cc4a44f3ce25f4c205dfbe7"
+        "digest": "edc812d80ce4e6af5c92146b70a0e01c49718885413ec371fe8436c2e18e2d3c"
       },
       "file": "generated/hal/mx_uart4.c"
     },

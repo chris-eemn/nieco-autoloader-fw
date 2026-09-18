@@ -11696,11 +11696,13 @@ solution:
                 "enable_tx_rx_swap": false,
                 "enable_msb_first": false,
                 "enable_dma_stop_on_rx_error": false,
-                "enable_fifo_mode": false,
+                "enable_fifo_mode": true,
                 "enable_receiver_timeout": false,
                 "enable_rs485_mode": false,
                 "rx_over_run_detection": true,
-                "set_config_auto_baud_rate": "DISABLE"
+                "set_config_auto_baud_rate": "DISABLE",
+                "set_rx_fifo_threshold": "1_8",
+                "set_tx_fifo_threshold": "1_8"
               },
               "system": {
                 "gpio": {
