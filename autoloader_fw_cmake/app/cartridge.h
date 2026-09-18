@@ -26,7 +26,21 @@
 /*******************************************************************************
  * Module Typedefs
  *******************************************************************************/
-typedef enum { PUSHER = 0U, LIFTER = 1U } cartridge_actuator_type_t;
+/**
+ * Actuator type for a cartridge slot. This enum is the single source of truth for
+ * how actuators map onto axis numbers: each slot owns CARTRIDGE_AXIS_COUNT
+ * consecutive axes, starting at the actuator listed first.
+ *
+ *   Slot 1 -> LIFTER axis 1, PUSHER axis 2
+ *   Slot 2 -> LIFTER axis 3, PUSHER axis 4
+ *   Slot 3 -> LIFTER axis 5, PUSHER axis 6
+ *   Slot 4 -> LIFTER axis 7, PUSHER axis 8
+ *
+ * Reordering these enumerators reorders the axis assignment. Every axis-number
+ * calculation and every axis-to-actuator test derives from this enum, so nothing
+ * else may hardcode the parity.
+ */
+typedef enum { LIFTER = 0U, PUSHER = 1U, CARTRIDGE_AXIS_COUNT = 2U } cartridge_actuator_type_t;
 
 // product types that can be dispensed from the autoloader. Whoppers, Jr. patties, and LTOs are the only supported types.
 typedef enum { CARTRIDGE_TYPE_EMPTY, CARTRIDGE_TYPE_WHOPPER, CARTRIDGE_TYPE_JR, CARTRIDGE_TYPE_LTO } cartridge_type_t;
@@ -86,6 +100,19 @@ uint8_t cartridge_get_axis_num(const cartridge_t* slot, cartridge_actuator_type_
  * invalid axis numbers. but the catridge array is indexed at 0-3.
  */
 uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num);
+
+/**
+ * @brief Tests whether an axis belongs to the given actuator type.
+ *
+ *        Derives the answer from cartridge_actuator_type_t, so the actuator/axis
+ *        layout is defined in exactly one place. Callers must not test axis
+ *        parity directly.
+ *
+ * @param axis_num Axis number to test (1-based; 0 is invalid and returns false).
+ * @param type Actuator type to test against.
+ * @return true when axis_num is that actuator of its slot, false otherwise.
+ */
+bool cartridge_axis_is_type(uint8_t axis_num, cartridge_actuator_type_t type);
 
 /**
  * @brief Reads the raw type-sensor GPIO levels for a cartridge slot.

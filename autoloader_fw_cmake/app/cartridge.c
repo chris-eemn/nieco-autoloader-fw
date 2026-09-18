@@ -40,21 +40,20 @@
  *******************************************************************************/
 uint8_t cartridge_get_axis_num(const cartridge_t* slot, cartridge_actuator_type_t type) {
   uint8_t axis_num = 0U;
+
   /*
-    CARTRIDGE SLOT 1 -> PUSHER AXIS 1, LIFTER AXIS 2
-    CARTRIDGE SLOT 2 -> PUSHER AXIS 3, LIFTER AXIS 4
-    CARTRIDGE SLOT 3 -> PUSHER AXIS 5, LIFTER AXIS 6
-    CARTRIDGE SLOT 4 -> PUSHER AXIS 7, LIFTER AXIS 8
+    The cartridge_actuator_type_t enum is the source of truth for this mapping:
+    each slot owns CARTRIDGE_AXIS_COUNT consecutive axes, in enum order.
+
+    CARTRIDGE SLOT 1 -> LIFTER AXIS 1, PUSHER AXIS 2
+    CARTRIDGE SLOT 2 -> LIFTER AXIS 3, PUSHER AXIS 4
+    CARTRIDGE SLOT 3 -> LIFTER AXIS 5, PUSHER AXIS 6
+    CARTRIDGE SLOT 4 -> LIFTER AXIS 7, PUSHER AXIS 8
   */
 
   // slot nums start from 1-4
-  if (slot->num <= APP_SLOT_COUNT) {
-    if (type == PUSHER) {
-      axis_num = (uint8_t)(((slot->num - 1) * 2U) + 1U);
-    }
-    else if (type == LIFTER) {
-      axis_num = (uint8_t)(((slot->num - 1) * 2U) + 2U);
-    }
+  if ((slot != NULL) && (slot->num >= 1U) && (slot->num <= APP_SLOT_COUNT) && (type < CARTRIDGE_AXIS_COUNT)) {
+    axis_num = (uint8_t)(((slot->num - 1U) * CARTRIDGE_AXIS_COUNT) + (uint8_t)type + 1U);
   }
 
   return axis_num;
@@ -63,11 +62,19 @@ uint8_t cartridge_get_axis_num(const cartridge_t* slot, cartridge_actuator_type_
 uint8_t cartridge_get_slot_from_axis_num(uint8_t axis_num) {
   uint8_t slot = 0U;
 
-  if ((axis_num > 0U) && (axis_num <= (APP_SLOT_COUNT * 2U))) {
-    slot = ((axis_num - 1U) / 2U) + 1U;
+  if ((axis_num > 0U) && (axis_num <= (APP_SLOT_COUNT * CARTRIDGE_AXIS_COUNT))) {
+    slot = (uint8_t)(((axis_num - 1U) / CARTRIDGE_AXIS_COUNT) + 1U);
   }
 
   return slot;
+}
+
+bool cartridge_axis_is_type(uint8_t axis_num, cartridge_actuator_type_t type) {
+  if ((axis_num == 0U) || (axis_num > (APP_SLOT_COUNT * CARTRIDGE_AXIS_COUNT)) || (type >= CARTRIDGE_AXIS_COUNT)) {
+    return false;
+  }
+
+  return (uint8_t)((axis_num - 1U) % CARTRIDGE_AXIS_COUNT) == (uint8_t)type;
 }
 
 void cartridge_read_type_sensors(const cartridge_t* cartridge, uint8_t* sensor1_out, uint8_t* sensor2_out) {

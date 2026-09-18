@@ -186,7 +186,7 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
     app_event.id = APP_EV_MOTION_FAILED;
   }
   else if (event == AXIS_EVENT_HOME_DONE) {
-    if ((app_sm_port_is_recount_active() == true) && (axis->num % 2U == 0U) && (app_event.slot > 0U)) {
+    if ((app_sm_port_is_recount_active() == true) && (cartridge_axis_is_type(axis->num, LIFTER) == true) && (app_event.slot > 0U)) {
       app_event.id = APP_EV_COUNT_DONE;
     }
     else {
@@ -199,7 +199,7 @@ static void on_axis_event(axis_t* axis, axis_event_enum event, void* ctx) {
   else if (event == AXIS_EVENT_HOME_FAILED) {
     // todo: temporary since we are faking homing
     axis_clear_fault(axis);
-    if ((app_sm_port_is_recount_active() == true) && (axis->num % 2U == 0U) && (app_event.slot > 0U)) {
+    if ((app_sm_port_is_recount_active() == true) && (cartridge_axis_is_type(axis->num, LIFTER) == true) && (app_event.slot > 0U)) {
       app_event.id = APP_EV_COUNT_DONE;
     }
     else {
